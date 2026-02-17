@@ -1,0 +1,99 @@
+Required: Symbolic Math Toolbox Installation
+This program requires the Symbolic Math Toolbox to run properly.
+Installation Steps:
+
+Open MATLAB
+Click Add-Ons in the Home tab
+Search for "Symbolic Math Toolbox"
+Click Install
+
+Verification:
+After installation, verify by running ver in the Command Window. You should see "Symbolic Math Toolbox" in the output list.
+Note:
+If you encounter the error "Undefined function 'syms' for input arguments of type 'char'", it indicates the Symbolic Math Toolbox is not installed or properly configured.
+
+
+
+
+# LGK Dendritic Growth Model - MATLAB Implementation 
+Author: Xinyi Hao
+Based on core code from Sihan Sun
+
+## Overview
+This MATLAB programme suite implements the **Lipton-Glicksman-Kurz (LGK) model** for calculating dendrite tip velocity and radius in undercooled binary alloy melts. The model solves coupled nonlinear equations combining heat/mass transport with morphological stability criteria.
+
+## Quick Start
+
+### For New Users
+**Start here:** Run `LGK_model.m`
+
+This will launch the main GUI interface where you can:
+1. Select from 9 predefined materials or define custom properties
+2. Configure calculation parameters (undercooling ranges, concentrations)
+3. Start calculations and view real-time progress
+4. Export results to Excel and save publication-quality figures
+
+### For Algorithm Testing/Debugging
+**Alternative start:** Run `SCN_Acetone_LGK_Calculation.m`
+
+This standalone programme calculates results for the well-characterized SCN-Acetone system used in the original LGK paper, ideal for validation and algorithm testing.
+
+## Programme Architecture
+
+### Core Computational Engine
+- **`calculate_VR.m`** - The heart of the programme
+  - Newton-Raphson solver for the coupled LGK equations
+  - Adaptive convergence algorithms with sophisticated damping
+  - All other files are supporting/interface programmes
+
+### Main Interface and Control
+- **`LGK_model.m`** - Programme entry point (launches GUI)
+- **`MaterialControlPanel.m`** - Main graphical user interface
+- **`run_main_calculation.m`** - Orchestrates multi-concentration calculations
+
+### Supporting Functions
+- **`create_deltaT_sequence.m`** - Generates adaptive undercooling sequences
+- **`create_analytical_guess_functions.m`** - Provides theoretical initial estimates
+- **`ParallelManager.m`** & **`cleanup_parallel_pool.m`** - Parallel computing management
+
+### Standalone Validation
+- **`SCN_Acetone_LGK_Calculation.m`** - Independent validation programme
+
+## Supported Materials
+- **AZ91** (Magnesium alloy)
+- **Al-4wt%Cu, Al-Cu, Al-Fe** (Aluminium alloys)
+- **Sn-Ag, Sn-Cu** (Tin-based solders)
+- **SCN-Acetone** (Transparent model system)
+- **Mg-Alloy** (General magnesium systems)
+- **Custom** (User-defined parameters)
+
+## Key Features
+- **Parallel processing** for multi-concentration calculations
+- **Real-time progress monitoring** with time estimation
+- **Adaptive undercooling sequences** for computational efficiency
+- **Multiple initial guess strategies** (parametric vs analytical)
+- **Comprehensive visualization** with surface fitting
+- **Excel export** with calculation parameters and fitted equations
+
+## System Requirements
+- MATLAB R2018b or later
+- Symbolic Math Toolbox (required)
+- Parallel Computing Toolbox (optional, for performance)
+
+## Getting Results
+1. Launch `LGK_model.m`
+2. Select material and adjust parameters as needed
+3. Click "Start Calculation"
+4. Wait for completion (progress shown in real-time)
+5. Use "Save Figures & Data" to export results
+
+## Troubleshooting
+- If calculations fail to converge, try different initial guess parameters
+- For performance issues, check parallel pool configuration
+- Use the SCN-Acetone standalone programme to validate algorithm behaviour
+
+## Reference
+Lipton, J., Glicksman, M.E., Kurz, W. (1984). "Dendritic Growth into Undercooled Alloy Melts". *Materials Science and Engineering*, 65, 57-63.
+
+---
+**Remember:** `calculate_VR.m` contains the core physics and mathematics - everything else is user interface, parameter management, or result processing.

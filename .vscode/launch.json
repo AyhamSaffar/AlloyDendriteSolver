@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations":
+    [
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/${fileBasenameNoExtension}",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "miDebuggerPath": "/usr/bin/gdb" // "sudo apt install build-essential gdb" required
+        }
+    ]
+}
