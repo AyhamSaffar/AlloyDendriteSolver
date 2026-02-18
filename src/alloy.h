@@ -3,11 +3,9 @@
 
 #include <numbers>
 
-
+// datastructures needed to track alloy physical constants in SI units
 namespace alloy
 {
-    using namespace std::numbers; // for value of pi
-
     /// @brief contains key physical constants for a given alloy system in SI units
     struct Alloy
     {
@@ -20,7 +18,8 @@ namespace alloy
         double a{};     // thermal diffusivity in liquid - m2/s
         double o{};     // stability constant - unitless
     };
-
+    
+    using std::numbers::pi;
     // should reference where these come from!
     Alloy SnAg{61'810.62, 249.0, -3.14, 0.0191, 8.54e-8, 1.82e-9, 1.5e-5, 1/(4*pi*pi)};
 }
