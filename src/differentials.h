@@ -1,3 +1,5 @@
+// replaceable by C++ symbolic differentiators!
+
 #ifndef DIFFERENTIALS_H
 #define DIFFERENTIALS_H
 
