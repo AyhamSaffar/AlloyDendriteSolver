@@ -3,7 +3,7 @@
 
 #include <numbers>
 
-// datastructures needed to track alloy physical constants in SI units
+/// @brief datastructures needed to track alloy physical constants in SI units
 namespace alloy
 {
     /// @brief contains key physical constants for a given alloy system in SI units
