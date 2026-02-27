@@ -22,47 +22,47 @@ $$ R = \frac {\frac{Γ}{σ^*}} {\frac{P_t L}{c_p} -\frac{P_c m C_0 (1-k_0 )}{1-(
 
 With the following identities
 
-$ P_t = \frac{VR}{2α} $ 
+$P_t = \frac{VR}{2α}$ 
 
-$ P_c = \frac{VR}{2D} $
+$P_c = \frac{VR}{2D}$
 
-$ Iv_t(P_t) = P_t e^{P_t} E_1(P_t) $
+$Iv_t(P_t) = P_t e^{P_t} E_1(P_t)$
 
-$ Iv_p(P_c) = P_c e^{P_c} E_1(P_c) $
+$Iv_p(P_c) = P_c e^{P_c} E_1(P_c)$
 
 Where
-- $ P_t $       &nbsp; is the thermal Péclet number
-- $ P_c $       &nbsp; is the solutal Péclet number
-- $ Iv_p(P_c) $ &nbsp; is the solutal Ivantsov function
-- $ Iv_p(p_t) $ &nbsp; is the thermal Ivantsov function
-- $ E_1(x) $    &nbsp; is the first exponential integral of variable $x$
+- $P_t$       &nbsp; is the thermal Péclet number
+- $P_c$       &nbsp; is the solutal Péclet number
+- $Iv_p(P_c)$ &nbsp; is the solutal Ivantsov function
+- $Iv_p(p_t)$ &nbsp; is the thermal Ivantsov function
+- $E_1(x)$    &nbsp; is the first exponential integral of variable $x$
 
 Within these equations, there are eight constant parameters, defined as follows:
-- $ L $ 	&nbsp; Latent heat of fusion - $ J/kg $
-- $ c_p $ 	&nbsp; Specific heat capacity - $ J/(kgK) $
-- $ m $ 	&nbsp; Equilibrium liquidus slope - $ K/ wt.\% $
-- $ k_0 $	&nbsp; Partition coefficient - *unitless*
-- $ Γ $ 	&nbsp; Gibbs-Thomson coefficient - $ Km $
-- $ D $ 	&nbsp; Solute diffusion coefficient - $ m^2/s $
-- $ α $	    &nbsp; Thermal diffusivity in the liquid - $ m^2/s $
-- $ σ^* $	&nbsp; Stability constant - *unitless*
+- $L$ 	&nbsp; Latent heat of fusion - $ J/kg $
+- $c_p$ &nbsp; Specific heat capacity - $ J/(kgK) $
+- $m$ 	&nbsp; Equilibrium liquidus slope - $ K/ wt.\% $
+- $k_0$	&nbsp; Partition coefficient - *unitless*
+- $Γ$ 	&nbsp; Gibbs-Thomson coefficient - $ Km $
+- $D$ 	&nbsp; Solute diffusion coefficient - $ m^2/s $
+- $α$	&nbsp; Thermal diffusivity in the liquid - $ m^2/s $
+- $σ^*$	&nbsp; Stability constant - *unitless*
 
 For Sn-Ag alloys, these parameters are
-- $ L $ = 	  61,810.62 $ J/kg $
-- $ c_p $ =   249 $ J/(kgK) $
-- $ m $ = 	  −3.14 $ K/ wt.\% $
-- $ k_0 $ =	  0.0191
-- $ Γ $ = 	  8.54*$10^8$ $ Km $
-- $ D $ = 	  1.82*$10^{–9}$ $ m^2/s $
-- $ α $ =	  1.5*$10^{–5}$ $ m^2/s $
-- $ σ^* $ =	  $1/(4π^2)$
+- $L$ = 	  61,810.62 $ J/kg $
+- $c_p$ =     249 $ J/(kgK) $
+- $m$ = 	  −3.14 $ K/ wt.\% $
+- $k_0$ =	  0.0191
+- $Γ$ = 	  8.54*$10^8$ $ Km $
+- $D$ = 	  1.82*$10^{–9}$ $ m^2/s $
+- $α$ =	      1.5*$10^{–5}$ $ m^2/s $
+- $σ^*$ =	  $1/(4π^2)$
 
 There are four variables, defined as follows:
 
-- $ C_0 $ Bulk alloy composition - $ wt.\% $
-- $ ∆T $ Undercooling - $ K $
-- $ V $ Velocity - $ m/s $
-- $ R $ Dendrite tip radius - $ m $
+- $C_0$ Bulk alloy composition - $wt.\%$
+- $∆T$ Undercooling - $K$
+- $V$ Velocity - $m/s$
+- $R$ Dendrite tip radius - $m$
 
 Fixing two of these variables, the other two can be solved iteratively using a method such as a two-dimensional Newton scheme, also known as the Newton-Raphson method in two variables.
 
@@ -81,12 +81,13 @@ Where:
 - n+1 is the next step in the iteration
 - $J$ is the Jacobian matrix.
 
-    $$ J= \begin{bmatrix} {\partial f_1}/{\partial V} & {\partial f_1}/{\partial R} \cr {\partial f_2}/{\partial V} & {\partial f_2}/{\partial R} \end{bmatrix} $$
+$$ J= \begin{bmatrix} {\partial f_1}/{\partial V} & {\partial f_1}/{\partial R} \cr {\partial f_2}/{\partial V} & {\partial f_2}/{\partial R} \end{bmatrix} $$
 
 It is convenient to write this in terms of the difference in the variables, $∆V$ and $∆R$
 
-$ ∆V=V_{n+1}-V_n $
-$ ∆R=R_{n+1}-R_n $
+$∆V=V_{n+1}-V_n$
+
+$∆R=R_{n+1}-R_n$
 
 It is also convenient to have J on the left-hand side so we do not need to use its inverse.
 
