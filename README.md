@@ -5,7 +5,7 @@ We are interested in developing code that runs two models of dendrite growth int
     ΔT	Growth undercooling
     V	Tip velocity
     R	Tip radius
-    C_0	Bulk alloy composition
+    C0	Bulk alloy composition
 
 The LGK model considers dendrite growth into an undercooled melt at velocities where the solid-liquid interface remains at local equilibrium.
 
@@ -28,13 +28,13 @@ $P_c = \frac{VR}{2D}$
 
 $Iv_t(P_t) = P_t e^{P_t} E_1(P_t)$
 
-$Iv_p(P_c) = P_c e^{P_c} E_1(P_c)$
+$Iv_c(P_c) = P_c e^{P_c} E_1(P_c)$
 
 Where
 - $P_t$       &nbsp; is the thermal Péclet number
 - $P_c$       &nbsp; is the solutal Péclet number
-- $Iv_p(P_c)$ &nbsp; is the solutal Ivantsov function
-- $Iv_p(p_t)$ &nbsp; is the thermal Ivantsov function
+- $Iv_c(P_c)$ &nbsp; is the solutal Ivantsov function
+- $Iv_t(P_t)$ &nbsp; is the thermal Ivantsov function
 - $E_1(x)$    &nbsp; is the first exponential integral of variable $x$
 
 Within these equations, there are eight constant parameters, defined as follows:
