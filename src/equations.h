@@ -43,7 +43,6 @@ namespace LGK
     {
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Pc{V*R/(2*A.D)}; // solutal Péclet number
-        double Ivt{Pt*std::exp(Pt)*std::expint(Pt)}; // thermal Ivantsov function
         double Ivc{Pc*std::exp(Pc)*std::expint(Pc)}; // solutal Ivantsov function
         return A.r/A.o / ( Pt*A.L/A.Cp - (Pc*A.m*C0*(1-A.k0))/(1-(1-A.k0)*Ivc) ) - R;
     }
