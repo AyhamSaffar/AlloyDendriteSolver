@@ -40,7 +40,7 @@ namespace models
         double Ivt{Pt*std::exp(Pt)*std::expint(Pt)}; // thermal Ivantsov function
         double Ivc{Pc*std::exp(Pc)*std::expint(Pc)}; // solutal Ivantsov function
         double f1{A.L*Ivt/A.Cp + A.m*C0*(1 - 1/(1-(1-A.k0)*Ivc)) + 2*A.r/R - dT};
-        double f2{A.r/A.o / ( Pt*A.L/A.Cp - (Pc*A.m*C0*(1-A.k0))/(1-(1-A.k0)*Ivc) ) - R};
+        double f2{(A.r/A.o) / ( Pt*A.L/A.Cp - (Pc*A.m*C0*(1-A.k0))/(1-(1-A.k0)*Ivc) ) - R};
         return std::make_tuple(f1, f2);
     }
 }
