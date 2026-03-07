@@ -1,0 +1,4 @@
+cmake_minimum_required(VERSION 3.28)
+project(AlloySolidificationSolver)
+add_executable(AlloySolidificationSolver src/main.cpp)
+target_include_directories(AlloySolidificationSolver PUBLIC include)

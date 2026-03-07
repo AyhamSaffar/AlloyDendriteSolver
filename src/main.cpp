@@ -19,12 +19,12 @@ int main()
     for (int i{0}; i<10; ++i)
     {
         std::tie(f1, f2) = models::LGK(V, R, dT, C0, A);
-        J = diff::calculateGrads<models::LGK>(V, R, dT, C0, A);
-        std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
-        std::cout << "V: " << V << ", dV: " << dV << ", R: " << R << ", dR: " << dR << ", f1: " << f1 << ", f2: " 
-            << f2 << '\n';
-        V += dV;
-        R += dR;
+        // J = diff::calculateGrads<models::LGK>(V, R, dT, C0, A);
+        // std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
+        // std::cout << "V: " << V << ", dV: " << dV << ", R: " << R << ", dR: " << dR << ", f1: " << f1 << ", f2: " 
+        //     << f2 << '\n';
+        // V += dV;
+        // R += dR;
     }
 
     return 0;
