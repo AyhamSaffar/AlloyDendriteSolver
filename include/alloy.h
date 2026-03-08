@@ -21,7 +21,7 @@ namespace alloy
         double o{};     // stability constant - unitless
     };
     
-    constexpr double pi{3.14159265358979};
+    using std::numbers::pi;
     
     //TODO should reference where these come from!
     constexpr Alloy SnAg{61'810.62, 249.0, -3.14, 0.0191, 8.54e-8, 1.82e-9, 1.5e-5, 1/(4*pi*pi)};
