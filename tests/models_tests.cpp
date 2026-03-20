@@ -16,3 +16,5 @@ TEST_CASE("LGK model agrees with approximation at low undercooling", "[models]")
     REQUIRE(std::abs(f1) < 0.01);
     REQUIRE(std::abs(f2) < 0.01);
 }
+
+//TODO add test to make sure LGK model agrees with reported results!

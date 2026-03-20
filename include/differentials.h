@@ -12,7 +12,7 @@ namespace diff
 {    
     // Enzyme autodiff can only handle non out-parameter functions when they return a single value
     template <models::ModelFunc func, int fToReturn>
-    double wrapper(double V, double R, double dT, double C0, const alloy::Alloy& A)
+    inline double wrapper(double V, double R, double dT, double C0, const alloy::Alloy& A)
     {
         std::tuple<double, double> f{func(V, R, dT, C0, A)};
         return std::get<fToReturn-1>(f);
@@ -43,7 +43,7 @@ namespace diff
     }
 }
 
-std::ostream& operator<<(std::ostream& out, const diff::Jacobian& J)
+inline std::ostream& operator<<(std::ostream& out, const diff::Jacobian& J)
 {
     return out << "Jacobian(δf1/δV=" << J.df1dV << ", δf1/δR=" << J.df1dR << ", δf2/δV=" << J.df2dV << ", δf2/δR=" <<
         J.df2dR << ')';
