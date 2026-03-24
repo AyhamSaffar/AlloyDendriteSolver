@@ -116,7 +116,6 @@ For the LKT-BCT model:
 
 ### To Do
 - Currently getting unreliable convergence
-    - Write Catch2 unit tests for basic building blocks
     - Maybe play with adaptive / clamped updates
     - Hess / more sophisticated optimizer
     - Maybe try looking up different techniques

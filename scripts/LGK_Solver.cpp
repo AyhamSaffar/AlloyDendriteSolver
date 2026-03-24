@@ -1,4 +1,4 @@
-// Minimal script used to calculate V & R for a range of dT given C0 and an Alloy.
+// Minimal script used to reproduce figure 3 in https://doi.org/10.1016/0025-5416(84)90199-X.
 
 #include <optional>
 #include <fstream>
@@ -20,15 +20,17 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A)
     double R{approx::getTipRadius(dT, C0, A)};
     diff::Jacobian J{};
 
-    for (int i{0}; i<1'000; ++i)
+    for (int i{0}; i<1000; ++i)
     {
         std::tie(f1, f2) = models::LGK(V, R, dT, C0, A);
         J = diff::calculateGrads<models::LGK>(V, R, dT, C0, A);
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
         if (std::isnan(dV) || std::isnan(dR)) // solver diverges
             return Result{true};
-        V += dV;
-        R += dR;
+        V += dV * 0.1;
+        R += dR * 0.1;
+        if ((f1<1e-8) && (f2<1e-8)) // solver converged
+            break;
     }
     
     return Result{false, f1, f2, V, R};
@@ -37,18 +39,16 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A)
 int main()
 {
     std::string dataPath{DATA_PATH};
-    std::ofstream outf{dataPath + "/result.csv"};
-    outf << "diverged,dT,C0,V,R,f1,f2\n";
-    
-    double C0{5.0};
-    for(double dT{0}; dT<=100; dT+=0.1)
+    std::ofstream outf{dataPath + "/data.csv"};
+    outf << "diverged,dT,C0,V,R,f1,f2\n" << std::boolalpha;
+    for (double dT{0.5}; dT<1.0; dT+=0.4)
     {
-        Result result{VRSolver(dT, C0, alloy::SnAg)};
-        if (result.hasDiverged)
-            outf << "True\n";
-        else
-            outf << "False" << ',' << dT << ',' << C0 << ',' << result.V << ',' << result.R << ',' << result.f1 << ','
-                << result.f2 << '\n';
+        for(double C0{0.0}; C0<=1.0; C0+=0.01)
+        {
+            Result result{VRSolver(dT, C0, alloy::SucAce)};
+            outf << result.hasDiverged << ',' << dT << ',' << C0 << ',' << result.V << ',' << result.R << ',' <<
+                result.f1 << ',' << result.f2 << '\n';
+        }
     }
     return 0;
 }

@@ -8,7 +8,7 @@ project(AlloySolidificationSolver)
 
 # saves all .cpp files in src directory to SRC_FILES variable. file names must not have spaces! 
 # CONFIGURE_DEPENDS reruns CMAKE when new .cpp files are found in src. Might not be supported on all platforms
-file(GLOB SRC_FILE_PATHS CONFIGURE_DEPENDS src/*.cpp)
+file(GLOB SRC_FILE_PATHS CONFIGURE_DEPENDS scripts/*.cpp)
 
 foreach(SRC_FILE_PATH ${SRC_FILE_PATHS})
     get_filename_component(SRC_FILE_NAME ${SRC_FILE_PATH} NAME_WE) #remove parent directories & file extension
