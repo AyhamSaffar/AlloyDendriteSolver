@@ -4,7 +4,7 @@
 #include <cmath>
 #include "alloy.h"
 
-// approximate analytical solutions to solidification parameters following "Solidification’ by Dantzig & Rappaz
+// approximate analytical solutions to solidification parameters following "Solidification" by Dantzig & Rappaz
 // (1st Ed)" textbook. assumes small undercooling and solutal dendrites.
 namespace approx
 {
