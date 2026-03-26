@@ -3,6 +3,7 @@
 
 # build files (executables and intermediate output created by CMake)
 build
+debug
 
 # directory reseverd for solver output files
 data/*
