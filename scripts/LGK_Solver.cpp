@@ -26,7 +26,7 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A)
             return Result{true};
         V += 0.1*dV;
         R += 0.1*dR;
-        if ((std::abs(f1)<1e-8) && (std::abs(f2)<1e-8)) // solver converged
+        if ((std::abs(f1)<1e-16) && (std::abs(f2)<1e-16)) // solver converged
             break;
     }
     
@@ -38,7 +38,7 @@ int main()
     std::string dataPath{DATA_PATH};
     std::ofstream outf{dataPath + "/data.csv"};
     outf << "diverged,dT,C0,V,R,f1,f2\n" << std::boolalpha;
-    for (double dT{0.5}; dT<1.0; dT+=0.4)
+    for (double dT{5}; dT<1.0; dT+=4)
     {
         for(double C0Molar{0.01}; C0Molar<=1.0; C0Molar+=0.01)
         {  

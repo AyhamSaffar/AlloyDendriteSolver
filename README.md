@@ -119,6 +119,8 @@ For the LKT-BCT model:
     - Maybe play with adaptive / clamped updates
     - Hess / more sophisticated optimizer
     - Maybe try looking up different techniques
+    - Plot V vs R for fixed C0 & dT to see if multiple solutions (might explain weird converged results)
+    - Find convergence intervals for initials guesses in V vs dT with lines for approx, LGK, and eventually LKT-BCT. This will be helpful in checking if fancier optimisers / update schemes are worthwhile in terms on interval of convergence.
 - Attempt to reproduce some LGK plots
 - Add T dependant LGK model where diffusivity, liquidus temperature, partition coefficient, and liquidus slopes are fit polynomials. *must figure out how best to implement this for stability criterion part of LGK*.
 - Implement LKT-BCT model and reproduce published plots
