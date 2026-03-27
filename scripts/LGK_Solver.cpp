@@ -24,8 +24,8 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A)
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
         if (std::isnan(dV) || std::isnan(dR)) // solver diverges
             return Result{true};
-        V += dV * 0.1;
-        R += dR * 0.1;
+        V += 0.1*dV;
+        R += 0.1*dR;
         if ((std::abs(f1)<1e-8) && (std::abs(f2)<1e-8)) // solver converged
             break;
     }
@@ -40,10 +40,11 @@ int main()
     outf << "diverged,dT,C0,V,R,f1,f2\n" << std::boolalpha;
     for (double dT{0.5}; dT<1.0; dT+=0.4)
     {
-        for(double C0{0.01}; C0<=1.0; C0+=0.01)
-        {
-            Result result{VRSolver(dT, C0, alloy::SucAce)};
-            outf << result.hasDiverged << ',' << dT << ',' << C0 << ',' << result.V << ',' << result.R << ',' <<
+        for(double C0Molar{0.01}; C0Molar<=1.0; C0Molar+=0.01)
+        {  
+            double C0wt{C0Molar*7.252e-3};
+            Result result{VRSolver(dT, C0wt, alloy::SucAce)};
+            outf << result.hasDiverged << ',' << dT << ',' << C0wt << ',' << result.V << ',' << result.R << ',' <<
                 result.f1 << ',' << result.f2 << '\n';
         }
     }
