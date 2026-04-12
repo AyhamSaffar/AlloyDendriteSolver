@@ -38,7 +38,7 @@ int main()
     std::string dataPath{DATA_PATH};
     std::ofstream outf{dataPath + "/data.csv"};
     outf << "diverged,dT,C0,V,R,f1,f2\n" << std::boolalpha;
-    for (double dT{5}; dT<1.0; dT+=4)
+    for (double dT{5}; dT<10.0; dT+=4)
     {
         for(double C0Molar{0.01}; C0Molar<=1.0; C0Molar+=0.01)
         {  

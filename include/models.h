@@ -14,13 +14,13 @@ namespace models
     /// @brief Lipton Glicksman Kurz (LGK) model equations that analytically predict how solidification dendrites grow
     /// into a molten liquid when the interface is in equilibrium. https://doi.org/10.1016/0025-5416(84)90199-X
     ///
-    /// The first equation calculates the LGK undercooling equation rearranged to equal zero. This equation takes into
+    /// The first equation calculates the LGK dendrite undercooling error. This equation takes into
     /// account the thermal, constitutional, and curvature undercooling. It uses dimensional analysis to solve for
     /// solute and heat transport across an equilibrium solidification parabaloid dendrite and uses phase diagram
     /// constants to calculate the drop in liquidus temperature ahead of the solidification front due to solute
     /// enrichment
     ///
-    /// The second equation calculates the LGK stability criterion equation rearranged to equal zero. The
+    /// The second equation calculates the LGK stability criterion dendrite radius error. The
     /// stability criterion gives an accurate value for dendrite velocity times it's radius squared. Too wide and slow
     /// dendrites split in smaller parallel dendrites. Too narrow and fast dendrites form secondary dendrites that grow
     /// out perpendicularly.
@@ -30,7 +30,7 @@ namespace models
     /// @param dT undercooling - K
     /// @param C0 bulk alloy composition - wt.%
     /// @param A struct containing key physical alloy parameters
-    /// @return both equation errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
+    /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
     inline std::tuple<double, double> LGK(double V, double R, double dT, double C0, const alloy::Alloy& A)
     {
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
