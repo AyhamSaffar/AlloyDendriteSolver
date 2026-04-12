@@ -1,4 +1,27 @@
-# Alloy Solidification Solver
+# Alloy Dendrite Solver
+
+A fast, modular C++ tool for numerically calculating alloy solidification dendrite radii and velocities from thermodynamic information.
+
+## Method
+
+This library is fully modular, offering many different options for each key step. See [*docs*](docs) for more detailed
+explanations of supported options.
+
+A **model** maps an alloy's thermodynamic parameters to 
+
+## Installation
+
+## Usage
+
+## Support
+
+## Roadmap
+
+## Contributing
+
+## Authors and Acknowledgment
+
+# Old ReadMe
 
 We are interested in developing code that runs two models of dendrite growth into an undercooled melt, generating data linking four variables over a wide range of growth undercoolings and velocities:
 

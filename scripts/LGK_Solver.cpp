@@ -1,4 +1,4 @@
-// Minimal script used to reproduce figure 3 in https://doi.org/10.1016/0025-5416(84)90199-X.
+// Script used to reproduce figure 3 in https://doi.org/10.1016/0025-5416(84)90199-X.
 
 #include <fstream>
 #include <tuple>
