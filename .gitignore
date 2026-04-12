@@ -5,5 +5,7 @@
 build
 debug
 
-# directory reseverd for solver output files
-data/*
+# data in directory reserved for experiments
+data/.venv
+data/*Experiments/*/
+data/uv.lock
