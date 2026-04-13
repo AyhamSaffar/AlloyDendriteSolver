@@ -1,21 +1,67 @@
 # Alloy Dendrite Solver
 
-A fast, modular C++ tool for numerically calculating alloy solidification dendrite radii and velocities from thermodynamic information.
+A fast, modular C++ tool for numerically calculating alloy solidification parameters from thermodynamic constants.
+
+The solidification parameters of interest are:
+
+    dT	Growth undercooling
+    V	Dendrite tip velocity
+    R	Dendrite tip radius
+    C0	Bulk alloy solute concentration.
+
+Where typically dT & C0 are fixed so that V and R can solved iteratively.
 
 ## Method
 
 This library is fully modular, offering many different options for each key step. See [*docs*](docs) for more detailed
-explanations of supported options.
+explanations of supported techniques for each module.
 
-A **model** maps an alloy's thermodynamic parameters to 
+A **model** is a pair of coupled equations that take V, R, and an alloy's thermodynamic constants and return f1 and f2
+respectively. Correct values for V and R would give zero f1 and f2, so the goal is to iteratively update V and R to
+reduce the model's outputs.
+
+Every model must be differentiable so that the **differentials** module can automatically calculate their
+derivatives at compile time. An **optimiser** than takes these and the model outputs to calculate an update to V and R
+that reduce model outputs.
+
+The model, differentiation, and optimisation steps are then repeated until the error in V and R are acceptable.
+
+The **approximators** module uses strong assumptions to give a good first guess for V and R. This increases the chance
+that the opimiser converges. The **updator** module (work in progress) modifies the optimiser outputs in order to
+further reduce the chance of divergence and increase convergence speed.
 
 ## Installation
 
+Currently the library only supports building from source. This requires correctly configured basic C++ tools (CMake and
+Make) on the command line. It is therefore recommended that Windows users use [WSL](http://ubuntu.com/desktop/wsl) (EG
+through [VSCode](https://code.visualstudio.com/docs/remote/wsl)) which installs these tools automatically. 
+
+Install the automatic differentiation compiler (Enzyme) using [Brew](https://brew.sh/)
+```
+brew install ezyme lld
+```
+
+Clone repository with supporting libraries (via git submodules)
+```
+git clone --recurse-submodules https://github.com/AyhamSaffar/AlloyDendriteSolver.git
+```
+
+Navigate into the repository
+```
+cd AlloyDendriteSolver
+```
+
+*explain cmake, code editor tools, and os agnostic manual workflow*
+
 ## Usage
+
+*explain tests, scripts, and script docs*
 
 ## Support
 
 ## Roadmap
+
+*split up library capabilities and scripts* 
 
 ## Contributing
 
