@@ -51,11 +51,86 @@ Navigate into the repository
 cd AlloyDendriteSolver
 ```
 
-*explain cmake, code editor tools, and os agnostic manual workflow*
+Now the library can be used following the standard CMake process. Code editors often contain functionality that automate
+this (EG [VSCode CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)) but the below
+details the manual process.
+
+First the build system (series of scripts specifying how to compile the code) must be generated
+```
+cmake -B build -DCMAKE_BUILD_TYPE=Debug
+```
+Setting build type to *Release* significantly speeds up the code but disables debugging at runtime.
+
+Navigate into the build system directory
+```
+cd build
+```
+
+Compile (convert source code to executables) the available files
+```
+make
+```
+This can take a couple of minutes the first time as libraries must be compiled, but will be much faster on subsequent
+calls.
+
+All available executables will then be present in the directory. On Mac and Linux for example, unit tests can be run
+with the following
+```
+./tests
+```
 
 ## Usage
 
-*explain tests, scripts, and script docs*
+All key experiments exist in [*scripts*](scripts) and are automatically found by CMake. On compilation, the
+corresponding executables are created with the same, minus the suffix.
+
+For example, take [*scripts/Minimal_Example.cpp*](scripts/Minimal_Example.cpp):
+
+```C++
+// Script used to demonstrate simplest possible workflow
+
+#include <iostream>
+#include <tuple>
+#include "alloy.h"
+#include "approximators.h"
+#include "differentials.h"
+#include "models.h"
+#include "optimiser.h"
+
+
+int main()
+{
+    // initialise variables
+    const alloy::Alloy A{alloy::SnAg}; // common solder material
+    double f1{}, f2{}, dV{}, dR{}, dT{0.1}, C0{1.0};
+    double V{approx::getTipVelocity(dT, C0, A)}, R{approx::getTipRadius(dT, C0, A)};
+    diff::Jacobian J{};
+
+    // iteratively solve for V and R
+    for (int step{0}; step<100; ++step)
+    {
+        std::tie(f1, f2) = models::LGK(V, R, dT, C0, A);
+        J = diff::calculateGrads<models::LGK>(V, R, dT, C0, A);
+        std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
+        V += dV;
+        R += dR;
+    }
+
+    // print result
+    std::cout << "R = " << R << ", V = " << V << '\n';
+    return 0;
+}
+
+```
+
+This experiment can be run on Mac & Linux with the following
+
+```
+❯ ./Minimal_Example 
+R = -0.00014758, V = 1.75723e-07
+```
+
+*explain custom experiments and data directory*
 
 ## Support
 
