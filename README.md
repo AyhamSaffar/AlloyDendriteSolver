@@ -27,7 +27,7 @@ that reduce model outputs.
 The model, differentiation, and optimisation steps are then repeated until the error in V and R are acceptable.
 
 The **approximators** module uses strong assumptions to give a good first guess for V and R. This increases the chance
-that the opimiser converges. The **updator** module (work in progress) modifies the optimiser outputs in order to
+that the opimiser converges. The **updators** module (work in progress) modifies the optimiser outputs in order to
 further reduce the chance of divergence and increase convergence speed.
 
 ## Installation
@@ -81,7 +81,7 @@ with the following
 
 ## Usage
 
-All key experiments exist in [*scripts*](scripts) and are automatically found by CMake. On compilation, the
+All key experiment types exist in [*scripts*](scripts) and are automatically found by CMake. On compilation, the
 corresponding executables are created with the same, minus the suffix.
 
 For example, take [*scripts/Minimal_Example.cpp*](scripts/Minimal_Example.cpp):
@@ -102,7 +102,7 @@ int main()
 {
     // initialise variables
     const alloy::Alloy A{alloy::SnAg}; // common solder material
-    double f1{}, f2{}, dV{}, dR{}, dT{0.1}, C0{1.0};
+    double f1{}, f2{}, dV{}, dR{}, dT{10.0}, C0{5.0}; // only non SI unit is concentration (wt.%)
     double V{approx::getTipVelocity(dT, C0, A)}, R{approx::getTipRadius(dT, C0, A)};
     diff::Jacobian J{};
 
@@ -112,35 +112,85 @@ int main()
         std::tie(f1, f2) = models::LGK(V, R, dT, C0, A);
         J = diff::calculateGrads<models::LGK>(V, R, dT, C0, A);
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
-        V += dV;
-        R += dR;
+        V += 0.01 * dV; // smaller steps improve convergence
+        R += 0.01 * dR;
     }
 
     // print result
-    std::cout << "R = " << R << ", V = " << V << '\n';
+    std::cout << "R = " << R << " m, V = " << V << " m/s\n";
     return 0;
 }
-
 ```
 
 This experiment can be run on Mac & Linux with the following
 
 ```
 ❯ ./Minimal_Example 
-R = -0.00014758, V = 1.75723e-07
+R = 3.25994e-07 m, V = 0.00526955 m/s
 ```
 
-*explain custom experiments and data directory*
+Any experiments that require data logging can dump to the [*data*](data) directory using the following macro
+```C++
+#include <fstream>
+#include <string>
+
+std::string dataPath{DATA_PATH};
+std::ofstream outf{dataPath + "/my_results.csv"};
+
+outf << "V,R,dT,C0\n" // logging column headers
+```
+
+[*Data*](data) also contains a Python [uv](https://docs.astral.sh/uv/) environment for data analysis. Each script also
+has its own directory there with an interactive Python notebook. This plots the key outputs of any number of experiments
+run using the corresponding script.
+
+Custom scripts should be saved to [*scripts*](scripts) so that they can be automatically detected and compiled using the
+CMake configuration.
 
 ## Support
 
+The best place to report bugs or request features would be
+[the project's issues page](https://github.com/AyhamSaffar/AlloyDendriteSolver/issues). This ensures that any current
+maintainers are notified by email.
+
+The maintainers will endeavour to respond to new issues as soon as possible.
+
 ## Roadmap
 
-*split up library capabilities and scripts* 
+This library is still in early and active development. Planned additions include:
 
-## Contributing
+- Temperature dependant alloys to better accomodate for high undercoolings. Solute diffusivity could follow an an
+Arrhenius model while solidus and liquidus slopes could be modelled by polynomials. Note changing some alloy
+thermodynamic constants with temperature may violate a given model's assumptions.
+
+- An [LKT-BCT](https://doi.org/10.1016/0001-6160(87)90174-X) model which maintains accuracy at higher undercoolings.
+
+- Support for higher order gradients and their accompanying optimisers. One example is
+[Halley's Method](https://en.wikipedia.org/wiki/Halley%27s_method), which takes advantage of second order tangents for
+faster and more reliable convergence.
+
+- An *updators* module that improves convergence through clamping / scaling / adapting optimiser outputs. This could
+look like the following:
+    ```C++
+    #include <tuple>
+    #include "updators.h"
+
+    const double momentum{0.6};
+    updators::AdaptiveUpdator updator{momentum};
+    
+    ...
+        std::tie(V, R) = updator.apply(V, R, dV, dR); // in minimisation loop
+    ...
+    ```
+
+- A Python / Matlab embedding to make common experiment types more accessible.
 
 ## Authors and Acknowledgment
+
+This library was written by me, Ayham Saffar, under the supervision of Dr Chris Gourlay. It was inspired by previous
+work in his research group.
+
+No AI was used whatsoever in the development of this project.
 
 # Old ReadMe
 
