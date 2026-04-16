@@ -12,9 +12,9 @@
 
 struct Result{bool hasDiverged{}; bool hasConverged{}; int steps{}; double f1{}; double f2{}; double V{}; double R{};};
 
-Result VRSolver(double dT, double C0, const alloy::Alloy& A)
+Result VRSolver(double dT, double C0, const alloy::Alloy& A, double V0, double R0)
 {
-    double f1{}, f2{}, V{approx::getTipVelocity(dT, C0, A)}, R{approx::getTipRadius(dT, C0, A)}, dV{}, dR{};
+    double f1{}, f2{}, V{V0}, R{R0}, dV{}, dR{};
     diff::Jacobian J{};
     const int maxSteps{10'000};
 
@@ -43,10 +43,25 @@ int main()
     const alloy::Alloy A{alloy::SucAce};
     for (double dT{5}; dT<10.0; dT+=4)
     {
+        bool converged{false};
+        double VBest{}, RBest{};
         for(double C0Molar{0.01}; C0Molar<=1.0; C0Molar+=0.001)
         {  
             double C0wt{C0Molar*7.252e-3};
-            Result result{VRSolver(dT, C0wt, A)};
+            if (!converged)
+            {
+                VBest = approx::getTipVelocity(dT, C0wt, A);
+                RBest = approx::getTipRadius(dT, C0wt, A);
+            }
+            Result result{VRSolver(dT, C0wt, A, VBest, RBest)};
+            if (result.hasConverged)
+            {
+                std::tie(VBest, RBest) = std::tie(result.V, result.R);
+                converged = true;
+            }
+            else
+                converged = false;
+
             outf << result.hasDiverged << ',' << result.hasConverged << ',' << result.steps << ',' <<  dT << ',' <<
                 C0wt << ',' << result.V << ',' << result.R << ',' << result.f1 << ',' << result.f2 << '\n';
         }
