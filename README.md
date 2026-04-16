@@ -16,9 +16,9 @@ Where typically dT & C0 are fixed so that V and R can solved iteratively.
 This library is fully modular, offering many different options for each key step. See [*docs*](docs) for more detailed
 explanations of supported techniques for each module.
 
-A **model** is a pair of coupled equations that take V, R, and an alloy's thermodynamic constants and return f1 and f2
-respectively. Correct values for V and R would give zero f1 and f2, so the goal is to iteratively update V and R to
-reduce the model's outputs.
+An *alloy* is a container for a binary alloy's thermodnamic constants. A **model** is a pair of coupled equations that
+take V, R, and an alloy and return f1 and f2 respectively. Correct values for V and R would give zero f1 and f2, so the
+goal is to iteratively update V and R to reduce the model's outputs.
 
 Every model must be differentiable so that the **differentials** module can automatically calculate their
 derivatives at compile time. An **optimiser** than takes these and the model outputs to calculate an update to V and R
