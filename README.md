@@ -182,6 +182,8 @@ look like the following:
     
     ...
         std::tie(V, R) = updator.apply(V, R, dV, dR); // in minimisation loop
+
+        if (updator.hasConverged() || updator.hasDiverged() || updator.hasStalled())
     ...
     ```
 
