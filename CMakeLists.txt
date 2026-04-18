@@ -18,7 +18,7 @@ foreach(SCRIPT_FILE_PATH ${SCRIPT_FILE_PATHS})
     target_compile_definitions(${SCRIPT_FILE_NAME} PRIVATE DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/")
 endforeach(SCRIPT_FILE_PATH ${SCRIPT_FILE_PATHS})
 
-file(GLOB TEST_FILE_PATHS CONFIGURE_DEPENDS tests/*.cpp)
+file(GLOB TEST_FILE_PATHS CONFIGURE_DEPENDS tests/*/*.cpp)
 
 add_subdirectory(libs/Catch2)
 add_executable(tests ${TEST_FILE_PATHS})
