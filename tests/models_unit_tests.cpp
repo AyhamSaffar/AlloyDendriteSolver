@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
+#include <tuple>
 #include "approximators.h"
 #include "models.h"
 #include "alloy.h"
@@ -16,5 +17,3 @@ TEST_CASE("LGK model agrees with approximation at low undercooling", "[models]")
     REQUIRE(std::abs(f1) < 0.01);
     REQUIRE(std::abs(f2) < 0.01);
 }
-
-//TODO add test to make sure LGK model agrees with reported results!

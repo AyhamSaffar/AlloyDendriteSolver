@@ -17,7 +17,7 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A, double V0)
 {
     double f1{}, f2{}, V{V0}, R{approx::getTipRadius(dT, C0, A)}, dV{}, dR{};
     diff::Jacobian J{};
-    int nSteps{5000};
+    int nSteps{1000};
 
     for (int step{0}; step<nSteps; ++step)
     {
@@ -26,9 +26,9 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A, double V0)
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
         if (std::isnan(dV) || std::isnan(dR)) // solver diverges
             return Result{true, false, step};
-        V += 0.01 * dV;
-        R += 0.01 * dR;
-        if ((std::abs(f1)<1e-16) && (std::abs(f2)<1e-16)) // solver converged
+        V += 0.1*dV;
+        R += 0.1*dR;
+        if ((std::abs(f1)<1e-12) && (std::abs(f2)<1e-12)) // solver converged
             return Result{false, true, step, f1, f2, V, R};
     }
     

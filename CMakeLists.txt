@@ -4,7 +4,7 @@ find_package(Enzyme REQUIRED CONFIG) # must install enzyme & lld through Brew / 
 set(CMAKE_CXX_COMPILER "${Enzyme_LLVM_BINARY_DIR}/bin/clang++") # enzyme only works on the compiler it was installed on
 set(CMAKE_CXX_STANDARD 20) # required for #include <numbers>
 
-project(AlloySolidificationSolver)
+project(AlloyDendriteSolver)
 
 # saves all .cpp files in src directory to SRC_FILES variable. file names must not have spaces! 
 # CONFIGURE_DEPENDS reruns CMAKE when new .cpp files are found in src. Might not be supported on all platforms
