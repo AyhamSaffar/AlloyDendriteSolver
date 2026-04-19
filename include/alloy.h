@@ -30,6 +30,25 @@ namespace alloy
     // often used in place of a molten alloy to test solidification models more easily in the lab. Note the equilibrium
     // liquidus scope coversion from its K/mol% value in the paper to K/wt% only holds for small wt% values.
     constexpr Alloy SucAce{46'260, 1937.5, -297.855, 0.103, 6.62e-8, 1.27e-9, 1.14e-7, 1/(4*pi*pi)};
+
+    /// @brief extends Alloy by adjusting thermodynamic parameters with dT
+    class AlloyTDependant: public Alloy
+    {
+        public:
+            AlloyTDependant(const Alloy& A, bool mVaries, bool k0Varies, bool Dvaries)
+                :Alloy{A}, m_mVaries{mVaries}, m_k0Varies{k0Varies}, m_DVaries{Dvaries} {};
+
+            void updateT(double dT);
+            void addLiquidusFit(double c, double m1, double m2=0, double m3=0, double m4=0, double m5=0);
+            void addSolidusFit(double c, double m1, double m2=0, double m3=0, double m4=0, double m5=0);
+            void addDiffusivityFit(double A, double Ea);
+
+        private:
+        bool m_mVaries{false};
+        bool m_k0Varies{false};
+        bool m_DVaries{false};
+
+    }
 }
 
 inline std::ostream& operator<<(std::ostream& out, const alloy::Alloy& alloy)
