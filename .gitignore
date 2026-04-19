@@ -8,5 +8,6 @@ debug
 # data in directory reserved for experiments
 data/.venv
 data/uv.lock
-data/*Experiments/*/
 data/*.csv
+data/*Experiments/*/
+data/*Experiments/*.png
