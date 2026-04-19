@@ -16,7 +16,7 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A)
 {
     double f1{}, f2{}, V{approx::getTipVelocity(dT, C0, A)}, R{approx::getTipRadius(dT, C0, A)}, dV{}, dR{};
     diff::Jacobian J{};
-    const int maxSteps{10'000};
+    const int maxSteps{1000};
 
     for (int step{0}; step<maxSteps; ++step)
     {
@@ -25,9 +25,9 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A)
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
         if (std::isnan(dV) || std::isnan(dR)) // solver diverges
             return Result{true, false, step};
-        V += 0.01 * dV;
-        R += 0.01 * dR;
-        if ((std::abs(f1)<1e-8) && (std::abs(f2)<1e-12)) // solver converged. f2 criteria lower as R is small
+        V += 0.1*dV;
+        R += 0.1*dR;
+        if ((std::abs(f1)<1e-12) && (std::abs(f2)<1e-12)) // solver converged. f2 criteria lower as R is small
             return Result{false, true, step, f1, f2, V, R};
     }
     
@@ -41,7 +41,7 @@ int main()
     outf << "diverged,converged,steps,dT,C0,V,R,f1,f2\n" << std::boolalpha;
 
     const alloy::Alloy A{alloy::SucAce};
-    for (double dT{5}; dT<10.0; dT+=4)
+    for (double dT{0.5}; dT<1.0; dT+=0.4)
     {
         for(double C0Molar{0.01}; C0Molar<=1.0; C0Molar+=0.001)
         {  

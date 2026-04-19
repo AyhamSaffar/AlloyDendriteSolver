@@ -25,8 +25,8 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A, double V0, double R
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
         if (std::isnan(dV) || std::isnan(dR)) // solver diverges
             return Result{true, false, step};
-        V += 0.01 * dV;
-        R += 0.01 * dR;
+        V += 0.1 * dV;
+        R += 0.1 * dR;
         if ((std::abs(f1)<1e-8) && (std::abs(f2)<1e-12)) // solver converged. f2 criteria lower as R is small
             return Result{false, true, step, f1, f2, V, R};
     }

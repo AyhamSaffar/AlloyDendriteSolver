@@ -112,8 +112,8 @@ int main()
         std::tie(f1, f2) = models::LGK(V, R, dT, C0, A);
         J = diff::calculateGrads<models::LGK>(V, R, dT, C0, A);
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
-        V += 0.01 * dV; // smaller steps improve convergence
-        R += 0.01 * dR;
+        V += 0.1 * dV; // smaller steps improve convergence
+        R += 0.1 * dR;
     }
 
     // print result
@@ -158,8 +158,6 @@ The maintainers will endeavour to respond to new issues as soon as possible.
 ## Roadmap
 
 This library is still in early and active development. Planned additions include:
-
-- An additional experiment type to check for multiple possible solutions for a given combination of V, R, dT, and C0.
 
 - Temperature dependant alloys to better accomodate for high undercoolings. Solute diffusivity could follow an an
 Arrhenius model while solidus and liquidus slopes could be modelled by polynomials. Note changing some alloy
