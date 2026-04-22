@@ -159,9 +159,8 @@ The maintainers will endeavour to respond to new issues as soon as possible.
 
 This library is still in early and active development. Planned additions include:
 
-- Temperature dependant alloys to better accomodate for high undercoolings. Solute diffusivity could follow an an
-Arrhenius model while solidus and liquidus slopes could be modelled by polynomials. Note changing some alloy
-thermodynamic constants with temperature may violate a given model's assumptions.
+- Add Alloys with temperature dependant phase diagram parameters (m and k0). Solidus and liquidus slopes could be
+modelled by polynomials. Must figure out if this violates the model's assumptions.
 
 - An [LKT-BCT](https://doi.org/10.1016/0001-6160(87)90174-X) model which maintains accuracy at higher undercoolings.
 
