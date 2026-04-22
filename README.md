@@ -126,10 +126,10 @@ This experiment can be run on Mac & Linux with the following
 
 ```
 ❯ ./Minimal_Example 
-R = 3.25994e-07 m, V = 0.00526955 m/s
+R = 4.12276e-07 m, V = 0.00291847 m/s
 ```
 
-Any experiments that require data logging can dump to the [*data*](data) directory using the following macro
+Any experiments that require data logging can dump to the [*data*](data) directory using the ```DATA_PATH``` macro
 ```C++
 #include <fstream>
 #include <string>
