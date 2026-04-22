@@ -28,7 +28,7 @@ namespace models
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
-    /// @param C0 bulk alloy composition - wt.%
+    /// @param C0 bulk alloy solute concentration - wt.%
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
     inline std::tuple<double, double> LGK(double V, double R, double dT, double C0, const alloy::Alloy& A)

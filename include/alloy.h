@@ -4,6 +4,7 @@
 #include <iostream>
 #include <numbers>
 #include <array>
+#include <cmath>
 
 
 /// @brief datastructures needed to track alloy physical constants in SI units
@@ -22,52 +23,51 @@ namespace alloy
         double o{};     // stability constant - unitless
     };
     
-    /// @brief extends Alloy by adjusting thermodynamic parameters with dT
+    /// @brief extends Alloy by adjusting diffusivity parameters with C0 and dT
     class AlloyTDependant: public Alloy
     {
         public:
-            AlloyTDependant(const Alloy& A, bool mVaries, bool k0Varies, bool Dvaries)
-            :Alloy{A}, m_mVaries{mVaries}, m_k0Varies{k0Varies}, m_DVaries{Dvaries} {};
-        
-            void updateT(double dT, double C0);
-            void addLiquidusFit(double m0, double m1, double m2=0, double m3=0, double m4=0, double m5=0);
-            void addSolidusFit(double m0, double m1, double m2=0, double m3=0, double m4=0, double m5=0);
-            void addDiffusivityFit(double A0, double Ea);
-        
-        private:
-            bool m_mVaries{false}, m_k0Varies{false}, m_DVaries{false};
-            bool m_liquidusFitSet{false}, m_solidusFitSet{false}, m_diffusivityFitSet{false};
-            std::array<double, 6> m_solidusFitParams{}, m_liquidusFitParams{};
-            double m_diffusivityA0{}, m_diffusivityEa{};
-    };
+            AlloyTDependant(const Alloy& A, double TmPure, double DA0, double DEa);
+            void updateDiffusivity(double dT, double C0);
 
+        private:
+            double m_TmPure{}; // melting point of alloy with zero solute concentration - K
+            double m_DA0{}; // Arrhenius constant of diffusivity - m2/s
+            double m_DEa{}; // activation energy for diffusion - J/mol
+    };
+    
     using std::numbers::pi;
-    // Taken from ThermoCalc TCSLD 4.1 database
-    constexpr Alloy SnAg{61'810.62, 249.0, -3.14, 0.0191, 8.54e-8, 1.82e-9, 1.5e-5, 1/(4*pi*pi)};
+    // Taken from ThermoCalc TCSLD 4.1 database as in https://doi.org/10.1007/s10854-025-14979-6
+    const Alloy SnAg{61'810.62, 249.0, -3.14, 0.0191, 8.54e-8, 1.82e-9, 1.5e-5, 1/(4*pi*pi)};
+
+    // Tm taking from https://periodic-table.rsc.org/element/50/tin and diffusion constants taken from
+    // https://doi.org/10.1063/1.1708821 using slower c axis. //! note these seem to high compared to TermoCalc numbers
+    inline AlloyTDependant SnAgTDependant{SnAg, 505.1, 7.1e-7, 12300.0};
     
     // Succinonitrile Acetone mixture taken from https://doi.org/10.1016/0025-5416(84)90199-X. This polymer system is
     // often used in place of a molten alloy to test solidification models more easily in the lab. Note the equilibrium
     // liquidus scope coversion from its K/mol% value in the paper to K/wt% only holds for small wt% values.
-    constexpr Alloy SucAce{46'260, 1937.5, -297.855, 0.103, 6.62e-8, 1.27e-9, 1.14e-7, 1/(4*pi*pi)};
+    const Alloy SucAce{46'260, 1937.5, -297.855, 0.103, 6.62e-8, 1.27e-9, 1.14e-7, 1/(4*pi*pi)};
 }
 
-/// @brief set a polynomial fit that maps solute concentration (C) to liquidus temperature (Tl), where Tl = m0 + m1 * C
-/// + m2 * C^2 + m3 * C^3 + m4 * C^4 + m5 * C^5.
-inline void alloy::AlloyTDependant::addLiquidusFit(double m0, double m1, double m2, double m3, double m4, double m5)
+/// @brief Configure parameters needed to calculate diffusivity at any T using D = A0*exp(-Ea/RT)
+/// @param A alloy base object
+/// @param TmPure melting point of alloy with zero solute concentration - K
+/// @param DA0 Arrhenius constant of diffusivity - m2/s
+/// @param DEa activation energy for diffusion - J/mol
+inline alloy::AlloyTDependant::AlloyTDependant(const alloy::Alloy& A, double TmPure, double DA0, double DEa)
+    :Alloy{A}, m_TmPure{TmPure}, m_DA0{DA0}, m_DEa{DEa} {};
+
+
+/// @brief Update alloy diffusivity by calculating T at liquid interface and using Arrhenius relationship
+/// @param dT undercooling - K
+/// @param C0 bulk alloy solute concentration - wt.%
+inline void alloy::AlloyTDependant::updateDiffusivity(double dT, double C0)
 {
-    m_liquidusFitSet = true;
-    m_liquidusFitParams = {m0, m1, m2, m3, m4, m5};
+    double T{m_TmPure + m*C0 - dT}; // note undercooling is how much colder liquid at interface is
+    const double R{8.31446262}; // molar gas constant
+    D = m_DA0 * std::exp(-m_DEa / (R*T));
 }
-
-/// @brief set a polynomial fit that maps solute concentration (C) to solidus temperature (Ts), where Ts = m0 + m1 * C
-/// + m2 * C^2 + m3 * C^3 + m4 * C^4 + m5 * C^5.
-inline void alloy::AlloyTDependant::addSolidusFit(double m0, double m1, double m2, double m3, double m4, double m5)
-{
-    m_solidusFitSet = true;
-    m_solidusFitParams = {m0, m1, m2, m3, m4, m5};
-}
-
-
 
 inline std::ostream& operator<<(std::ostream& out, const alloy::Alloy& alloy)
 {

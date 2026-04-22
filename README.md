@@ -7,7 +7,7 @@ The solidification parameters of interest are:
     dT	Growth undercooling
     V	Dendrite tip velocity
     R	Dendrite tip radius
-    C0	Bulk alloy solute concentration.
+    C0	Bulk alloy solute concentration
 
 Where typically dT & C0 are fixed so that V and R can solved iteratively.
 

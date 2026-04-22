@@ -1,4 +1,4 @@
-// Script used to reproduce figure 3 in https://doi.org/10.1016/0025-5416(84)90199-X.
+// script used to solve V and R for range of dT and C0
 
 #include <fstream>
 #include <tuple>
@@ -27,7 +27,7 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A)
             return Result{true, false, step};
         V += 0.1*dV;
         R += 0.1*dR;
-        if ((std::abs(f1)<1e-12) && (std::abs(f2)<1e-12)) // solver converged. f2 criteria lower as R is small
+        if ((std::abs(f1)<1e-12) && (std::abs(f2)<1e-12)) // solver converged
             return Result{false, true, step, f1, f2, V, R};
     }
     
@@ -40,15 +40,15 @@ int main()
     std::ofstream outf{dataPath + "/data.csv"};
     outf << "diverged,converged,steps,dT,C0,V,R,f1,f2\n" << std::boolalpha;
 
-    const alloy::Alloy A{alloy::SucAce};
-    for (double dT{0.5}; dT<1.0; dT+=0.4)
+    alloy::AlloyTDependant A{alloy::SnAgTDependant};
+    for (double dT{1.0}; dT<=60; dT+=0.5)
     {
-        for(double C0Molar{0.01}; C0Molar<=1.0; C0Molar+=0.001)
-        {  
-            double C0wt{C0Molar*7.252e-3};
-            Result result{VRSolver(dT, C0wt, A)};
+        for(double C0{1.0}; C0<=5.0; C0+=2.0)
+        {
+            A.updateDiffusivity(dT, C0);
+            Result result{VRSolver(dT, C0, A)};
             outf << result.hasDiverged << ',' << result.hasConverged << ',' << result.steps << ',' <<  dT << ',' <<
-                C0wt << ',' << result.V << ',' << result.R << ',' << result.f1 << ',' << result.f2 << '\n';
+                C0 << ',' << result.V << ',' << result.R << ',' << result.f1 << ',' << result.f2 << '\n';
         }
     }
     return 0;

@@ -22,7 +22,7 @@ namespace approx
 
     /// @brief given as equation 8.92 in cited textbook.
     /// @param dT undercooling - K
-    /// @param C0 bulk alloy composition - wt%
+    /// @param C0 bulk alloy solute concentration - wt%
     /// @param A struct containing key physical alloy parameters
     /// @return approximate tip velocity - m/s
     inline double getTipVelocity(double dT, double C0, const alloy::Alloy& A)
