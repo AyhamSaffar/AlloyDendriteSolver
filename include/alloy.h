@@ -13,6 +13,7 @@ namespace alloy
     /// @brief contains key physical constants for a given alloy system in SI units
     struct Alloy
     {
+        // LGK parameters
         double L{};     // latent heat of fusion - J/kg
         double Cp{};    // specific heat capacity - J/(Kg K)
         double m{};     // equilibrium liquidus slope - K/wt%
@@ -21,6 +22,12 @@ namespace alloy
         double D{};     // solute diffusion coefficient - m2/s
         double a{};     // thermal diffusivity in liquid - m2/s
         double o{};     // stability constant - unitless
+
+        // LKT-BCT parameters
+        double a0{};    // atomic spacing in pure metal - m
+        double V0{};    // speed of sound in liquid - m/s
+        double Tm{};    // melting point of pure metal - K
+        //TODO figure out whether to make second alloy for LKT-BCT or use boolean flag member
     };
     
     /// @brief extends Alloy by adjusting diffusivity parameters with C0 and dT
@@ -38,7 +45,7 @@ namespace alloy
     
     using std::numbers::pi;
     // Taken from ThermoCalc TCSLD 4.1 database as in https://doi.org/10.1007/s10854-025-14979-6
-    const Alloy SnAg{61'810.62, 249.0, -3.14, 0.0191, 8.54e-8, 1.82e-9, 1.5e-5, 1/(4*pi*pi)};
+    const Alloy SnAg{61'810.62, 249.0, -3.14, 0.0191, 8.54e-8, 1.82e-9, 1.5e-5, 1/(4*pi*pi), 3.07e-10, 2.47e3, 505.1};
 
     // Tm taking from https://periodic-table.rsc.org/element/50/tin and diffusion constants taken from
     // https://doi.org/10.1063/1.1708821 using slower c axis. //! note these seem to high compared to TermoCalc numbers

@@ -18,7 +18,11 @@ The following alloy thermodynamic constants are used below:
 - $D$ 	&nbsp; Solute diffusion coefficient - $m^2/s$
 - $α$	&nbsp; Thermal diffusivity in the liquid - $m^2/s$
 - $σ^*$	&nbsp; Stability constant - *unitless*
+- $a_0$ &nbsp; Atomic spacing in pure metal - $m$
+- $V_0$ &nbsp; Speed of sound in liquid - $m/s$
+- $T_m$ &nbsp; Melting point of pure metal - $K$
 
+- $R_0$ &nbsp; Gas constant - $J/(mol K)$
 
 ### The LGK model
 
@@ -28,7 +32,8 @@ This equation holds up to moderate undercooling and when there is only a single 
 in small liquid solder balls that don't have any available nucleants.
 
 $$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \{ 1 - \frac{1}{(1-(1-k_0 )Iv_c)} \} + \frac{2Γ}{R} $$
-$$ R = \frac {\frac{Γ}{σ^*}} {\frac{P_t L}{c_p} -\frac{P_c m C_0 (1-k_0 )}{1-(1-k_0 ) Iv_c}} $$
+
+$$ R = \frac {Γ/σ^*} {\frac{P_t L}{c_p} -\frac{P_c m C_0 (1-k_0 )}{1-(1-k_0 ) Iv_c}} $$
 
 Given the following
 
@@ -51,10 +56,32 @@ enrichment
 The second equation calculates the LGK stability criterion dendrite radius. A planar solidification front is modified by
 adding a periodic pertubation, solving for the solute concentration field of the liquid side, and calculating the rate
 of growth of a given wavelength with time. The smallest pertubation wavelength that does not grow with time can then be
-used as the dendrite radius. This gives an expression in terms of temperature and solutal gradients, which can be solved
-for a parabaloid dendrite using the Ivantsov functions levered in the first equation.
+used as the dendrite radius. This gives an expression in terms of temperature and solutal gradients, which can be
+calculated for a parabaloid dendrite using the Ivantsov fields levered in the first equation.
 
 ### The LKT-BCT Model
 
-Work in progress.
+[J. Lipton, W. Kurz, R. Trivedi](https://doi.org/10.1016/0001-6160(87)90174-X) - [W.J. Boettinger, S.R. Coriell and R. Trivedi (pages 13-31)](https://search.library.uq.edu.au/discovery/fulldisplay/alma991011497109703131/61UQ_INST:61UQ)
 
+An extension of the LGK model that maintains accuracy at higher undercoolings and growth rates via fewer modelling
+assumptions.
+
+$$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \{ 1 - \frac{m'/m}{(1-(1-k_0 )Iv_c)} \} + \frac{2Γ}{R} + \frac{V}{\mu} $$
+
+$$ R = \frac {Γ/σ^*} {\frac{\xi_t P_t L}{c_p} -\frac{2 \xi_c P_c m' C_0 (1-k)}{1-(1-k) Iv_c}} $$
+
+GIven the following:
+
+$k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D)}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity dependant partition coefficient
+
+$m' = m(1 + \frac{k_0 - k[1-ln(k/k_0)]}{1-k_0})$ &emsp;&emsp;&emsp;&emsp; - velocity dependant liquidus slope
+
+$\mu = \frac{LV_0}{R_0T_L^2}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - interfacial kinetic coefficient
+
+$\xi_t = 1 - \frac{1}{\sqrt{1+1/(\sigma^*P_t^2)}}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - thermal stability function
+
+$\xi_c = 1 + \frac{2k}{1-2k-\sqrt{1+1/(\sigma^*P_c^2)}}$ &emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - solutal stability function
+
+*explanation of the first equation*
+
+*explanation of the second equation*
