@@ -24,6 +24,9 @@ The following alloy thermodynamic constants are used below:
 
 [Lipton, J., Glicksman, M. E., & Kurz, W.](https://doi.org/10.1016/0025-5416(84)90199-X)
 
+This equation holds up to moderate undercooling and when there is only a single nucleation event. The latter is common
+in small liquid solder balls that don't have any available nucleants.
+
 $$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \{ 1 - \frac{1}{(1-(1-k_0 )Iv_c)} \} + \frac{2Γ}{R} $$
 $$ R = \frac {\frac{Γ}{σ^*}} {\frac{P_t L}{c_p} -\frac{P_c m C_0 (1-k_0 )}{1-(1-k_0 ) Iv_c}} $$
 
@@ -40,15 +43,16 @@ $Iv_c(P_c) = P_c e^{P_c} E_1(P_c)$ &emsp;&emsp;&emsp;&ensp;&nbsp;- thermal Ivant
 $E_1(x)$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;&emsp;&ensp;&nbsp;- first exponential integral of $x$
 
 The first equation calculates the LGK dendrite undercooling. This equation takes into account the thermal,
-constitutional, and curvature undercooling. It uses dimensional analysis to solve for
+solutal, and curvature undercooling. It uses dimensional analysis to solve for
 solute and heat transport across an equilibrium solidification parabaloid dendrite and uses phase diagram
 constants to calculate the drop in liquidus temperature ahead of the solidification front due to solute
 enrichment
 
-The second equation calculates the LGK stability criterion dendrite radius. The
-stability criterion gives an accurate value for dendrite velocity times it's radius squared. Too wide and slow
-dendrites split in smaller parallel dendrites. Too narrow and fast dendrites form secondary dendrites that grow
-out perpendicularly.
+The second equation calculates the LGK stability criterion dendrite radius. A planar solidification front is modified by
+adding a periodic pertubation, solving for the solute concentration field of the liquid side, and calculating the rate
+of growth of a given wavelength with time. The smallest pertubation wavelength that does not grow with time can then be
+used as the dendrite radius. This gives an expression in terms of temperature and solutal gradients, which can be solved
+for a parabaloid dendrite using the Ivantsov functions levered in the first equation.
 
 ### The LKT-BCT Model
 
