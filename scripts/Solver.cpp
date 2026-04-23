@@ -20,8 +20,8 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A)
 
     for (int step{0}; step<maxSteps; ++step)
     {
-        std::tie(f1, f2) = models::LGK(V, R, dT, C0, A);
-        J = diff::calculateGrads<models::LGK>(V, R, dT, C0, A);
+        std::tie(f1, f2) = models::LKT_BCT(V, R, dT, C0, A);
+        J = diff::calculateGrads<models::LKT_BCT>(V, R, dT, C0, A);
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
         if (std::isnan(dV) || std::isnan(dR)) // solver diverges
             return Result{true, false, step};
@@ -40,12 +40,11 @@ int main()
     std::ofstream outf{dataPath + "/data.csv"};
     outf << "diverged,converged,steps,dT,C0,V,R,f1,f2\n" << std::boolalpha;
 
-    alloy::AlloyTDependant A{alloy::SnAgTDependant};
-    for (double dT{1.0}; dT<=60; dT+=0.5)
+    alloy::Alloy A{alloy::SnAg};
+    for (double dT{0.5}; dT<=50; dT+=0.5)
     {
-        for(double C0{1.0}; C0<=5.0; C0+=2.0)
+        for(double C0{3.5}; C0<=5.0; C0+=1.5)
         {
-            A.updateDiffusivity(dT, C0);
             Result result{VRSolver(dT, C0, A)};
             outf << result.hasDiverged << ',' << result.hasConverged << ',' << result.steps << ',' <<  dT << ',' <<
                 C0 << ',' << result.V << ',' << result.R << ',' << result.f1 << ',' << result.f2 << '\n';

@@ -12,7 +12,7 @@ namespace models
     using ModelFunc = std::tuple<double, double> (*)(double, double, double, double, const alloy::Alloy&);
 
     // <cmath> uses a slightly different form of exponential integral compared to what is needed here
-    double expint(double x) {return -std::expint(-x);}
+    inline double expint(double x) {return -std::expint(-x);}
 
     /// @brief Lipton Glicksman Kurz (LGK) model equations that analytically predict how solidification dendrites grow
     /// into a molten liquid when the interface is in equilibrium. https://doi.org/10.1016/0025-5416(84)90199-X
@@ -63,7 +63,7 @@ namespace models
 
         double k{(A.k0+(A.a0*V/A.D))/(1+(A.a0*V/A.D))}; // velocity dependant partition coefficient
         double mP{A.m*(1+(A.k0-k*(1-std::log(k/A.k0)))/(1-A.k0))}; // velocity dependant liquidus slope (m prime)
-        double Tl{A.Tm + A.m*C0}; // temperature of liquid
+        double Tl{A.Tm + A.m*C0 - dT}; // temperature of liquid NOT DEFINED IN PAPER
         double R0{8.314}; // gas constant
         double mu{A.L*A.V0/(R0*Tl*Tl)}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function

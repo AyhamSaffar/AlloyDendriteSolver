@@ -27,7 +27,7 @@ def read_data(path: pl.Path):
 	return approx_data, V0s, dTs, grids, percent_error
 
 # %%
-fig, axes = plt.subplots(nrows=3, ncols=len(experiment_paths), figsize=(16,10))
+fig, axes = plt.subplots(nrows=3, ncols=len(experiment_paths), figsize=(28,10))
 fig.suptitle('Sn-3.5Ag Non Diverged Data Points')
 
 for i, path in enumerate(experiment_paths):

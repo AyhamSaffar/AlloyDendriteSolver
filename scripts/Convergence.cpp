@@ -21,8 +21,8 @@ Result VRSolver(double dT, double C0, const alloy::Alloy& A, double V0)
 
     for (int step{0}; step<nSteps; ++step)
     {
-        std::tie(f1, f2) = models::LGK(V, R, dT, C0, A);
-        J = diff::calculateGrads<models::LGK>(V, R, dT, C0, A);
+        std::tie(f1, f2) = models::LKT_BCT(V, R, dT, C0, A);
+        J = diff::calculateGrads<models::LKT_BCT>(V, R, dT, C0, A);
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
         if (std::isnan(dV) || std::isnan(dR)) // solver diverges
             return Result{true, false, step};
