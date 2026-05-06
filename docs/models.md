@@ -45,43 +45,62 @@ $Iv_t(P_t) = P_t e^{P_t} E_1(P_t)$ &emsp;&emsp;&emsp;&emsp;- solutal Ivantsov fu
 
 $Iv_c(P_c) = P_c e^{P_c} E_1(P_c)$ &emsp;&emsp;&emsp;&ensp;&nbsp;- thermal Ivantsov function
 
-$E_1(x)$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;&emsp;&ensp;&nbsp;- first exponential integral of $x$
+$E_1(x) = \int_u^\infty \frac{exp(-s)}{s} ds$ &emsp;&emsp;&ensp;&emsp;&ensp;&nbsp;- first exponential
+integral of $x$
 
-The first equation calculates the LGK dendrite undercooling. This equation takes into account the thermal,
-solutal, and curvature undercooling. It uses dimensional analysis to solve for
-solute and heat transport across an equilibrium solidification parabaloid dendrite and uses phase diagram
-constants to calculate the drop in liquidus temperature ahead of the solidification front due to solute
-enrichment
+The first equation calculates the LGK dendrite undercooling. It quantifies how the liquid must be cooled below the
+temperature of the solid to 1. drive thermal diffusion away from the solid that gives out heat as it solidifies, 2.
+reach the lower melting temperature caused by a build up of solute just ahead of the solidification front, and 3.
+overcome the energy barrier created by the surface energy of a high curvature dendrite tip. It uses dimensional analysis
+to solve for solute and heat transport across an equilibrium solidification parabaloid dendrite. Phase diagram constants
+are used to calculate the drop in liquidus temperature ahead of the solidification front due to solute enrichment
 
-The second equation calculates the LGK stability criterion dendrite radius. A planar solidification front is modified by
-adding a periodic pertubation, solving for the solute concentration field of the liquid side, and calculating the rate
-of growth of a given wavelength with time. The smallest pertubation wavelength that does not grow with time can then be
-used as the dendrite radius. This gives an expression in terms of temperature and solutal gradients, which can be
-calculated for a parabaloid dendrite using the Ivantsov fields levered in the first equation.
+The second equation calculates the LGK marginal stability criterion dendrite radius. A planar solidification front is
+modified by adding a periodic pertubation. Too small and the curvature will drive the pertubation to shrink. Too large
+and purtubation will grow by escaping the cold and solute rich solidification front. The dendrite radius is approximated
+as the smallest pertubation that won't shrink. This gives an expression that is a function of the solute and temperature
+field gradient, which can be calculated for a parabaloid dendrite using the same dimensional analysis as the first
+equation.
 
 ### The LKT-BCT Model
 
-[J. Lipton, W. Kurz, R. Trivedi](https://doi.org/10.1016/0001-6160(87)90174-X) - [W.J. Boettinger, S.R. Coriell and R. Trivedi (pages 13-31)](https://search.library.uq.edu.au/discovery/fulldisplay/alma991011497109703131/61UQ_INST:61UQ)
+[J. Lipton, W. Kurz, R. Trivedi](https://doi.org/10.1016/0001-6160(87)90174-X) - [W.J. Boettinger, S.R. Coriell and R. 
+Trivedi*](https://search.library.uq.edu.au/discovery/fulldisplay/alma991011497109703131/61UQ_INST:61UQ)
 
 An extension of the LGK model that maintains accuracy at higher undercoolings and growth rates via fewer modelling
 assumptions.
 
-$$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \{ 1 - \frac{m'/m}{(1-(1-k_0 )Iv_c)} \} + \frac{2Γ}{R} + \frac{V}{\mu} $$
+$$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \{ 1 - \frac{m'/m}{(1-(1-k_0 )Iv_c)} \} + \frac{2T_mΓ}{R} + \frac{V}{\mu} $$
 
-$$ R = \frac {Γ/σ^*} {\frac{\xi_t P_t L}{c_p} -\frac{2 \xi_c P_c m' C_0 (1-k)}{1-(1-k) Iv_c}} $$
+$$ R = \frac {T_mΓ/σ^*} {\frac{\xi_t P_t L}{c_p} -\frac{2 m C_0 (k-1)}{1-(1-k) Iv_c}} $$
 
 GIven the following:
 
-$k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D)}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity dependant partition coefficient
+$k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D)}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity
+ dependant partition coefficient
 
 $m' = m(1 + \frac{k_0 - k[1-ln(k/k_0)]}{1-k_0})$ &emsp;&emsp;&emsp;&emsp; - velocity dependant liquidus slope
 
-$\mu = \frac{LV_0}{R_0T_L^2}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - interfacial kinetic coefficient
+$\mu = \frac{LV_0}{R_0T_m^2}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; -
+ interfacial kinetic coefficient
 
-$\xi_t = 1 - \frac{1}{\sqrt{1+1/(\sigma^*P_t^2)}}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - thermal stability function
+$\xi_t = 1 - \frac{1}{\sqrt{1+1/(\sigma^*P_t^2)}}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - thermal stability
+ function
 
-$\xi_c = 1 + \frac{2k}{1-2k-\sqrt{1+1/(\sigma^*P_c^2)}}$ &emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - solutal stability function
+$\xi_c = 1 + \frac{2k}{1-2k-\sqrt{1+1/(\sigma^*P_c^2)}}$ &emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - solutal stability
+ function
 
-*explanation of the first equation*
+Both terms modify their phase diagram constants ($m$ and $k$) to accomodate solute trapping at higher velocities. This
+is when the solidification front moves too quickly to allow as many solute atoms to cross the solidification front into
+the liquid. This means more solute gets frozen in the solid before crossing over to the liquid. At extreme velocities,
+both solid and liquid have the same solute concentration ($C_0$), meaning $k \rightarrow$ 1 and both the liquidus and
+solidus lines overlap with equal gradients.
 
-*explanation of the second equation*
+The first equation has an added fourth undercooling term, which specifies how much further the liquid must be cooled to
+overcome the kinetic energy barrier for adding extra liquid atoms onto the solid lattice. This is assumed to be
+negligible at the lower velocities expected in the LGK model. 
+
+The LGK second equation assumes small Peclet numbers, where V*R << 1, meaning the stability functions ≈ 1. The second
+LKT-BCT equation however drops this low V assumption, meaning these terms must be included.
+
+\* While Boettinger, Coriell, and Trivedi's origional paper is not openly published online, it is famously well written and the basis for this implementation. For a full derivation of this model, it can be accessed by requesting pages 13-25 of the linked conference paper.
