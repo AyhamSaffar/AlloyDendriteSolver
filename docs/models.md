@@ -53,7 +53,7 @@ temperature of the solid to 1. drive thermal diffusion away from the solid that 
 reach the lower melting temperature caused by a build up of solute just ahead of the solidification front, and 3.
 overcome the energy barrier created by the surface energy of a high curvature dendrite tip. It uses dimensional analysis
 to solve for solute and heat transport across an equilibrium solidification parabaloid dendrite. Phase diagram constants
-are used to calculate the drop in liquidus temperature ahead of the solidification front due to solute enrichment
+are used to calculate the drop in liquidus temperature ahead of the solidification front due to solute enrichment.
 
 The second equation calculates the LGK marginal stability criterion dendrite radius. A planar solidification front is
 modified by adding a periodic pertubation. Too small and the curvature will drive the pertubation to shrink. Too large
@@ -103,4 +103,6 @@ negligible at the lower velocities expected in the LGK model.
 The LGK second equation assumes small Peclet numbers, where V*R << 1, meaning the stability functions ≈ 1. The second
 LKT-BCT equation however drops this low V assumption, meaning these terms must be included.
 
-\* While Boettinger, Coriell, and Trivedi's origional paper is not openly published online, it is famously well written and the basis for this implementation. For a full derivation of this model, it can be accessed by requesting pages 13-25 of the linked conference paper.
+\* While Boettinger, Coriell, and Trivedi's origional paper is not openly published online, it is famously well written
+and the basis for this implementation. For a full derivation of this model, it can be accessed by requesting pages 13-25
+of the linked conference paper.
