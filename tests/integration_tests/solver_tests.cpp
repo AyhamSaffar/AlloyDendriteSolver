@@ -25,7 +25,7 @@ std::tuple<double, double, double> solver(double dT, double C0, const alloy::All
         R += 0.1 * dR;
     }
 
-    return std::tuple(V, R, std::abs(f1)+std::abs(f2));
+    return std::tuple{V, R, std::abs(f1)+std::abs(f2)};
 }
 
 // numericallly derived fit from https://doi.org/10.1007/s10854-025-14979-6
@@ -47,7 +47,7 @@ TEST_CASE("LGK model V prediction agrees with published LGK SnAg numerical fit a
             REQUIRE(RPred > 0);
 
             double VFit{getPublishedLGKSnAgVFit(dT, C0)};
-            REQUIRE(std::abs(VPred-VFit)/VFit < 0.20); // maximum of 20% error as simple solver and numerical fit
+            REQUIRE(std::abs(VPred-VFit)/VFit < 0.20); // maximum of 20% error as numerical fit
         }
     }
 }
@@ -63,12 +63,12 @@ TEST_CASE(
         for (double C0{3.0}; C0<=6.0; C0+=1.0)
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
-            std::tie(VPred, RPred, f) = solver<models::LGK>(dT, C0, alloy::SnAg);
+            std::tie(VPred, RPred, f) = solver<models::LKT_BCT>(dT, C0, alloy::SnAg);
             REQUIRE(f < 2e-12);
             REQUIRE(RPred > 0);
 
             double VFit{getPublishedLGKSnAgVFit(dT, C0)};
-            REQUIRE(std::abs(VPred-VFit)/VFit < 0.20); // maximum of 20% error as simple solver and numerical fit
+            REQUIRE(std::abs(VPred-VFit)/VFit < 1.0); // maximum of 100% error as numerical fit to different model
         }
     }
 }

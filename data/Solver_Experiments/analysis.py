@@ -20,7 +20,7 @@ for i, (name, data) in enumerate(experiments.items()):
 	for C0 in data['C0'].unique():
 		subset = data[data['C0']==C0]
 		converged = subset[subset['converged']]
-		ax.plot(converged['dT'], converged['V'], label=f'Sn-{C0:.1f}Ag {model}')
+		ax.scatter(converged['dT'], converged['V'], label=f'Sn-{C0:.1f}Ag {model}')
 		ax.vlines(
 			subset['V'][subset['diverged']], ymin=converged['V'].min(), ymax=converged['V'].max(),
 			colors='red', alpha=0.1

@@ -31,7 +31,7 @@ The following alloy thermodynamic constants are used below:
 This equation holds up to moderate undercooling and when there is only a single nucleation event. The latter is common
 in small liquid solder balls that don't have any available nucleants.
 
-$$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \{ 1 - \frac{1}{(1-(1-k_0 )Iv_c)} \} + \frac{2Γ}{R} $$
+$$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \left[ 1 - \frac{1}{1-(1-k_0 )Iv_c} \right] + \frac{2Γ}{R} $$
 
 $$ R = \frac {Γ/σ^*} {\frac{P_t L}{c_p} -\frac{P_c m C_0 (1-k_0 )}{1-(1-k_0 ) Iv_c}} $$
 
@@ -70,16 +70,16 @@ Trivedi*](https://search.library.uq.edu.au/discovery/fulldisplay/alma99101149710
 An extension of the LGK model that maintains accuracy at higher undercoolings and growth rates via fewer modelling
 assumptions.
 
-$$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \{ 1 - \frac{m'/m}{(1-(1-k_0 )Iv_c)} \} + \frac{2T_mΓ}{R} + \frac{V}{\mu} $$
+$$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \left[ 1 - \frac{m'/m}{1-(1-k)Iv_c} \right] + \frac{2T_mΓ}{R} + \frac{V}{\mu} $$
 
-$$ R = \frac {T_mΓ/σ^*} {\frac{\xi_t P_t L}{c_p} -\frac{2 m C_0 (k-1)}{1-(1-k) Iv_c}} $$
+$$ R = \frac {T_mΓ/σ^*} {\frac{\xi_t P_t L}{c_p} +\frac{2 m C_0 (k-1) \xi_c}{1-(1-k) Iv_c}} $$
 
 GIven the following:
 
 $k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D)}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity
  dependant partition coefficient
 
-$m' = m(1 + \frac{k_0 - k[1-ln(k/k_0)]}{1-k_0})$ &emsp;&emsp;&emsp;&emsp; - velocity dependant liquidus slope
+$m' = m \left[1 + \frac{k_0 - k(1-ln(k/k_0))}{1-k_0} \right]$ &emsp;&emsp;&emsp;&emsp; - velocity dependant liquidus slope
 
 $\mu = \frac{LV_0}{R_0T_m^2}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; -
  interfacial kinetic coefficient

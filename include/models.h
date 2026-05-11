@@ -81,15 +81,15 @@ namespace models
         double Ivt{Pt*std::exp(Pt)*expint(Pt)}; // thermal Ivantsov function
         double Ivc{Pc*std::exp(Pc)*expint(Pc)}; // solutal Ivantsov function
 
-        double k{(A.k0+(A.a0*V/A.D))/(1+(A.a0*V/A.D))}; // velocity dependant partition coefficient
+        double k{ (A.k0+(A.a0*V/A.D)) / (1+(A.a0*V/A.D)) }; // velocity dependant partition coefficient
         double mP{A.m*(1+ (A.k0-k*(1-std::log(k/A.k0))) / (1-A.k0) )}; // velocity dependant liquidus slope (m prime)
         double R0{8.314}; // gas constant
         double mu{A.L*A.V0/(R0*A.Tm*A.Tm)}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
         double xic{1 + 2*k/(1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)))}; // - solutal stability function
 
-        double f1{A.L*Ivt/A.Cp + A.m*C0*(1 - (mP/A.m)/(1-(1-A.k0)*Ivc)) + 2*A.Tm*A.r/R + V/mu - dT};
-        double f2{(A.Tm*A.r/A.o) / ( xit*Pt*A.L/A.Cp - (2*A.m*C0*(k-1))/(1-(1-k)*Ivc) ) - R};
+        double f1{A.L*Ivt/A.Cp + A.m*C0*(1 - (mP/A.m)/(1-(1-k)*Ivc)) + 2*A.Tm*A.r/R + V/mu - dT};
+        double f2{(A.Tm*A.r/A.o) / ( xit*Pt*A.L/A.Cp + (2*A.m*C0*(k-1)*xic)/(1-(1-k)*Ivc) ) - R};
         return std::make_tuple(f1, f2);
     }
 }
