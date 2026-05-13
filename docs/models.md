@@ -70,9 +70,9 @@ Trivedi*](https://search.library.uq.edu.au/discovery/fulldisplay/alma99101149710
 An extension of the LGK model that maintains accuracy at higher undercoolings and growth rates via fewer modelling
 assumptions.
 
-$$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \left[ 1 - \frac{m'/m}{1-(1-k)Iv_c} \right] + \frac{2T_mΓ}{R} + \frac{V}{\mu} $$
+$$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \left[ 1 - \frac{m'/m}{1-(1-k)Iv_c} \right] + \frac{2Γ}{R} + \frac{V}{\mu} $$
 
-$$ R = \frac {T_mΓ/σ^*} {\frac{\xi_t P_t L}{c_p} +\frac{2 m C_0 (k-1) \xi_c}{1-(1-k) Iv_c}} $$
+$$ R = \frac {Γ/σ^*} {\frac{\xi_t P_t L}{c_p} +\frac{2 m C_0 (k-1) \xi_c}{1-(1-k) Iv_c}} $$
 
 GIven the following:
 

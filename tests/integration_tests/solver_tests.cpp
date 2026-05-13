@@ -68,7 +68,7 @@ TEST_CASE(
             REQUIRE(RPred > 0);
 
             double VFit{getPublishedLGKSnAgVFit(dT, C0)};
-            REQUIRE(std::abs(VPred-VFit)/VFit < 1.0); // maximum of 100% error as numerical fit to different model
+            REQUIRE(std::abs(VPred-VFit)/VFit < 0.2); // maximum of 20% error as numerical fit
         }
     }
 }
