@@ -48,7 +48,8 @@ namespace alloy
     // Taken from Fourth Conference on Rapid Solidification Processing: Principles and Technologies, Application of
     // dendritic growth theory to the interpretation of rapid  solidification microstructures, pages 13-25, W.J.
     // Boettinger, S.R. Coriell and R. Trivedi.
-    const Alloy CuAg{};
+    //! using molar L and C here.
+    const Alloy CuAg{11'900, 31.8, -8.0, 0.37, 1.53e-7, 2.1e-9, 6.6e-5, 1/(4*pi*pi), 1.05e-9, 2e3, 1234};
 
     // Taken from ThermoCalc TCSLD 4.1 database as in https://doi.org/10.1007/s10854-025-14979-6
     const Alloy SnAg{61'810.62, 249.0, -3.14, 0.0191, 8.54e-8, 1.82e-9, 1.5e-5, 1/(4*pi*pi), 3.07e-10, 2.47e3, 505.1};
