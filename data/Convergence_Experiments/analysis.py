@@ -27,12 +27,12 @@ def read_data(path: pl.Path):
 	return approx_data, V0s, dTs, grids, percent_error
 
 # %%
-fig, axes = plt.subplots(ncols=len(experiment_paths), figsize=(16,4))
-fig.suptitle('Sn-3.5Ag Data Points')
+fig, axes = plt.subplots(ncols=len(experiment_paths), figsize=(12,4))
 
 for i, path in enumerate(experiment_paths):
 	axes[i].set_title(path.stem)
 	approx_data, V0s, dTs, grids, percent_error = read_data(path)
+	assert(~np.any(grids['R']==np.nan))
 
 	# for row in (0, 1, 2):
 	axes[i].plot(approx_data['dT'], np.log10(approx_data['V']), color='blue')
@@ -53,20 +53,28 @@ for i, path in enumerate(experiment_paths):
 	# )
 	# fig.colorbar(error_im, label=r'$log_{10}$ V % Error Compared to V approx')
 
+	# R_im = axes[i].imshow(
+	# 	np.log10(grids['R'], out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['converged'])&(grids['R']>0)),
+	# 	extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())),
+	# 	aspect='auto',
+	# )
+	# fig.colorbar(R_im, label=r'$log_{10}$ R / m')
+
 	R_im = axes[i].imshow(
-		np.log10(grids['R'], out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['converged'])&(grids['R']>0)),
+		np.log10(grids['steps']+1, out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['diverged'] | ~grids['converged'])),
 		extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())),
 		aspect='auto',
+		cmap='Spectral',
 	)
-	fig.colorbar(R_im, label=r'$log_{10}$ R / m')
+	fig.colorbar(R_im, label=r'$log_{10}$ steps')
 
-	neg_R_grid = np.full(shape=grids['R'].shape, fill_value=np.nan)
-	neg_R_grid[(grids['converged']) & (grids['R']<0)] = 1.0
-	neg_R_grid[0, 0] = 0.0
+	# neg_R_grid = np.full(shape=grids['R'].shape, fill_value=np.nan)
+	# neg_R_grid[(grids['converged']) & (grids['R']<0)] = 1.0
+	# neg_R_grid[0, 0] = 0.0
 
-	neg_R_im = axes[i].imshow(
-		neg_R_grid, extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())), aspect='auto', cmap='hsv',
-	)
+	# neg_R_im = axes[i].imshow(
+	# 	neg_R_grid, extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())), aspect='auto', cmap='hsv',
+	# )
 
 	fig.savefig(home_path / "plots.png")
 

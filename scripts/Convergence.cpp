@@ -43,11 +43,11 @@ int main()
     std::ofstream outfAprrox{dataPath + "/approx_data.csv"};
     outfAprrox << "dT,C0,V,R\n";
     
-    const double C0{3.5};
-    alloy::Alloy A{alloy::SnAg};
-    for (double dT{1.0}; dT<=50.0; dT+=0.5)
+    const alloy::Alloy A{alloy::CuAg};
+    const double C0{15};
+    for (double dT{1.0}; dT<=320; dT+=1.0)
     {
-        for(double V0Power{-5.0}; V0Power<=1.0; V0Power+=0.1)
+        for(double V0Power{-7.0}; V0Power<=4.0; V0Power+=0.1)
         {
             double V0{std::pow(10.0, V0Power)};
             Result result{VRSolver(dT, C0, A, V0)};
