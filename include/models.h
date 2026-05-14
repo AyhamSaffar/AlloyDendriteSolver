@@ -86,10 +86,10 @@ namespace models
         double R0{8.314}; // gas constant
         double mu{A.L*A.V0/(R0*A.Tm*A.Tm)}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
-        double xic{1 + 2*k/(1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)))}; // - solutal stability function
+        double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // - solutal stability function
 
         double f1{A.L*Ivt/A.Cp + A.m*C0*(1 - (mP/A.m)/(1-(1-k)*Ivc)) + 2*A.r/R + V/mu - dT};
-        double f2{(A.r/A.o) / ( xit*Pt*A.L/A.Cp + (2*A.m*C0*(k-1)*xic)/(1-(1-k)*Ivc) ) - R};
+        double f2{(A.r/A.o) / ( xit*Pt*A.L/A.Cp - (2*A.m*C0*(1-k)*Pc*xic)/(1-(1-k)*Ivc) ) - R};
         return std::make_tuple(f1, f2);
     }
 }

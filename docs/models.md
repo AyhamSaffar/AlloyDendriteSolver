@@ -72,7 +72,7 @@ assumptions.
 
 $$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \left[ 1 - \frac{m'/m}{1-(1-k)Iv_c} \right] + \frac{2Γ}{R} + \frac{V}{\mu} $$
 
-$$ R = \frac {Γ/σ^*} {\frac{\xi_t P_t L}{c_p} +\frac{2 m C_0 (k-1) \xi_c}{1-(1-k) Iv_c}} $$
+$$ R = \frac {Γ/σ^*} {\frac{\xi_t P_t L}{c_p} - \frac{2 P_c m C_0 (1-k) \xi_c}{1-(1-k) Iv_c}} $$
 
 GIven the following:
 
@@ -105,4 +105,4 @@ LKT-BCT equation however drops this low V assumption, meaning these terms must b
 
 \* While Boettinger, Coriell, and Trivedi's origional paper is not openly published online, it is famously well written
 and the basis for this implementation. For a full derivation of this model, it can be accessed by requesting pages 13-25
-of the linked conference paper.
+of the linked conference paper. Also note a $P_c$ is missing in the denominator of the paper's R equation.
