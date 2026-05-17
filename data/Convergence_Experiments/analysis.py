@@ -53,20 +53,20 @@ for i, path in enumerate(experiment_paths):
 	# )
 	# fig.colorbar(error_im, label=r'$log_{10}$ V % Error Compared to V approx')
 
-	# R_im = axes[i].imshow(
-	# 	np.log10(grids['R'], out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['converged'])&(grids['R']>0)),
-	# 	extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())),
-	# 	aspect='auto',
-	# )
-	# fig.colorbar(R_im, label=r'$log_{10}$ R / m')
-
 	R_im = axes[i].imshow(
-		np.log10(grids['steps']+1, out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['diverged'] | ~grids['converged'])),
+		np.log10(grids['R'], out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['converged'])&(grids['R']>0)),
 		extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())),
 		aspect='auto',
-		cmap='Spectral',
 	)
-	fig.colorbar(R_im, label=r'$log_{10}$ steps')
+	fig.colorbar(R_im, label=r'$log_{10}$ R / m')
+
+	# R_im = axes[i].imshow(
+	# 	np.log10(grids['steps']+1, out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['diverged'] | ~grids['converged'])),
+	# 	extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())),
+	# 	aspect='auto',
+	# 	cmap='Spectral',
+	# )
+	# fig.colorbar(R_im, label=r'$log_{10}$ steps')
 
 	# neg_R_grid = np.full(shape=grids['R'].shape, fill_value=np.nan)
 	# neg_R_grid[(grids['converged']) & (grids['R']<0)] = 1.0

@@ -53,7 +53,7 @@ namespace models
     /// @brief Lipton, Glicksman, and Kurz - Boettinger Coriell and Trivedi model. Generalises better to higher
     /// undercoolings and velocities.
     ///
-    ///The first equation calculates the LGK dendrite undercooling. It quantifies how the liquid must be cooled below
+    /// The first equation calculates the LGK dendrite undercooling. It quantifies how the liquid must be cooled below
     /// the temperature of the solid to 1. drive thermal diffusion away from the solid that gives out heat as it
     /// solidifies, 2. reach the lower melting temperature caused by a build up of solute just ahead of the
     /// solidification front, and 3. overcome the energy barrier created by the surface energy of a high curvature
@@ -68,12 +68,15 @@ namespace models
     /// a function of the solute and temperature field gradient, which can be calculated for a parabaloid dendrite using
     /// the same dimensional analysis as the first equation.
     ///
+    /// @tparam NO_PARTITIONING whether to disable the solute from ever crossing the solidification front. This is
+    /// usually true at high V, but setting this value to true ensures this at low V aswell. Defaults to false.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
     /// @param C0 bulk alloy solute concentration - wt.%
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
+    template <bool NO_PARTITIONING=false>
     inline std::tuple<double, double> LKT_BCT(double V, double R, double dT, double C0, const alloy::Alloy& A)
     {
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
@@ -81,7 +84,12 @@ namespace models
         double Ivt{Pt*std::exp(Pt)*expint(Pt)}; // thermal Ivantsov function
         double Ivc{Pc*std::exp(Pc)*expint(Pc)}; // solutal Ivantsov function
 
-        double k{ (A.k0+(A.a0*V/A.D)) / (1+(A.a0*V/A.D)) }; // velocity dependant partition coefficient
+        double k{NAN};
+        if constexpr (NO_PARTITIONING)
+            k = 1;
+        else
+            k = (A.k0+(A.a0*V/A.D)) / (1+(A.a0*V/A.D)); // velocity dependant partition coefficient
+
         double mP{A.m*(1+ (A.k0-k*(1-std::log(k/A.k0))) / (1-A.k0) )}; // velocity dependant liquidus slope (m prime)
         double R0{8.314}; // gas constant
         double mu{A.L*A.V0/(R0*A.Tm*A.Tm)}; // interfacial kinetic coefficient
