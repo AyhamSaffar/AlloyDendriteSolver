@@ -23,11 +23,11 @@ namespace alloy
         double a{};     // thermal diffusivity in liquid - m2/s
         double o{};     // stability constant - unitless
 
-        // LKT-BCT parameters
-        double a0{};    // atomic spacing in pure metal - m
-        double V0{};    // speed of sound in liquid - m/s
-        double Tm{};    // melting point of pure metal - K
-        //TODO figure out whether to make second alloy for LKT-BCT or use boolean flag member
+        // LKT-BCT parameters 
+        // set to nan to ensure the object cannot be used with the LKT-BCT model if values are not given for these
+        double a0{NAN};    // atomic spacing in pure metal - m
+        double V0{NAN};    // speed of sound in liquid - m/s
+        double Tm{NAN};    // melting point of pure metal - K
     };
     
     /// @brief extends Alloy by adjusting diffusivity parameters with C0 and dT

@@ -23,7 +23,7 @@ int main()
         std::tie(f1, f2) = models::LGK(V, R, dT, C0, A);
         J = diff::calculateGrads<models::LGK>(V, R, dT, C0, A);
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
-        V += 0.1 * dV; // smaller steps improve convergence
+        V += 0.1 * dV; // smaller steps increase the range of starting V and R that don't diverge
         R += 0.1 * dR;
     }
 

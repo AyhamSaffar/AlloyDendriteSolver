@@ -59,7 +59,8 @@ First the build system (series of scripts specifying how to compile the code) mu
 ```
 cmake -B build -DCMAKE_BUILD_TYPE=Debug
 ```
-Setting build type to *Release* significantly speeds up the code but disables debugging at runtime.
+Setting build type to *Release* significantly speeds up the code but disables debugging at runtime. This means that if
+the code does crash for any reason, there will be no indication of where or why the code crashed.
 
 Navigate into the build system directory
 ```
@@ -112,7 +113,7 @@ int main()
         std::tie(f1, f2) = models::LGK(V, R, dT, C0, A);
         J = diff::calculateGrads<models::LGK>(V, R, dT, C0, A);
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
-        V += 0.1 * dV; // smaller steps improve convergence
+        V += 0.1 * dV; // smaller steps increase the range of starting V and R that don't diverge
         R += 0.1 * dR;
     }
 
@@ -137,8 +138,11 @@ Any experiments that require data logging can dump to the [*data*](data) directo
 std::string dataPath{DATA_PATH};
 std::ofstream outf{dataPath + "/my_results.csv"};
 
-outf << "V,R,dT,C0\n" // logging column headers
+outf << "V,R,dT,C0\n"; // logging column headers
 ```
+
+See [*scripts/Range_Scan.cpp*](scripts/Range_Scan.cpp) for a higher level interface for all of the above. This should be
+more convenient for this standard workflow.
 
 [*Data*](data) also contains a Python [uv](https://docs.astral.sh/uv/) environment for data analysis. Each script also
 has its own directory there with an interactive Python notebook. This plots the key outputs of any number of experiments
