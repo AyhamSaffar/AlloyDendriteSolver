@@ -3,14 +3,14 @@
 
 #include <cmath> // for std::exp and std::expint
 #include <tuple>
-#include "alloy.h"
+#include "alloys.h"
 
 /// @brief standard models that help calculate solidification parameters from alloy physical parameters. These assume
 /// a single nucleation event, for example in small liquid solder balls that don't have any available nucleants.
 namespace models
 {
     // template for all function headers in this module
-    using ModelFunc = std::tuple<double, double> (*)(double, double, double, double, const alloy::Alloy&);
+    using ModelFunc = std::tuple<double, double> (*)(double, double, double, double, const alloys::Alloy&);
 
     // cmath module uses a slightly different form of exponential integral compared to what is needed here
     inline double expint(double x) {return -std::expint(-x);}
@@ -38,7 +38,7 @@ namespace models
     /// @param C0 bulk alloy solute concentration - wt.%
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
-    inline std::tuple<double, double> LGK(double V, double R, double dT, double C0, const alloy::Alloy& A)
+    inline std::tuple<double, double> LGK(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Pc{V*R/(2*A.D)}; // solutal Péclet number
@@ -77,7 +77,7 @@ namespace models
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
     template <bool NO_PARTITIONING=false>
-    inline std::tuple<double, double> LKT_BCT(double V, double R, double dT, double C0, const alloy::Alloy& A)
+    inline std::tuple<double, double> LKT_BCT(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Pc{V*R/(2*A.D)}; // solutal Péclet number

@@ -1,5 +1,7 @@
 # Models
 
+TODO - list assumptions for each model. 
+
 Models are used to evaluate how accurate a given V and R pair are given C0, dT, and a given alloy. They are analytically
 derived from theory given a set of physical assumptions.
 
@@ -9,20 +11,7 @@ This means that if all parameters are consistent, the right hand side of the fir
 
 They must also be continuous so that they can be automatically differentiated at any given V and R pair.
 
-The following alloy thermodynamic constants are used below:
-- $L$ 	&nbsp; Latent heat of fusion - $J/kg$
-- $c_p$ &nbsp; Specific heat capacity - $J/(kgK)$
-- $m$ 	&nbsp; Equilibrium liquidus slope - $K/ wt.$%
-- $k_0$	&nbsp; Partition coefficient - *unitless*
-- $Γ$ 	&nbsp; Gibbs-Thomson coefficient - $Km$
-- $D$ 	&nbsp; Solute diffusion coefficient - $m^2/s$
-- $α$	&nbsp; Thermal diffusivity in the liquid - $m^2/s$
-- $σ^*$	&nbsp; Stability constant - *unitless*
-- $a_0$ &nbsp; Atomic spacing in pure metal - $m$
-- $V_0$ &nbsp; Speed of sound in liquid - $m/s$
-- $T_m$ &nbsp; Melting point of pure metal - $K$
-
-- $R_0$ &nbsp; Gas constant - $J/(mol K)$
+All alloy thermodynamic constants used below are documented in the [*alloys*](alloys.md) docs:
 
 ### The LGK model
 
@@ -80,6 +69,8 @@ $k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D)}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&e
  dependant partition coefficient
 
 $m' = m \left[1 + \frac{k_0 - k(1-ln(k/k_0))}{1-k_0} \right]$ &emsp;&emsp;&emsp;&emsp; - velocity dependant liquidus slope
+
+$R_0$ = 8.314 $J/molK$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; - molar gas constant
 
 $\mu = \frac{LV_0}{R_0T_m^2}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; -
  interfacial kinetic coefficient

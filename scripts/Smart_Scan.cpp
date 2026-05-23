@@ -5,7 +5,7 @@
 #include <tuple>
 #include <string>
 #include <cmath>
-#include "alloy.h"
+#include "alloys.h"
 #include "models.h"
 #include "solver.h"
 
@@ -16,7 +16,7 @@ int main()
     std::ofstream outf{dataPath + "/data.csv"};
     outf << solver::Result::commaSeparatedColumns << '\n';
 
-    const alloy::Alloy A{alloy::CuAg};
+    const alloys::Alloy A{alloys::CuAg};
     double C0{15}, dT{1.0}, dTStep{1.0};
     double V{approx::getTipVelocity(dT, C0, A)}, R{approx::getTipRadius(dT, C0, A)};
 

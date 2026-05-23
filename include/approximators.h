@@ -2,7 +2,7 @@
 #define APPROXIMATORS_H
 #include <numbers>
 #include <cmath>
-#include "alloy.h"
+#include "alloys.h"
 
 // approximate analytical solutions to solidification parameters following "Solidification" by Dantzig & Rappaz
 // (1st Ed)" textbook. assumes small undercooling and solutal dendrites.
@@ -13,7 +13,7 @@ namespace approx
     /// @param C0 bulk alloy composition - wt%
     /// @param A struct containing key physical alloy parameters
     /// @return approximate tip radius - m
-    inline double getTipRadius(double dT, double C0, const alloy::Alloy& A)
+    inline double getTipRadius(double dT, double C0, const alloys::Alloy& A)
     {
         using std::numbers::pi;
         using std::pow;
@@ -25,7 +25,7 @@ namespace approx
     /// @param C0 bulk alloy solute concentration - wt%
     /// @param A struct containing key physical alloy parameters
     /// @return approximate tip velocity - m/s
-    inline double getTipVelocity(double dT, double C0, const alloy::Alloy& A)
+    inline double getTipVelocity(double dT, double C0, const alloys::Alloy& A)
     {
         using std::numbers::pi;
         using std::pow;

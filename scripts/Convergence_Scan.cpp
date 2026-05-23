@@ -5,7 +5,7 @@
 #include <string>
 #include <cmath>
 #include "solver.h"
-#include "alloy.h"
+#include "alloys.h"
 #include "models.h"
 #include "approximators.h"
 
@@ -18,7 +18,7 @@ int main()
     std::ofstream outfAprrox{dataPath + "/approx_data.csv"};
     outfAprrox << "dT,C0,V,R" << '\n';
     
-    const alloy::Alloy A{alloy::CuAg};
+    const alloys::Alloy A{alloys::CuAg};
     const double C0{15};
     for (double dT{1.0}; dT<=320; dT+=1.0)
     {

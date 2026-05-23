@@ -2,7 +2,7 @@
 #include <cmath>
 #include <tuple>
 #include <string>
-#include "alloy.h"
+#include "alloys.h"
 #include "approximators.h"
 #include "differentials.h"
 #include "models.h"
@@ -11,7 +11,7 @@
 
 // returns iteratively calculated V, R, and f (abs(f1) + abs(f2))
 template <models::ModelFunc MODEL>
-std::tuple<double, double, double> solver(double dT, double C0, const alloy::Alloy& A)
+std::tuple<double, double, double> solver(double dT, double C0, const alloys::Alloy& A)
 {
     double f1{}, f2{}, dV{}, dR{}, V{approx::getTipVelocity(dT, C0, A)}, R{approx::getTipRadius(dT, C0, A)};
     diff::Jacobian J{};
@@ -42,7 +42,7 @@ TEST_CASE("LGK model V prediction agrees with published LGK SnAg numerical fit a
         for (double C0{3.0}; C0<=6.0; C0+=1.0)
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
-            std::tie(VPred, RPred, f) = solver<models::LGK>(dT, C0, alloy::SnAg);
+            std::tie(VPred, RPred, f) = solver<models::LGK>(dT, C0, alloys::SnAg);
             REQUIRE(f < 2e-12);
             REQUIRE(RPred > 0);
 
@@ -63,7 +63,7 @@ TEST_CASE(
         for (double C0{3.0}; C0<=6.0; C0+=1.0)
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
-            std::tie(VPred, RPred, f) = solver<models::LKT_BCT>(dT, C0, alloy::SnAg);
+            std::tie(VPred, RPred, f) = solver<models::LKT_BCT>(dT, C0, alloys::SnAg);
             REQUIRE(f < 2e-12);
             REQUIRE(RPred > 0);
 

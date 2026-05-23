@@ -4,7 +4,7 @@
 #include <tuple>
 #include <iostream>
 #include "enzyme.h" 
-#include "alloy.h"
+#include "alloys.h"
 #include "models.h"
 
 
@@ -12,7 +12,7 @@ namespace diff
 {    
     // Enzyme autodiff can only handle non out-parameter functions when they return a single value
     template <models::ModelFunc func, int fToReturn>
-    inline double wrapper(double V, double R, double dT, double C0, const alloy::Alloy& A)
+    inline double wrapper(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         std::tuple<double, double> f{func(V, R, dT, C0, A)};
         return std::get<fToReturn-1>(f);
@@ -20,7 +20,7 @@ namespace diff
     struct Jacobian{double df1dV{}; double df1dR{}; double df2dV{}; double df2dR{};};
     
     template <models::ModelFunc modelFunc>
-    inline Jacobian calculateGrads(double V, double R, double dT, double C0, alloy::Alloy A)
+    inline Jacobian calculateGrads(double V, double R, double dT, double C0, alloys::Alloy A)
     {
         Jacobian J{};
         J.df1dV = __enzyme_autodiff<double>(

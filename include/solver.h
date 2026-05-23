@@ -4,7 +4,7 @@
 #include <tuple>
 #include <string>
 #include <sstream>
-#include "alloy.h"
+#include "alloys.h"
 #include "approximators.h"
 #include "differentials.h"
 #include "models.h"
@@ -39,7 +39,7 @@ namespace solver{
     /// @param R0 initial guess for dendrite tip radius - m
     /// @return struct containing V, R, dT, and C0 as well as optimisation flags and parameters
     template <models::ModelFunc MODEL>
-    inline Result solve(double dT, double C0, const alloy::Alloy& A, double V0, double R0)
+    inline Result solve(double dT, double C0, const alloys::Alloy& A, double V0, double R0)
     {
         double f1{}, f2{}, V{V0}, R{R0}, dV{}, dR{};
         diff::Jacobian J{};
@@ -76,7 +76,7 @@ namespace solver{
     /// @param A struct containing key physical alloy parameters
     /// @return struct containing V, R, dT, and C0 as well as optimisation flags and parameters
     template <models::ModelFunc MODEL>
-    inline Result solve(double dT, double C0, const alloy::Alloy& A)
+    inline Result solve(double dT, double C0, const alloys::Alloy& A)
     {
         return solve<MODEL>(dT, C0, A, approx::getTipVelocity(dT, C0, A), approx::getTipRadius(dT, C0, A));
     }
