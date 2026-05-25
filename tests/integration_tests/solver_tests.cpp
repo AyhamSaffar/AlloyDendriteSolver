@@ -1,32 +1,12 @@
-#include <catch2/catch_test_macros.hpp>
+#include <numbers>
 #include <cmath>
 #include <tuple>
 #include <string>
+#include <catch2/catch_test_macros.hpp>
 #include "alloys.h"
-#include "approximators.h"
-#include "differentials.h"
 #include "models.h"
-#include "optimiser.h"
-#include <numbers>
+#include "solver.h"
 
-// returns iteratively calculated V, R, and f (abs(f1) + abs(f2))
-template <models::ModelFunc MODEL>
-std::tuple<double, double, double> solver(double dT, double C0, const alloys::Alloy& A)
-{
-    double f1{}, f2{}, dV{}, dR{}, V{approx::getTipVelocity(dT, C0, A)}, R{approx::getTipRadius(dT, C0, A)};
-    diff::Jacobian J{};
-
-    for (int step{0}; step<500; ++step)
-    {
-        std::tie(f1, f2) = MODEL(V, R, dT, C0, A);
-        J = diff::calculateGrads<MODEL>(V, R, dT, C0, A);
-        std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
-        V += 0.1 * dV; // smaller steps improve convergence
-        R += 0.1 * dR;
-    }
-
-    return std::tuple{V, R, std::abs(f1)+std::abs(f2)};
-}
 
 // numericallly derived fit from https://doi.org/10.1007/s10854-025-14979-6
 double getPublishedLGKSnAgVFit(double dT, double C0)
@@ -36,20 +16,18 @@ double getPublishedLGKSnAgVFit(double dT, double C0)
 
 TEST_CASE("LGK model V prediction agrees with published LGK SnAg numerical fit and gives positive R", "[solver]")
 {
-    double VPred{}, RPred{}, f{};
     for (double dT{2.5}; dT<=60; dT+=2.5)
-    {
         for (double C0{3.0}; C0<=6.0; C0+=1.0)
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
-            std::tie(VPred, RPred, f) = solver<models::LGK>(dT, C0, alloys::SnAg);
-            REQUIRE(f < 2e-12);
-            REQUIRE(RPred > 0);
+            solver::Result result{solver::solve<models::LGK>(dT, C0, alloys::SnAg)};
+            REQUIRE(std::abs(result.f1) < 1e-12);
+            REQUIRE(std::abs(result.f2) < 1e-12);
+            REQUIRE(result.R > 0);
 
             double VFit{getPublishedLGKSnAgVFit(dT, C0)};
-            REQUIRE(std::abs(VPred-VFit)/VFit < 0.20); // maximum of 20% error as numerical fit
+            REQUIRE(std::abs(result.V-VFit)/VFit < 0.20); // maximum of 20% error as numerical fit
         }
-    }
 }
 
 TEST_CASE(
@@ -57,18 +35,16 @@ TEST_CASE(
     "[solver]"
 )
 {
-    double VPred{}, RPred{}, f{};
     for (double dT{2.5}; dT<=20; dT+=2.5)
-    {
         for (double C0{3.0}; C0<=6.0; C0+=1.0)
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
-            std::tie(VPred, RPred, f) = solver<models::LKT_BCT>(dT, C0, alloys::SnAg);
-            REQUIRE(f < 2e-12);
-            REQUIRE(RPred > 0);
+            solver::Result result{solver::solve<models::LKT_BCT>(dT, C0, alloys::SnAg)};
+            REQUIRE(std::abs(result.f1) < 1e-12);
+            REQUIRE(std::abs(result.f2) < 1e-12);
+            REQUIRE(result.R > 0);
 
             double VFit{getPublishedLGKSnAgVFit(dT, C0)};
-            REQUIRE(std::abs(VPred-VFit)/VFit < 0.2); // maximum of 20% error as numerical fit
+            REQUIRE(std::abs(result.V-VFit)/VFit < 0.2); // maximum of 20% error as numerical fit
         }
-    }
 }
