@@ -10,7 +10,7 @@ All *Alloy* object must contain the following constants:
 - $k_0$	&nbsp; Partition coefficient - $wt.\% / wt.\%$
 - $Γ$ 	&nbsp; Gibbs-Thomson coefficient - $Km$
 - $D$ 	&nbsp; Diffusion coefficient of solute in liquid - $m^2/s$
-- $α$	&nbsp; Thermal conductivity of liquid - $m^2/s$
+- $α$	&nbsp; Thermal diffusivity of liquid - $m^2/s$
 - $σ^*$	&nbsp; Stability constant - $m/m$
 
 Optional parameters required for some models:

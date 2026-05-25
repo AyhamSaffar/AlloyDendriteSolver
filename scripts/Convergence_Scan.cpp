@@ -1,5 +1,4 @@
-// Script used to reproduce figure 11 in https://link.springer.com/article/10.1007/s10854-025-14979-6, adding
-// bounds for how well the model converges given a starting guess for dendrite velocity.
+// Script used to test whether a model will converge for a range of starting guesses for dendrite velocity.
 
 #include <fstream>
 #include <string>

@@ -20,7 +20,7 @@ namespace alloys
         double k0{};    // Partition coefficient - wt.% / wt.%
         double r{};     // Gibbs-Thomson coefficient - K m
         double D{};     // Diffusion coefficient of solute in liquid - m2/s
-        double a{};     // Thermal conductivity of liquid - m2/s
+        double a{};     // Thermal diffusivity of liquid - m2/s
         double o{};     // Stability constant - m/m
 
         // LKT-BCT parameters 
@@ -44,6 +44,10 @@ namespace alloys
     };
     
     using std::numbers::pi;
+
+    constexpr double AlDensity{2699}, AlAr{26.982e-3}; // Ar in Kg/mol
+    // Taken from https://doi.org/10.1007/BF02643853
+    const Alloy AlFe{971e6*AlAr/AlDensity, 2.67e6*AlAr/AlDensity, -3.7, 0.038, 1e-7, 2e-9, 0.34e-4, 1/(4*pi*pi)};
 
     // Taken from Fourth Conference on Rapid Solidification Processing: Principles and Technologies, Application of
     // dendritic growth theory to the interpretation of rapid  solidification microstructures, pages 13-25, W.J.

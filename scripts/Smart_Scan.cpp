@@ -1,5 +1,5 @@
-// Script used to reproduce figure 2 in page 22 of
-// https://search.library.uq.edu.au/discovery/fulldisplay/alma991011497109703131/61UQ_INST:61UQ.
+// Script used to more robustly solve for higher undercoolings by using the solutions to previous undercoolings as a
+// starting guess for V and R.
 
 #include <fstream>
 #include <tuple>
