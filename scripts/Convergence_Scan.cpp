@@ -17,7 +17,7 @@ int main()
     std::ofstream outfAprrox{dataPath + "/approx_data.csv"};
     outfAprrox << "dT,C0,V,R" << '\n';
     
-    const alloys::Alloy A{alloys::CuAg};
+    const alloys::Alloy A{alloys::AgCu};
     const double C0{15};
     for (double dT{1.0}; dT<=320; dT+=1.0)
     {

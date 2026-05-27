@@ -26,7 +26,7 @@ int main()
             outfSucAce << solver::solve<models::LGK>(dT, C0, alloys::SucAce).commaSeparatedValues() << '\n';
         }
 
-    
+
     // https://doi.org/10.1007/BF02643853 Fig. 14
     std::ofstream outfAlFe{dataPath + "/AlFe_LGK.csv"};
     outfAlFe << solver::Result::commaSeparatedColumns << '\n';
@@ -37,7 +37,28 @@ int main()
             double dT{std::pow(10, dTPower)};
             outfAlFe << solver::solve<models::LGK>(dT, C0, alloys::AlFe).commaSeparatedValues() << '\n';
         }
-        
+
+
+    // https://doi.org/10.1007/BF02646933 Fig. 12 & 13 (early LKT model skipped as this library doesn't support it)
+    std::ofstream outfNiSn{dataPath + "NiSn_LGK.csv"};
+    outfNiSn << solver::Result::commaSeparatedColumns << '\n';
+
+    for (double dT{1}, C0{25}; dT<=1000; ++dT)
+        outfNiSn << solver::solve<models::LGK>(dT, C0, alloys::NiSn).commaSeparatedValues() << '\n';
+
+
+    // https://doi.org/10.1016/j.actamat.2016.09.047 Fig. 3, 4, & 5
+    std::ofstream outfFeCoGamma{dataPath + "FeCoGamma_LKT_BCT.csv"};
+    std::ofstream outfFeCoDelta{dataPath + "FeCoDelta_LKT_BCT.csv"};
+    outfFeCoGamma << solver::Result::commaSeparatedColumns << '\n';
+    outfFeCoDelta << solver::Result::commaSeparatedColumns << '\n';
+
+    for (double C0{30}; C0<=50; C0+=10)
+        for (double dT{1}; dT<=350; ++dT)
+        {
+            outfFeCoGamma << solver::solve<models::LKT_BCT>(dT, C0, alloys::FeCoGamma).commaSeparatedValues() << '\n';
+            outfFeCoDelta << solver::solve<models::LKT_BCT>(dT, C0, alloys::FeCoDelta).commaSeparatedValues() << '\n';
+        }
 
     return 0;
 }

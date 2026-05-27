@@ -51,6 +51,9 @@ as the smallest pertubation that won't shrink. This gives an expression that is 
 field gradient, which can be calculated for a parabaloid dendrite using the same dimensional analysis as the first
 equation.
 
+*Assumptions* (unfinished)
+- most constants do not vary with composition (E.G m, k0, r)
+
 ### The LKT-BCT Model
 
 [J. Lipton, W. Kurz, R. Trivedi](https://doi.org/10.1016/0001-6160(87)90174-X) - [W.J. Boettinger, S.R. Coriell and R. 
