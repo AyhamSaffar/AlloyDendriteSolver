@@ -81,11 +81,12 @@ namespace alloys
     // https://doi.org/10.1063/1.1708821 using slower c axis. //! note these seem to high compared to TermoCalc numbers
     inline AlloyTDependant SnAgTDependant{SnAg, 505.1, 7.1e-7, 12300.0};
     
-    static constexpr double SucMr{0.080090}; // relative molecular mass of succinonitrile in Kg/mol
+    static constexpr double SucMr{80.090e-3}, AceMr{58.08e-3}; // relative molecular mass of succinonitrile in Kg/mol
     // Succinonitrile Acetone mixture taken from https://doi.org/10.1016/0025-5416(84)90199-X. This polymer system is
     // often used in place of a molten alloy to test solidification models more easily in the lab. Note the equilibrium
-    // liquidus scope coversion from its K/mol% value in the paper to K/wt% only holds for small wt% values.
-    const Alloy SucAce{46'260*SucMr, 1937.5*SucMr, -297.855, 0.103, 6.62e-8, 1.27e-9, 1.14e-7, o};
+    // liquidus scope coversion from its K/mol% value in the paper to K/wt% only holds for small wt% values. Also the
+    // equivalence of k0 from mol.%/mol.% value in the paper to its wt.%/wt.% value also only holds for small wt% values
+    const Alloy SucAce{46'260*SucMr, 1937.5*SucMr, -2.16*SucMr/AceMr, 0.103, 6.62e-8, 1.27e-9, 1.14e-7, o};
 }
 
 /// @brief Configure parameters needed to calculate diffusivity at any T using D = A0*exp(-Ea/RT)

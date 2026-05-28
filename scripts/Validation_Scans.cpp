@@ -20,9 +20,9 @@ int main()
 
     double SucMr{80.09}, AceMr{58.08};
     for (double dT{0.5}; dT<=0.9; dT+=0.4)
-        for(double C0MolPercent{0.01}; C0MolPercent<=1; C0MolPercent+=0.01)
+        for(double C0MolPercent{0.005}; C0MolPercent<=1; C0MolPercent+=0.005)
         {
-            double C0{ (C0MolPercent*AceMr) / (C0MolPercent*AceMr + (100-C0MolPercent)*SucMr) };
+            double C0{ 100 * (C0MolPercent*AceMr) / (C0MolPercent*AceMr + (100-C0MolPercent)*SucMr) }; // wt.% required
             outfSucAce << solver::solve<models::LGK>(dT, C0, alloys::SucAce).commaSeparatedValues() << '\n';
         }
 
@@ -31,7 +31,7 @@ int main()
     std::ofstream outfAlFe{dataPath + "/AlFe_LGK.csv"};
     outfAlFe << solver::Result::commaSeparatedColumns << '\n';
     
-    for (double C0: std::array{0.1, 4.0, 8.0}) // solver cannot handle 0 C0 value
+    for (double C0: std::array{0.1, 0.5, 4.0, 8.0}) // solver cannot handle 0 C0 value
         for(double dTPower{0}; dTPower<=2.7; dTPower+=0.01)
         {
             double dT{std::pow(10, dTPower)};
@@ -59,6 +59,21 @@ int main()
             outfFeCoGamma << solver::solve<models::LKT_BCT>(dT, C0, alloys::FeCoGamma).commaSeparatedValues() << '\n';
             outfFeCoDelta << solver::solve<models::LKT_BCT>(dT, C0, alloys::FeCoDelta).commaSeparatedValues() << '\n';
         }
+
+
+    // https://doi.org/10.1007/s10854-025-14979-6 Fig. 11d
+    std::ofstream outfSnAgLGK{dataPath + "SnAg_LGK.csv"};
+    std::ofstream outfSnAgLKTBCT{dataPath + "SnAg_LKT_BCT.csv"};
+    outfSnAgLGK << solver::Result::commaSeparatedColumns << '\n';
+    outfSnAgLKTBCT << solver::Result::commaSeparatedColumns << '\n';
+
+    for (double C0{3.5}; C0<=5.0; C0+=1.5)
+        for (double dT{1}; dT<=50; ++dT)
+        {
+            outfSnAgLGK << solver::solve<models::LGK>(dT, C0, alloys::SnAg).commaSeparatedValues() << '\n';
+            outfSnAgLKTBCT << solver::solve<models::LKT_BCT>(dT, C0, alloys::SnAg).commaSeparatedValues() << '\n';
+        }
+
 
     return 0;
 }
