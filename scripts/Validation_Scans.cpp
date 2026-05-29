@@ -4,9 +4,11 @@
 #include <fstream>
 #include <array>
 #include <cmath>
+#include <tuple>
 #include "solver.h"
 #include "alloys.h"
 #include "models.h"
+#include "approximators.h"
 
 
 int main()
@@ -54,11 +56,18 @@ int main()
     outfFeCoDelta << solver::Result::commaSeparatedColumns << '\n';
 
     for (double C0{30}; C0<=50; C0+=10)
+    {
+        double V0Gamma{approx::getTipVelocity(1.0, C0, alloys::FeCoGamma)};
+        double R0Gamma{approx::getTipRadius(1.0, C0, alloys::FeCoGamma)};
         for (double dT{1}; dT<=350; ++dT)
         {
-            outfFeCoGamma << solver::solve<models::LKT_BCT>(dT, C0, alloys::FeCoGamma).commaSeparatedValues() << '\n';
+            // model diverges for Gamma at higher dT if approx funcs always used as initial guess for V and R
+            solver::Result result{solver::solve<models::LKT_BCT>(dT, C0, alloys::FeCoGamma, V0Gamma, R0Gamma)};
+            outfFeCoGamma << result.commaSeparatedValues() << '\n';
+            std::tie(V0Gamma, R0Gamma) = std::tie(result.V, result.R);
             outfFeCoDelta << solver::solve<models::LKT_BCT>(dT, C0, alloys::FeCoDelta).commaSeparatedValues() << '\n';
         }
+    }
 
 
     // https://doi.org/10.1007/s10854-025-14979-6 Fig. 11d

@@ -18,24 +18,26 @@ int main()
 
     const alloys::Alloy A{alloys::AgCu};
     double C0{15}, dT{1.0}, dTStep{1.0};
-    double V{approx::getTipVelocity(dT, C0, A)}, R{approx::getTipRadius(dT, C0, A)};
+    double V0{approx::getTipVelocity(dT, C0, A)}, R0{approx::getTipRadius(dT, C0, A)};
 
-    while( (dT<=320) && (dTStep>=std::pow(2, -100)) )
-    {
-        solver::Result result{solver::solve<models::LGK>(dT, C0, A, V, R)};
-        if (result.hasConverged)
+    for (double C0{30}; C0<=50; C0+=10)
+        while( (dT<=320) && (dTStep>=std::pow(2, -100)) )
         {
-            outf << result.commaSeparatedValues() << '\n';
-            std::tie(V, R) = std::tie(result.V, result.R);
-            dTStep = 1.0;
-            dT += dTStep;
+            solver::Result result{solver::solve<models::LGK>(dT, C0, A, V0, R0)};
+            if (result.hasConverged)
+            {
+                outf << result.commaSeparatedValues() << '\n';
+                std::tie(V0, R0) = std::tie(result.V, result.R);
+                dTStep = 1.0;
+                dT += dTStep;
+            }
+            else
+            {
+                dT -= dTStep;
+                dTStep /= 2;
+                dT += dTStep;
+            }
         }
-        else
-        {
-            dT -= dTStep;
-            dTStep /= 2;
-            dT += dTStep;
-        }
-    }
+
     return 0;
 }

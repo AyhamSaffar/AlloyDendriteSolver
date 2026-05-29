@@ -53,7 +53,7 @@ namespace alloys
     // atomic masses (55.845 & 58.993), atom.% is assumed to be equal to wt.%.
     const Alloy FeCoGamma{
         14083, 5796451*FeAr/FeMeltDensity, -0.45, 0.989, 0.319/1032396, 4.7e-9, 5.36e-06, o, 2.354e-10, 550, 1757
-    }; //! should use C0 dependant m as is -0.69, 0.45, and 0.13 at 30, 40, and 50 atom.% Co repectively.
+    }; //! should use C0 dependant m as is -0.69, -0.45, and -0.13 at 30, 40, and 50 atom.% Co repectively.
     const Alloy FeCoDelta{
         10767, 5704510*FeAr/FeMeltDensity, -1.98, 0.96, 0.206/801030, 4.7e-9, 5.36e-06, o, 2.354e-10, 350, 1733
     };
