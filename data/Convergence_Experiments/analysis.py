@@ -6,75 +6,71 @@ import pathlib as pl
 
 # %%
 home_path = pl.Path(__file__).parent
-experiment_paths = [path for path in home_path.glob(pattern='LKT_BCT*') if path.is_dir()]
+experiment_path = home_path / 'CuAg_Scan'
 
 # %%
-def read_data(path: pl.Path):
-	data = pd.read_csv(path / 'solver_data.csv')
-	V0s = np.sort(data['V0'].unique())
-	dTs = np.sort(data['dT'].unique())
+raw_data = pd.read_csv(experiment_path / 'solver_data.csv')
+V0s = np.sort(raw_data['V0'].unique())
+R0s = np.sort(raw_data['R0'].unique())
 
-	grids = {col: data[col].to_numpy().reshape([len(dTs), len(V0s)]).T[::-1] for col in data.columns} # top row should be highest V0 value
+data = {} # dT: {col: col_grid}
+for dT in np.sort(raw_data['dT'].unique()):
+	subset = raw_data[raw_data['dT']==dT].sort_values(by=['V0', 'R0'], ascending=[False, True]) # top row = highest V0
+	grids = {col: subset[col].to_numpy().reshape([len(V0s), len(R0s)]) for col in raw_data.columns} 
 	grids['f'] = np.abs(grids['f1']) + np.abs(grids['f2'])
-	grids['f_log'] = np.full(shape=[len(V0s), len(dTs)], fill_value=np.nan)
-	np.log10(grids['f']+1e-20, out=grids['f_log'], where=~grids['diverged'])
-	
-	approx_data = pd.read_csv(path / 'approx_data.csv')
-	approx_v = approx_data['V'].to_numpy()[np.newaxis, :]
-	percent_error = 100 * np.abs(grids['V'] -  approx_v) / approx_v
-	percent_error[grids['diverged']] = np.nan
+	data[dT] = grids
 
-	return approx_data, V0s, dTs, grids, percent_error
+approx_data = pd.read_csv(experiment_path / 'approx_data.csv')
+
 
 # %%
-fig, axes = plt.subplots(ncols=len(experiment_paths), figsize=(12,4))
+fig, axes = plt.subplots(nrows=2, ncols=len(data), figsize=(7*len(data),7))
 
-for i, path in enumerate(experiment_paths):
-	axes[i].set_title(path.stem)
-	approx_data, V0s, dTs, grids, percent_error = read_data(path)
-	assert(~np.any(grids['R']==np.nan))
+for i, (dT, grids) in enumerate(data.items()):
+	approx_row = approx_data[approx_data['dT']==dT]
 
-	# for row in (0, 1, 2):
-	axes[i].plot(approx_data['dT'], np.log10(approx_data['V']), color='blue')
-	axes[i].set_xlabel(r'$\Delta T$ / $K$')
-	axes[i].set_ylabel(r'$log_{10}V0$ / $ms^{-1}$')
+	axes[0, i].set_title(f'Undercooling = {dT:.0f}K')
+	for row in [0, 1]:
+		axes[row, i].set_xlabel(r'$R_0$ / $log_{10}(m)$')
+		axes[row, i].set_ylabel(r'$V_0$ / $log_{10}(m/s)$')
+		axes[row, i].scatter(np.log10(approx_row['R']), np.log10(approx_row['V']), color='black', marker='X')
 
-	# f_im = axes[i].imshow(
-	# 	grids['f_log'], vmax=0, vmin=-12, extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())),
-	# 	aspect='auto', alpha=0.7, cmap='RdYlGn_r'
-	# )
-	# fig.colorbar(f_im, label=r'$log_{10}$Convergence')
-
-	# error_im = axes[i].imshow(
-	# 	np.log10(percent_error),
-	# 	extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())),
-	# 	vmin=0, aspect='auto', alpha=0.7, cmap='RdYlGn_r',
-	# 	# vmax=3
-	# )
-	# fig.colorbar(error_im, label=r'$log_{10}$ V % Error Compared to V approx')
-
-	R_im = axes[i].imshow(
-		np.log10(grids['R'], out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['converged'])&(grids['R']>0)),
-		extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())),
+	R_im = axes[0, i].imshow(
+		np.log10(grids['R'],
+		out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['converged'])&(grids['R']>0)),
+		extent=(np.log10(R0s.min()), np.log10(R0s.max()), np.log10(V0s.min()), np.log10(V0s.max())),
 		aspect='auto',
 	)
-	fig.colorbar(R_im, label=r'$log_{10}$ R / m')
+	fig.colorbar(R_im, label=r'$R$ / $log_{10}(m)$')
 
-	# R_im = axes[i].imshow(
-	# 	np.log10(grids['steps']+1, out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['diverged'] | ~grids['converged'])),
+	neg_R_grid = np.full(shape=grids['R'].shape, fill_value=np.nan)
+	neg_R_grid[(grids['converged']) & (grids['R']<0)] = 1.0
+	neg_R_grid[0, 0] = 0.0
+
+	neg_R_im = axes[0, i].imshow(
+		neg_R_grid,
+		extent=(np.log10(R0s.min()), np.log10(R0s.max()), np.log10(V0s.min()), np.log10(V0s.max())),
+		cmap='hsv',
+		aspect='auto',
+	)
+
+	V_im = axes[1, i].imshow(
+		np.log10(grids['V'],
+		out=np.full(shape=grids['V'].shape, fill_value=np.nan), where=(grids['converged'])&(grids['R']>0)),
+		extent=(np.log10(R0s.min()), np.log10(R0s.max()), np.log10(V0s.min()), np.log10(V0s.max())),
+		aspect='auto',
+	)
+	fig.colorbar(V_im, label=r'$V$ / $log_{10}(m/s)$')
+
+	# steps_im = axes[i].imshow(
+	# 	np.log10(grids['steps']+1,
+	# 	out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['diverged'] | ~grids['converged'])),
 	# 	extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())),
-	# 	aspect='auto',
 	# 	cmap='Spectral',
+	#	aspect='auto',
 	# )
-	# fig.colorbar(R_im, label=r'$log_{10}$ steps')
+	# fig.colorbar(steps_im, label=r'$log_{10}$ steps')
 
-	# neg_R_grid = np.full(shape=grids['R'].shape, fill_value=np.nan)
-	# neg_R_grid[(grids['converged']) & (grids['R']<0)] = 1.0
-	# neg_R_grid[0, 0] = 0.0
-
-	# neg_R_im = axes[i].imshow(
-	# 	neg_R_grid, extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())), aspect='auto', cmap='hsv',
-	# )
 
 	fig.savefig(home_path / "plots.png")
 
