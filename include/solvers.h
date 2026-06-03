@@ -1,5 +1,5 @@
-#ifndef SOLVER_H
-#define SOLVER_H
+#ifndef SOLVERS_H
+#define SOLVERS_H
 
 #include <tuple>
 #include <string>
@@ -12,7 +12,7 @@
 
 
 // high level interface for the most common use case - solving V and R for a given Alloy, C0, and dT
-namespace solver{
+namespace solvers{
 
     // struct to hold and log data from a solve attempt
     struct Result{

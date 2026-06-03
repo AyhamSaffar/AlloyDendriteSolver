@@ -6,7 +6,7 @@ import pathlib as pl
 
 # %%
 home_path = pl.Path(__file__).parent
-experiment_path = home_path / 'CuAg_Scan'
+experiment_path = home_path / 'AgCu_Scan'
 
 # %%
 raw_data = pd.read_csv(experiment_path / 'solver_data.csv')
@@ -72,5 +72,5 @@ for i, (dT, grids) in enumerate(data.items()):
 	# fig.colorbar(steps_im, label=r'$log_{10}$ steps')
 
 
-	fig.savefig(home_path / "plots.png")
+	fig.savefig(experiment_path / "plots.png")
 

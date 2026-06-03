@@ -7,14 +7,14 @@
 #include <cmath>
 #include "alloys.h"
 #include "models.h"
-#include "solver.h"
+#include "solvers.h"
 
 
 int main()
 {
     std::string dataPath{DATA_PATH};
     std::ofstream outf{dataPath + "/data.csv"};
-    outf << solver::Result::commaSeparatedColumns << '\n';
+    outf << solvers::Result::commaSeparatedColumns << '\n';
 
     const alloys::Alloy A{alloys::AgCu};
     double C0{15}, dT{1.0}, dTStep{1.0};
@@ -23,7 +23,7 @@ int main()
     for (double C0{30}; C0<=50; C0+=10)
         while( (dT<=320) && (dTStep>=std::pow(2, -100)) )
         {
-            solver::Result result{solver::solve<models::LGK>(dT, C0, A, V0, R0)};
+            solvers::Result result{solvers::solve<models::LGK>(dT, C0, A, V0, R0)};
             if (result.hasConverged)
             {
                 outf << result.commaSeparatedValues() << '\n';

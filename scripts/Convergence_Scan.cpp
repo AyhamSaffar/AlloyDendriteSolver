@@ -4,7 +4,7 @@
 #include <string>
 #include <cmath>
 #include <array>
-#include "solver.h"
+#include "solvers.h"
 #include "alloys.h"
 #include "models.h"
 #include "approximators.h"
@@ -14,13 +14,13 @@ int main()
 {
     std::string dataPath{DATA_PATH};
     std::ofstream outfSolver{dataPath + "/solver_data.csv"};
-    outfSolver << solver::Result::commaSeparatedColumns << ",V0,R0\n";
+    outfSolver << solvers::Result::commaSeparatedColumns << ",V0,R0\n";
     std::ofstream outfAprrox{dataPath + "/approx_data.csv"};
     outfAprrox << "dT,C0,V,R" << '\n';
     
     const alloys::Alloy A{alloys::AgCu};
     const double C0{15};
-    for (double dT: std::array{50.0, 100.0, 150.0})
+    for (double dT{50}; dT<=150; dT+=50)
     {
         outfAprrox << dT << ',' << C0 << ',' << approx::getTipVelocity(dT, C0, A) << ',' <<
             approx::getTipRadius(dT, C0, A) << '\n';
@@ -31,7 +31,7 @@ int main()
             for (double R0Power{-8}; R0Power<=-5.2; R0Power+=0.1)
             {
                 double R0{std::pow(10.0, R0Power)};
-                outfSolver << solver::solve<models::LKT_BCT>(dT, C0, A, V0, R0).commaSeparatedValues() << ',';
+                outfSolver << solvers::solve<models::LKT_BCT>(dT, C0, A, V0, R0).commaSeparatedValues() << ',';
                 outfSolver << V0 << ',' << R0 << '\n';
             } 
         }
