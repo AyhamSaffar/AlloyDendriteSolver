@@ -22,8 +22,8 @@ int main()
     const double C0{15};
     for (double dT{50}; dT<=150; dT+=50)
     {
-        outfAprrox << dT << ',' << C0 << ',' << approx::getTipVelocity(dT, C0, A) << ',' <<
-            approx::getTipRadius(dT, C0, A) << '\n';
+        outfAprrox << dT << ',' << C0 << ',' << approx::getV(dT, C0, A) << ',' <<
+            approx::getR(dT, C0, A) << '\n';
 
         for (double V0Power{-7.0}; V0Power<=4.0; V0Power+=0.1)
         {
@@ -31,7 +31,7 @@ int main()
             for (double R0Power{-8}; R0Power<=-5.2; R0Power+=0.1)
             {
                 double R0{std::pow(10.0, R0Power)};
-                outfSolver << solvers::solve<models::LKT_BCT>(dT, C0, A, V0, R0).commaSeparatedValues() << ',';
+                outfSolver << solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0).commaSeparatedValues() << ',';
                 outfSolver << V0 << ',' << R0 << '\n';
             } 
         }

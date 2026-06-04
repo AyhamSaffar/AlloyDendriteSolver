@@ -20,7 +20,7 @@ TEST_CASE("LGK model V prediction agrees with published LGK SnAg numerical fit a
         for (double C0{3.0}; C0<=6.0; C0+=1.0)
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
-            solvers::Result result{solvers::solve<models::LGK>(dT, C0, alloys::SnAg)};
+            solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::SnAg)};
             REQUIRE(std::abs(result.f1) < 1e-12);
             REQUIRE(std::abs(result.f2) < 1e-12);
             REQUIRE(result.R > 0);
@@ -39,7 +39,7 @@ TEST_CASE(
         for (double C0{3.0}; C0<=6.0; C0+=1.0)
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
-            solvers::Result result{solvers::solve<models::LKT_BCT>(dT, C0, alloys::SnAg)};
+            solvers::Result result{solvers::newton<models::LKT_BCT>(dT, C0, alloys::SnAg)};
             REQUIRE(std::abs(result.f1) < 1e-12);
             REQUIRE(std::abs(result.f2) < 1e-12);
             REQUIRE(result.R > 0);

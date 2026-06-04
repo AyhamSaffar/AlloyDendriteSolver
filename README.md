@@ -104,7 +104,7 @@ int main()
     // initialise variables
     const alloys::Alloy A{alloys::SnAg}; // common solder material
     double f1{}, f2{}, dV{}, dR{}, dT{10.0}, C0{5.0}; // only non SI unit is concentration (wt.%)
-    double V{approx::getTipVelocity(dT, C0, A)}, R{approx::getTipRadius(dT, C0, A)};
+    double V{approx::getV(dT, C0, A)}, R{approx::getR(dT, C0, A)};
     diff::Jacobian J{};
 
     // iteratively solve for V and R

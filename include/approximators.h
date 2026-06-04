@@ -13,7 +13,7 @@ namespace approx
     /// @param C0 bulk alloy composition - wt%
     /// @param A struct containing key physical alloy parameters
     /// @return approximate tip radius - m
-    inline double getTipRadius(double dT, double C0, const alloys::Alloy& A)
+    inline double getR(double dT, double C0, const alloys::Alloy& A)
     {
         using std::numbers::pi;
         using std::pow;
@@ -25,7 +25,7 @@ namespace approx
     /// @param C0 bulk alloy solute concentration - wt%
     /// @param A struct containing key physical alloy parameters
     /// @return approximate tip velocity - m/s
-    inline double getTipVelocity(double dT, double C0, const alloys::Alloy& A)
+    inline double getV(double dT, double C0, const alloys::Alloy& A)
     {
         using std::numbers::pi;
         using std::pow;

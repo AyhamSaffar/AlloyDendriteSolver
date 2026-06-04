@@ -25,7 +25,7 @@ int main()
         for(double C0MolPercent{0.005}; C0MolPercent<=1; C0MolPercent+=0.005)
         {
             double C0{ 100 * (C0MolPercent*AceMr) / (C0MolPercent*AceMr + (100-C0MolPercent)*SucMr) }; // wt.% required
-            outfSucAce << solvers::solve<models::LGK>(dT, C0, alloys::SucAce).commaSeparatedValues() << '\n';
+            outfSucAce << solvers::newton<models::LGK>(dT, C0, alloys::SucAce).commaSeparatedValues() << '\n';
         }
 
 
@@ -37,7 +37,7 @@ int main()
         for(double dTPower{0}; dTPower<=2.7; dTPower+=0.01)
         {
             double dT{std::pow(10, dTPower)};
-            outfAlFe << solvers::solve<models::LGK>(dT, C0, alloys::AlFe).commaSeparatedValues() << '\n';
+            outfAlFe << solvers::newton<models::LGK>(dT, C0, alloys::AlFe).commaSeparatedValues() << '\n';
         }
 
 
@@ -46,7 +46,7 @@ int main()
     outfNiSn << solvers::Result::commaSeparatedColumns << '\n';
 
     for (double dT{1}, C0{25}; dT<=1000; ++dT)
-        outfNiSn << solvers::solve<models::LGK>(dT, C0, alloys::NiSn).commaSeparatedValues() << '\n';
+        outfNiSn << solvers::newton<models::LGK>(dT, C0, alloys::NiSn).commaSeparatedValues() << '\n';
 
 
     // https://doi.org/10.1016/j.actamat.2016.09.047 Fig. 3, 4, & 5
@@ -57,15 +57,15 @@ int main()
 
     for (double C0{30}; C0<=50; C0+=10)
     {
-        double V0Gamma{approx::getTipVelocity(1.0, C0, alloys::FeCoGamma)};
-        double R0Gamma{approx::getTipRadius(1.0, C0, alloys::FeCoGamma)};
+        double V0Gamma{approx::getV(1.0, C0, alloys::FeCoGamma)};
+        double R0Gamma{approx::getR(1.0, C0, alloys::FeCoGamma)};
         for (double dT{1}; dT<=350; ++dT)
         {
             // model diverges for Gamma at higher dT if approx funcs always used as initial guess for V and R
-            solvers::Result result{solvers::solve<models::LKT_BCT>(dT, C0, alloys::FeCoGamma, V0Gamma, R0Gamma)};
+            solvers::Result result{solvers::newton<models::LKT_BCT>(dT, C0, alloys::FeCoGamma, V0Gamma, R0Gamma)};
             outfFeCoGamma << result.commaSeparatedValues() << '\n';
             std::tie(V0Gamma, R0Gamma) = std::tie(result.V, result.R);
-            outfFeCoDelta << solvers::solve<models::LKT_BCT>(dT, C0, alloys::FeCoDelta).commaSeparatedValues() << '\n';
+            outfFeCoDelta << solvers::newton<models::LKT_BCT>(dT, C0, alloys::FeCoDelta).commaSeparatedValues() << '\n';
         }
     }
 
@@ -79,8 +79,8 @@ int main()
     for (double C0{3.5}; C0<=5.0; C0+=1.5)
         for (double dT{1}; dT<=50; ++dT)
         {
-            outfSnAgLGK << solvers::solve<models::LGK>(dT, C0, alloys::SnAg).commaSeparatedValues() << '\n';
-            outfSnAgLKTBCT << solvers::solve<models::LKT_BCT>(dT, C0, alloys::SnAg).commaSeparatedValues() << '\n';
+            outfSnAgLGK << solvers::newton<models::LGK>(dT, C0, alloys::SnAg).commaSeparatedValues() << '\n';
+            outfSnAgLKTBCT << solvers::newton<models::LKT_BCT>(dT, C0, alloys::SnAg).commaSeparatedValues() << '\n';
         }
 
 
