@@ -8,7 +8,7 @@
 #include "solvers.h"
 
 
-// numericallly derived fit from https://doi.org/10.1007/s10854-025-14979-6
+// numericallly derived LGK fit from https://doi.org/10.1007/s10854-025-14979-6
 double getPublishedLGKSnAgVFit(double dT, double C0)
 {
     return std::pow(dT*std::pow(C0, -0.59)/28.6, 1/0.35);
@@ -21,6 +21,7 @@ TEST_CASE("LGK model V prediction agrees with published LGK SnAg numerical fit a
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
             solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::SnAg)};
+            REQUIRE(result.hasConverged);
             REQUIRE(std::abs(result.f1) < 1e-12);
             REQUIRE(std::abs(result.f2) < 1e-12);
             REQUIRE(result.R > 0);

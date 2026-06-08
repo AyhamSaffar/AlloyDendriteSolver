@@ -30,6 +30,8 @@ namespace solvers{
         static inline std::string commaSeparatedColumns{"diverged,converged,steps,dT,C0,V,R,f1,f2"};
     };
 
+    using SolverFunc = Result (*)(double, double, const alloys::Alloy&);
+
     /// @brief Scaled newton method for iteratively solving for V and R. Each iteration approximates the system of
     /// equations with linear tangents at the current V, R pair and updates this pair to the point where those tangents
     /// equal reach zero F. Requires a reasonable initial guess for this pair to converge to the correct solution. 
@@ -92,7 +94,7 @@ namespace solvers{
         double R{(R0==-1) ? approx::getR(dT, C0, A): R0};
         double f1{}, f2{}, dV{}, dR{};
         diff::Jacobian J{};
-        int maxSteps{100}, step{0};
+        int maxSteps{1000}, step{0};
         bool converged{false}, diverged{false};
     
         for (; step<maxSteps; ++step)
@@ -103,7 +105,6 @@ namespace solvers{
                 converged = true;
                 break;
             }
-            double fNorm{std::sqrt(f1*f1 + f2*f2)};
             J = diff::calculateGrads<MODEL>(V, R, dT, C0, A);
             std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
             if (std::isnan(dV) || std::isnan(dR))
@@ -111,9 +112,9 @@ namespace solvers{
                 diverged = true;
                 break;
             }
-            double a{1};
+            double a{1}, fNorm{std::sqrt(f1*f1 + f2*f2)};
             bool searchSucceeded{false};
-            for (int nAttemps{0}, nAttemps<10; ++nAttemps)
+            for (int nAttemps{0}; nAttemps<10; ++nAttemps)
             {
                 std::tie(f1, f2) = MODEL(V+a*dV, R+a*dR, dT, C0, A);
                 if (std::sqrt(f1*f1 + f2*f2) < fNorm)

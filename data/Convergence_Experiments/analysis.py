@@ -17,6 +17,7 @@ data = {} # dT: {col: col_grid}
 for dT in np.sort(raw_data['dT'].unique()):
 	subset = raw_data[raw_data['dT']==dT].sort_values(by=['V0', 'R0'], ascending=[False, True]) # top row = highest V0
 	grids = {col: subset[col].to_numpy().reshape([len(V0s), len(R0s)]) for col in raw_data.columns} 
+	grids['valid'] = (grids['converged']) & (grids['R']>0) & (grids['V']>0)
 	grids['f'] = np.abs(grids['f1']) + np.abs(grids['f2'])
 	data[dT] = grids
 
@@ -37,7 +38,7 @@ for i, (dT, grids) in enumerate(data.items()):
 
 	R_im = axes[0, i].imshow(
 		np.log10(grids['R'],
-		out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['converged'])&(grids['R']>0)),
+		out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=grids['valid']),
 		extent=(np.log10(R0s.min()), np.log10(R0s.max()), np.log10(V0s.min()), np.log10(V0s.max())),
 		aspect='auto',
 	)
@@ -56,18 +57,29 @@ for i, (dT, grids) in enumerate(data.items()):
 
 	V_im = axes[1, i].imshow(
 		np.log10(grids['V'],
-		out=np.full(shape=grids['V'].shape, fill_value=np.nan), where=(grids['converged'])&(grids['R']>0)),
+		out=np.full(shape=grids['V'].shape, fill_value=np.nan), where=grids['valid']),
 		extent=(np.log10(R0s.min()), np.log10(R0s.max()), np.log10(V0s.min()), np.log10(V0s.max())),
 		aspect='auto',
 	)
 	fig.colorbar(V_im, label=r'$V$ / $log_{10}(m/s)$')
 
-	# steps_im = axes[i].imshow(
+	neg_V_grid = np.full(shape=grids['V'].shape, fill_value=np.nan)
+	neg_V_grid[(grids['converged']) & (grids['V']<0)] = 1.0
+	neg_V_grid[0, 0] = 0.0
+
+	neg_V_im = axes[0, i].imshow(
+		neg_V_grid,
+		extent=(np.log10(R0s.min()), np.log10(R0s.max()), np.log10(V0s.min()), np.log10(V0s.max())),
+		cmap='hsv',
+		aspect='auto',
+	)
+
+	# steps_im = axes[1, i].imshow(
 	# 	np.log10(grids['steps']+1,
 	# 	out=np.full(shape=grids['R'].shape, fill_value=np.nan), where=(grids['diverged'] | ~grids['converged'])),
-	# 	extent=(dTs.min(), dTs.max(), np.log10(V0s.min()), np.log10(V0s.max())),
+	# 	extent=(np.log10(R0s.min()), np.log10(R0s.max()), np.log10(V0s.min()), np.log10(V0s.max())),
 	# 	cmap='Spectral',
-	#	aspect='auto',
+	# 	aspect='auto',
 	# )
 	# fig.colorbar(steps_im, label=r'$log_{10}$ steps')
 
