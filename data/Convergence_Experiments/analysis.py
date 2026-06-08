@@ -7,6 +7,7 @@ import pathlib as pl
 # %%
 home_path = pl.Path(__file__).parent
 experiment_path = home_path / 'AgCu_Scan'
+assert experiment_path.is_dir()
 
 # %%
 raw_data = pd.read_csv(experiment_path / 'solver_data.csv')
