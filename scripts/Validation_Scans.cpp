@@ -33,13 +33,25 @@ int main()
     std::ofstream outfAlFe{dataPath + "/AlFe_LGK.csv"};
     outfAlFe << solvers::Result::commaSeparatedColumns << '\n';
     
-    for (double C0: std::array{0.1, 0.5, 4.0, 8.0}) // approx module cannot handle 0 C0 value for initial V guess
+    // approx module used for initial V, R guess assumes some solute present, so custom guesses needed here
+    double C0{0}, dT0{1.0}; 
+    double V0{approx::getV(dT0, C0+0.1, alloys::AlFe)}, R0(approx::getR(dT0, C0+0.1, alloys::AlFe));
+    for(double dTPower{0}; dTPower<=2.7; dTPower+=0.01)
+    {
+        double dT{std::pow(10, dTPower)};
+        solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::AlFe, V0, R0)};
+        outfAlFe << result.commaSeparatedValues() << '\n';
+        std::tie(V0, R0) = std::tie(result.V, result.R);
+    }
+    
+    for (C0=4; C0<=8; C0+=4)
+    {
         for(double dTPower{0}; dTPower<=2.7; dTPower+=0.01)
         {
             double dT{std::pow(10, dTPower)};
             outfAlFe << solvers::newton<models::LGK>(dT, C0, alloys::AlFe).commaSeparatedValues() << '\n';
         }
-
+    }
 
     // https://doi.org/10.1007/BF02646933 Fig. 12 & 13 (early LKT model skipped as this library doesn't support it)
     std::ofstream outfNiSn{dataPath + "NiSn_LGK.csv"};
