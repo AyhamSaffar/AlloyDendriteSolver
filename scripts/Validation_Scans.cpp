@@ -45,13 +45,11 @@ int main()
     }
     
     for (C0=4; C0<=8; C0+=4)
-    {
         for(double dTPower{0}; dTPower<=2.7; dTPower+=0.01)
         {
             double dT{std::pow(10, dTPower)};
             outfAlFe << solvers::newton<models::LGK>(dT, C0, alloys::AlFe).commaSeparatedValues() << '\n';
         }
-    }
 
     // https://doi.org/10.1007/BF02646933 Fig. 12 & 13 (early LKT model skipped as this library doesn't support it)
     std::ofstream outfNiSn{dataPath + "NiSn_LGK.csv"};

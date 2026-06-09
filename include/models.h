@@ -88,7 +88,7 @@ namespace models
         if constexpr (NO_PARTITIONING)
             k = 1;
         else
-            k = (A.k0+(A.a0*V/A.D)) / (1+(A.a0*V/A.D)); // velocity dependant partition coefficient
+            k = (A.k0+(A.a0*V/A.D)) / (1+(A.a0*V/A.D)-(1-A.k0)*(C0/100)); // velocity dependant partition coefficient
 
         double mP{A.m*(1+ (A.k0-k*(1-std::log(k/A.k0))) / (1-A.k0) )}; // velocity dependant liquidus slope (m prime)
         double R0{8.314}; // gas constant

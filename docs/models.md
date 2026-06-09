@@ -68,7 +68,7 @@ $$ R = \frac {Γ/σ^*} {\frac{\xi_t P_t L}{c_p} - \frac{2 P_c m C_0 (1-k) \xi_c}
 
 GIven the following:
 
-$k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D)}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity
+$k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D) - (1-k_0)\frac{C_0}{100}}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity
  dependant partition coefficient
 
 $m' = m \left[1 + \frac{k_0 - k(1-ln(k/k_0))}{1-k_0} \right]$ &emsp;&emsp;&emsp;&emsp; - velocity dependant liquidus slope
@@ -99,4 +99,6 @@ LKT-BCT equation however drops this low V assumption, meaning these terms must b
 
 \* While Boettinger, Coriell, and Trivedi's origional paper is not openly published online, it is famously well written
 and the basis for this implementation. For a full derivation of this model, it can be accessed by requesting pages 13-25
-of the linked conference paper. Also note a $P_c$ is missing in the denominator of the paper's R equation.
+of the linked conference paper. Note that a $P_c$ is missing in the denominator of the paper's R equation, and the paper
+assumes the dilute solute limit when deriving the velocity dependant $k$, meaning the $(1-k_0)C_0$ term is assumed to be
+negligible. To better generalise to higher solute concentrations, this implementation keeps the term in.
