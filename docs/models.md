@@ -22,7 +22,7 @@ in small liquid solder balls that don't have any available nucleants.
 
 $$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \left[ 1 - \frac{1}{1-(1-k_0 )Iv_c} \right] + \frac{2Γ}{R} $$
 
-$$ R = \frac {Γ/σ^*} {\frac{P_t L}{c_p} -\frac{P_c m C_0 (1-k_0 )}{1-(1-k_0 ) Iv_c}} $$
+$$ R = \frac {Γ/σ^*} {\frac{P_t L}{c_p} -\frac{2 P_c m C_0 (1-k_0 )}{1-(1-k_0 ) Iv_c}} $$
 
 Given the following
 
@@ -50,6 +50,11 @@ and purtubation will grow by escaping the cold and solute rich solidification fr
 as the smallest pertubation that won't shrink. This gives an expression that is a function of the solute and temperature
 field gradient, which can be calculated for a parabaloid dendrite using the same dimensional analysis as the first
 equation.
+
+Note the extra factor of 2 in the second term of the second equation's denominator. Lipton, Glicksman, & Kurz remove
+this factor in their paper in order to coerce this equation into agreeing with a prior published result for the case
+where there is zero thermal field gradient and the second equation only depends on the solutal field gradient. This
+change is not otherwise justified and is ignored in future iterations of this model such as LKT-BCT.
 
 *Assumptions* (unfinished)
 - most constants do not vary with composition (E.G m, k0, r)

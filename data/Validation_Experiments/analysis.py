@@ -6,7 +6,7 @@ import numpy as np
 
 # %%
 home_path = pl.Path(__file__).parent 
-experiment_path = home_path / '27_May_test'
+experiment_path = home_path / '10_June_test'
 experiments = {path.stem: pd.read_csv(path) for path in experiment_path.glob(pattern='*.csv')}
 
 # %%

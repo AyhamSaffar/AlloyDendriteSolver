@@ -32,12 +32,22 @@ namespace models
     /// a function of the solute and temperature field gradient, which can be calculated for a parabaloid dendrite using
     /// the same dimensional analysis as the first equation.
     ///
+    /// Note the extra factor of 2 in the second term of the second equation's denominator. Lipton, Glicksman, & Kurz
+    /// remove this factor in their paper in order to coerce this equation into agreeing with a prior published result
+    /// for the case where there is zero thermal field gradient and the second equation only depends on the solutal
+    /// field gradient. This change is not otherwise justified and is ignored in future iterations of this model such as
+    /// LKT-BCT.
+    ///
+    /// @tparam LEGACY whether to remove the factor of 2 in the f2 solutal field gradient term. If true, the model is
+    /// consistent with the original paper by Lipton, Glicksman, & Kurz. If false, the model better matches future
+    /// iterations of the model. Defaults to true.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
     /// @param C0 bulk alloy solute concentration - wt.%
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
+    template <bool LEGACY=true>
     inline std::tuple<double, double> LGK(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
@@ -45,8 +55,9 @@ namespace models
         double Ivt{Pt*std::exp(Pt)*expint(Pt)}; // thermal Ivantsov function
         double Ivc{Pc*std::exp(Pc)*expint(Pc)}; // solutal Ivantsov function
 
+        double factor{LEGACY ? 1 : 2}; // solutal field gradient factor
         double f1{A.L*Ivt/A.Cp + A.m*C0*(1 - 1/(1-(1-A.k0)*Ivc)) + 2*A.r/R - dT};
-        double f2{(A.r/A.o) / ( Pt*A.L/A.Cp - (Pc*A.m*C0*(1-A.k0))/(1-(1-A.k0)*Ivc) ) - R};
+        double f2{(A.r/A.o) / ( Pt*A.L/A.Cp - (factor*Pc*A.m*C0*(1-A.k0))/(1-(1-A.k0)*Ivc) ) - R};
         return std::make_tuple(f1, f2);
     }
 

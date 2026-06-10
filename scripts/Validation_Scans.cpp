@@ -89,7 +89,8 @@ int main()
     for (double C0{3.5}; C0<=5.0; C0+=1.5)
         for (double dT{1}; dT<=50; ++dT)
         {
-            outfSnAgLGK << solvers::newton<models::LGK>(dT, C0, alloys::SnAg).commaSeparatedValues() << '\n';
+            constexpr bool legacy{false}; // template arguement for LGK model that makes it consistent with LKT_BCT
+            outfSnAgLGK << solvers::newton<models::LGK<legacy>>(dT, C0, alloys::SnAg).commaSeparatedValues() << '\n';
             outfSnAgLKTBCT << solvers::newton<models::LKT_BCT>(dT, C0, alloys::SnAg).commaSeparatedValues() << '\n';
         }
 
