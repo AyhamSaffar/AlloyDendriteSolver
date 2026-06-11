@@ -34,17 +34,19 @@ int main()
     outfAlFe << solvers::Result::commaSeparatedColumns << '\n';
     
     // approx module used for initial V, R guess assumes some solute present, so custom guesses needed here
-    double C0{0}, dT0{1.0}; 
-    double V0{approx::getV(dT0, C0+0.1, alloys::AlFe)}, R0(approx::getR(dT0, C0+0.1, alloys::AlFe));
-    for(double dTPower{0}; dTPower<=2.7; dTPower+=0.01)
     {
-        double dT{std::pow(10, dTPower)};
-        solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::AlFe, V0, R0)};
-        outfAlFe << result.commaSeparatedValues() << '\n';
-        std::tie(V0, R0) = std::tie(result.V, result.R);
+        double C0{0}, dT0{1.0}; 
+        double V0{approx::getV(dT0, C0+0.1, alloys::AlFe)}, R0(approx::getR(dT0, C0+0.1, alloys::AlFe));
+        for(double dTPower{0}; dTPower<=2.7; dTPower+=0.01)
+        {
+            double dT{std::pow(10, dTPower)};
+            solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::AlFe, V0, R0)};
+            outfAlFe << result.commaSeparatedValues() << '\n';
+            std::tie(V0, R0) = std::tie(result.V, result.R);
+        }
     }
-    
-    for (C0=4; C0<=8; C0+=4)
+
+    for (double C0{4}; C0<=8; C0+=4)
         for(double dTPower{0}; dTPower<=2.7; dTPower+=0.01)
         {
             double dT{std::pow(10, dTPower)};
@@ -95,6 +97,27 @@ int main()
         }
 
 
+    // https://doi.org/10.1103/PhysRevB.45.5019 Fig. 1 & 2b (note Alloy and parameters here are at.% instead of wt.%)
+    std::ofstream outfNiB{dataPath + "NiB_LKT_BCT.csv"};
+    outfNiB << solvers::Result::commaSeparatedColumns << '\n';
+
+    {
+        // approx module used for initial V, R guess assumes some solute present, so custom guesses needed here
+        double C0{0}, dT0{1.0}; 
+        double V0{approx::getV(dT0, C0+0.1, alloys::NiB)}, R0(approx::getR(dT0, C0+0.1, alloys::NiB));
+        for (double dT{1}; dT<=400; ++dT)
+        {
+            solvers::Result result{solvers::newton<models::LKT_BCT>(dT, C0, alloys::NiB, V0, R0)};
+            outfNiB << result.commaSeparatedValues() << '\n';
+            std::tie(V0, R0) = std::tie(result.V, result.R);
+        }
+    }
+
+    for (double C0: std::array{0.7, 1.0})
+        for (double dT{1}; dT<=400; ++dT)
+            outfNiB << solvers::newton<models::LKT_BCT>(dT, C0, alloys::NiB).commaSeparatedValues() << '\n';
+
+            
     return 0;
 }
 

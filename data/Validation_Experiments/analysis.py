@@ -125,3 +125,35 @@ for model, data in [('LGK', data_LGK), ('LKT_BCT', data_LKT_BCT)]:
 ax.legend()
 
 fig.savefig(home_path / 'SnAg_LKT_BCT.png')
+
+# %%
+data = experiments['NiB_LKT_BCT']
+data = data[data['converged'] & (data['R']>0) & (data['V']>0)]
+fig, axes = plt.subplots(nrows=2, figsize=(7,10))
+
+axes[0].set_xlabel('Undercooling    ΔT (K)')
+axes[0].set_xlim(0, 320)
+axes[0].set_xticks(range(0, 301, 100))
+axes[0].set_ylabel('Dendrite growth velocity V (m/s)')
+axes[0].set_ylim(0, 30)
+axes[0].set_yticks(range(0, 31, 10))
+
+axes[1].set_xlabel('Undercooling ΔT (K)')
+axes[1].set_xlim(0, 400)
+axes[1].set_xticks(range(0, 401, 100))
+axes[1].set_ylabel('Dendrite tip radius R (m)')
+axes[1].set_yscale('log')
+axes[1].set_ylim(1e-8, 1e-5)
+axes[1].set_yticks([1e-5, 1e-6, 1e-7, 1e-8])
+
+for C0 in [0, 0.7, 1]:
+    subset = data[data['C0']==C0]
+    axes[0].plot(subset['dT'], subset['V'], label=f'x = {C0:.1f}')
+    if C0==0:
+        continue
+    axes[1].plot(subset['dT'], subset['R'], label=f'$ Ni_{{{100-C0}}}B_{{{C0}}} $')
+
+axes[0].legend(title='$Ni_{100-x}B_x$')
+axes[1].legend()
+
+fig.savefig(home_path / 'NiB_LKT_BCT.png')

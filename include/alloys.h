@@ -46,6 +46,11 @@ namespace alloys
     // standard solution to marginal stability criterion for a planar interace. //! Could vary with crystal structure.
     static constexpr double o{1/(4*std::numbers::pi*std::numbers::pi)};
 
+    static constexpr double NiAr{58.693e-3}, NiDensity{8.907e3}; // In Kg/mol and Kg/m3 respectively
+    static constexpr double NiS{29.87*NiDensity/NiAr}; // J/molK value taken from https://webbook.nist.gov/
+    // Taken from https://doi.org/10.1103/PhysRevB.45.5019. //* units intentionally left in at.% instead of wt.%
+    const Alloy NiB{1.72e4, 36.39, -14.3, 8e-6, 0.464/NiS, 2.42e-9, 1e-5, o, 2.42e-9/7.6, 2e3, 1726};
+
     static constexpr double FeMeltDensity{7352.53}, FeAr{55.845e-3}; // Ar in Kg/mol
     // Taken from https://doi.org/10.1016/j.actamat.2016.09.047. Gamma and Delta refer to different crystal phases that
     // form during solidification. The paper lists slighly different parameters for 30, 40, and 50 atom.% Co. The 40
@@ -58,7 +63,6 @@ namespace alloys
         10767, 5704510*FeAr/FeMeltDensity, -1.98, 0.96, 0.206/801030, 4.7e-9, 5.36e-06, o, 2.354e-10, 350, 1733
     };
 
-    static constexpr double NiAr{58.693e-3}; // Ar in Kg/mol
     // Taken from https://doi.org/10.1007/BF02646933 (m and k0 taken from Appendix A liquidus and solidus fits. To
     // remove the T^2 term, a least squares linear trend was fit to the liquidus. k_0 was set to the average calculated
     // values over the 1510K (0K undercooling) to 1210K (300K undercooling) range, as this is where most results are.
