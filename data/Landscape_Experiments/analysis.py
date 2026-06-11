@@ -28,8 +28,9 @@ for i, (dT, grids) in enumerate(data.items()):
 	axes[i].set_xlabel(r'$R_0$ / $log_{10}(m)$')
 	axes[i].set_ylabel(r'$V_0$ / $log_{10}(m/s)$')
 
+	log_f1, log_f2 = np.log10(np.abs(grids['f1'])), np.log10(np.abs(grids['f2']))
 	F_mean_im = axes[i].imshow(
-		np.log10( (np.abs(grids['f1']) + np.abs(grids['f2'])) / 2),
+		(log_f1 + log_f2) / 2,
 		extent=(np.log10(Rs.min()), np.log10(Rs.max()), np.log10(Vs.min()), np.log10(Vs.max())),
 		interpolation=None,
 		aspect='auto',

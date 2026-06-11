@@ -31,6 +31,8 @@ TEST_CASE("LGK model V prediction agrees with published LGK SnAg numerical fit a
         }
 }
 
+//! fit comes from legacy LGK, where half solutal field gradient is used. It wouldn't make sense for LKT-BCT to give
+//! same results!
 TEST_CASE(
     "LKT-BCT model V prediction agrees with published LGK SnAg numerical fit at low undercooling and gives positive R",
     "[solvers]"

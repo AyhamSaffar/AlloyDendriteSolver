@@ -26,7 +26,7 @@ approx_data = pd.read_csv(experiment_path / 'approx_data.csv')
 
 
 # %%
-fig, axes = plt.subplots(nrows=2, ncols=len(data), figsize=(7*len(data),7))
+fig, axes = plt.subplots(nrows=2, ncols=len(data), figsize=(7*len(data),10))
 
 for i, (dT, grids) in enumerate(data.items()):
 	approx_row = approx_data[approx_data['dT']==dT]
