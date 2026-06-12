@@ -17,7 +17,7 @@ Optional parameters required for some models:
 
 - $a_0$ &nbsp; Solid atomic spacing - $m$
 - $V_0$ &nbsp; Speed of sound in liquid - $m/s$
-- $T_m$ &nbsp; Solid melting point - $K$
+- $T_m$ &nbsp; Solid melting point at  - $K$
 
 ### Constants Varying With Other Parameters
 

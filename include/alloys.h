@@ -47,7 +47,7 @@ namespace alloys
     static constexpr double o{1/(4*std::numbers::pi*std::numbers::pi)};
 
     static constexpr double NiAr{58.693e-3}, NiDensity{8.907e3}; // In Kg/mol and Kg/m3 respectively
-    static constexpr double NiS{29.87*NiDensity/NiAr}; // J/molK value taken from https://webbook.nist.gov/
+    static constexpr double NiS{(1.72e4*NiDensity/NiAr)/1726}; // S = L/Tm converted to J/m3K
     // Taken from https://doi.org/10.1103/PhysRevB.45.5019. //* units intentionally left in at.% instead of wt.%
     const Alloy NiB{1.72e4, 36.39, -14.3, 8e-6, 0.464/NiS, 2.42e-9, 1e-5, o, 2.42e-9/7.6, 2e3, 1726};
 
