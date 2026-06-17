@@ -6,7 +6,7 @@ import pathlib as pl
 
 # %%
 home_path = pl.Path(__file__).parent
-experiment_path = home_path / 'AgCu_Scan'
+experiment_path = home_path / 'NiB_Global_Newton'
 assert experiment_path.is_dir()
 
 # %%
@@ -21,6 +21,10 @@ for dT in np.sort(raw_data['dT'].unique()):
 	grids['valid'] = (grids['converged']) & (grids['R']>0) & (grids['V']>0)
 	grids['f'] = np.abs(grids['f1']) + np.abs(grids['f2'])
 	data[dT] = grids
+
+for dT, subset in data.items():
+	steps = np.mean(subset['steps'][subset['converged']])
+	print(f'dT={dT}, average steps={steps:.1f}')
 
 approx_data = pd.read_csv(experiment_path / 'approx_data.csv')
 

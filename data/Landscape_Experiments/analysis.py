@@ -5,7 +5,7 @@ import pandas as pd
 import pathlib as pl
 
 # %%
-experiment_path = pl.Path(__file__).parent / 'AgCu_LKT_BCT_High_Res'
+experiment_path = pl.Path(__file__).parent / 'NiB'
 assert experiment_path.is_dir()
 
 # %%

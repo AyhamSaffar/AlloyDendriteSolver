@@ -44,12 +44,12 @@ namespace alloys
     };
     
     // standard solution to marginal stability criterion for a planar interace. //! Could vary with crystal structure.
-    static constexpr double o{1/(4*std::numbers::pi*std::numbers::pi)};
+    static constexpr double o{1.0/(4*std::numbers::pi*std::numbers::pi)};
 
     static constexpr double NiAr{58.693e-3}, NiDensity{8.907e3}; // In Kg/mol and Kg/m3 respectively
     static constexpr double NiS{(1.72e4*NiDensity/NiAr)/1726}; // S = L/Tm converted to J/m3K
     // Taken from https://doi.org/10.1103/PhysRevB.45.5019. //* units intentionally left in at.% instead of wt.%
-    const Alloy NiB{1.72e4, 36.39, -14.3, 8e-6, 0.464/NiS, 2.42e-9, 1e-5, o, 2.42e-9/7.6, 2e3, 1726};
+    const Alloy NiB{1.72e4, 36.39, -14.3, 8e-6, 0.464/NiS, 2.42e-9, 1e-5, o, (2.42e-9)/7.6, 2e3, 1726};
 
     static constexpr double FeMeltDensity{7352.53}, FeAr{55.845e-3}; // Ar in Kg/mol
     // Taken from https://doi.org/10.1016/j.actamat.2016.09.047. Gamma and Delta refer to different crystal phases that

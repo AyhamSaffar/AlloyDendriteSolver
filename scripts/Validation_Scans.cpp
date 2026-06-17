@@ -98,26 +98,31 @@ int main()
 
 
     // https://doi.org/10.1103/PhysRevB.45.5019 Fig. 1 & 2b (note Alloy and parameters here are at.% instead of wt.%)
+    //! currently does not quite match published results at higher undercoolings
     std::ofstream outfNiB{dataPath + "NiB_LKT_BCT.csv"};
-    outfNiB << solvers::Result::commaSeparatedColumns << '\n';
+    outfNiB << solvers::Result::commaSeparatedColumns << ",Cl,Cs\n";
 
+    const alloys::Alloy A{alloys::NiB};
+    for (double C0: std::array{0.0, 0.7, 1.0})
     {
-        // approx module used for initial V, R guess assumes some solute present, so custom guesses needed here
-        double C0{0}, dT0{1.0}; 
-        double V0{approx::getV(dT0, C0+0.1, alloys::NiB)}, R0(approx::getR(dT0, C0+0.1, alloys::NiB));
-        for (double dT{1}; dT<=400; ++dT)
+        double dT0{1}, C00{(C0==0) ? 0.1 : C0}; // approx module cannot handle 0 C0
+        double V0{approx::getV(dT0, C00, A)}, R0{approx::getR(dT0, C00, A)};
+        for (double dT{dT0}; dT<=400; ++dT)
         {
-            solvers::Result result{solvers::newton<models::LKT_BCT>(dT, C0, alloys::NiB, V0, R0)};
-            outfNiB << result.commaSeparatedValues() << '\n';
-            std::tie(V0, R0) = std::tie(result.V, result.R);
+            solvers::Result result{solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0)};
+            double Pc{result.V*result.R/(2*A.D)}; // solutal Péclet number
+            double Ivc{Pc*std::exp(Pc)*models::expint(Pc)}; // solutal Ivantsov function
+            double k{(A.k0+(A.a0*result.V/A.D)) / (1+(A.a0*result.V/A.D)-(1-A.k0)*(C0/100))}; // velocity dependant k
+            double Cl{C0/(1-Ivc*(1-k))}; // interface liquid solute conentration
+            double Cs{k*Cl}; // interface solid solute concentration
+
+            outfNiB << result.commaSeparatedValues() << ',' << Cl << ',' << Cs << '\n';
+            if (result.hasConverged)
+                std::tie(V0, R0) = std::tie(result.V, result.R);
         }
     }
 
-    for (double C0: std::array{0.7, 1.0})
-        for (double dT{1}; dT<=400; ++dT)
-            outfNiB << solvers::newton<models::LKT_BCT>(dT, C0, alloys::NiB).commaSeparatedValues() << '\n';
-
-            
+    
     return 0;
 }
 
