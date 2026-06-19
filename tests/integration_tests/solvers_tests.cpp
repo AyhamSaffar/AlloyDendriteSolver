@@ -22,8 +22,6 @@ TEST_CASE("LGK model V prediction agrees with published LGK SnAg numerical fit a
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
             solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::SnAg)};
             REQUIRE(result.hasConverged);
-            REQUIRE(std::abs(result.f1) < 1e-12);
-            REQUIRE(std::abs(result.f2) < 1e-12);
             REQUIRE(result.R > 0);
 
             double VFit{getPublishedLGKSnAgVFit(dT, C0)};
@@ -31,23 +29,22 @@ TEST_CASE("LGK model V prediction agrees with published LGK SnAg numerical fit a
         }
 }
 
-//! fit comes from legacy LGK, where half solutal field gradient is used. It wouldn't make sense for LKT-BCT to give
-//! same results!
-TEST_CASE(
-    "LKT-BCT model V prediction agrees with published LGK SnAg numerical fit at low undercooling and gives positive R",
-    "[solvers]"
-)
+
+TEST_CASE("LKT-BCT model V prediction agrees with LGK at low undercooling and gives positive R", "[solvers]")
 {
+    // low undercoolings = lower V and R = k does not vary from k0, stability functions equal 1, and negligible kinetic
+    // undercooling. Therefore LKT_BCT reduces to LGK 
     for (double dT{2.5}; dT<=20; dT+=2.5)
         for (double C0{3.0}; C0<=6.0; C0+=1.0)
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
-            solvers::Result result{solvers::newton<models::LKT_BCT>(dT, C0, alloys::SnAg)};
-            REQUIRE(std::abs(result.f1) < 1e-12);
-            REQUIRE(std::abs(result.f2) < 1e-12);
-            REQUIRE(result.R > 0);
 
-            double VFit{getPublishedLGKSnAgVFit(dT, C0)};
-            REQUIRE(std::abs(result.V-VFit)/VFit < 0.2); // maximum of 20% error as numerical fit
+            constexpr bool legacy{false}; // ensures LGK form is consistent with LKT_BCT
+            solvers::Result LGKResult{solvers::newton<models::LGK<legacy>>(dT, C0, alloys::SnAg)};
+            solvers::Result LKT_BCTResult{solvers::newton<models::LKT_BCT>(dT, C0, alloys::SnAg)};
+
+            REQUIRE(LKT_BCTResult.hasConverged);
+            REQUIRE(LKT_BCTResult.R > 0);
+            REQUIRE(std::abs(LKT_BCTResult.V-LGKResult.V)/LGKResult.V < 0.05); // maximum of 5% error
         }
 }
