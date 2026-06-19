@@ -31,7 +31,7 @@ int main()
             for (double R0Power{-8}; R0Power<=-5; R0Power+=0.1)
             {
                 double R0{std::pow(10.0, R0Power)};
-                outfSolver << solvers::globalNewton<models::LKT_BCT>(dT, C0, A, V0, R0).commaSeparatedValues() << ',';
+                outfSolver << solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0).commaSeparatedValues() << ',';
                 outfSolver << V0 << ',' << R0 << '\n';
             } 
         }
