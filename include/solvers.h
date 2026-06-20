@@ -44,7 +44,7 @@ namespace solvers{
     /// @param R0 initial guess for dendrite tip radius - m. Defaults to -1, which uses approx module to get initial
     /// guess.
     /// @return struct containing V, R, dT, and C0 as well as optimisation flags and parameters
-    template <models::ModelFunc MODEL, optimisers::LineSearch LINESEARCH = nullptr>
+    template <models::ModelFunc MODEL, optimisers::LineSearchFunc LINESEARCH = nullptr>
     inline Result newton(double dT, double C0, const alloys::Alloy& A, double V0=-1, double R0=-1)
     {
         double V{(V0==-1) ? approx::getV(dT, C0, A): V0};
@@ -73,7 +73,7 @@ namespace solvers{
             if constexpr (LINESEARCH != nullptr)
             {
                 double prevFNorm{std::sqrt(f1*f1 + f2*f2)};
-                a = LINESEARCH(MODEL, V, R, dT, C0, A, dV, dR, prevFNorm);
+                a = LINESEARCH<MODEL>(V, R, dT, C0, A, dV, dR, prevFNorm);
                 if (a==-1) // line search failed
                     break;
             }
