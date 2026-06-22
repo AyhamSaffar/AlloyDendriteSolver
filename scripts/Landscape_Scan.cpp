@@ -13,7 +13,7 @@ int main()
     std::ofstream outfError{dataPath + "/scan_data.csv"};
     outfError << "dT,C0,V,R,f1,f2" << '\n';
     
-    const alloys::Alloy A{alloys::NiB};
+    const alloys::Alloy A{alloys::NiB_atp};
     double C0{1}, f1{}, f2{};
     for (double dT{100}; dT<=300; dT+=100)
         for (double VPower{-3}; VPower<=3.0; VPower+=0.01)

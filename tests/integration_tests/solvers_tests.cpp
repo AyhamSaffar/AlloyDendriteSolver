@@ -20,7 +20,7 @@ TEST_CASE("LGK model V prediction agrees with published LGK SnAg numerical fit a
         for (double C0{3.0}; C0<=6.0; C0+=1.0)
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
-            solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::SnAg)};
+            solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::SnAg_wtp)};
             REQUIRE(result.hasConverged);
             REQUIRE(result.R > 0);
 
@@ -40,8 +40,8 @@ TEST_CASE("LKT-BCT model V prediction agrees with LGK at low undercooling and gi
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
 
             constexpr bool legacy{false}; // ensures LGK form is consistent with LKT_BCT
-            solvers::Result LGKResult{solvers::newton<models::LGK<legacy>>(dT, C0, alloys::SnAg)};
-            solvers::Result LKT_BCTResult{solvers::newton<models::LKT_BCT>(dT, C0, alloys::SnAg)};
+            solvers::Result LGKResult{solvers::newton<models::LGK<legacy>>(dT, C0, alloys::SnAg_wtp)};
+            solvers::Result LKT_BCTResult{solvers::newton<models::LKT_BCT>(dT, C0, alloys::SnAg_wtp)};
 
             REQUIRE(LKT_BCTResult.hasConverged);
             REQUIRE(LKT_BCTResult.R > 0);

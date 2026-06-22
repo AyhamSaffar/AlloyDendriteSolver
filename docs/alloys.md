@@ -2,18 +2,21 @@
 
 Alloy structs are used to organise all thermodynamic constants for a given binary alloy system.
 
-All *Alloy* object must contain the following constants: 
+All *Alloy* objects must contain the following constants: 
 
 - $L$ 	&nbsp; Fusion enthalpy - $J/mol$
 - $c_p$ &nbsp; Melt heat capacity - $J/(mol K)$
-- $m$ 	&nbsp; Equilibrium liquidus slope - $K / wt.\%$
-- $k_0$	&nbsp; Partition coefficient - $wt.\% / wt.\%$
+- $m$ 	&nbsp; Equilibrium liquidus slope - $K / C\%$
+- $k_0$	&nbsp; Partition coefficient - $C\% / C\%$
 - $Γ$ 	&nbsp; Gibbs-Thomson coefficient - $Km$
 - $D$ 	&nbsp; Diffusion coefficient of solute in liquid - $m^2/s$
 - $α$	&nbsp; Thermal diffusivity of liquid - $m^2/s$
 - $σ^*$	&nbsp; Stability constant - $m/m$
 
-Optional parameters required for some models:
+where C% is the concentration unit. Alloy varaible names with the *_wtp* suffix are in weight percent while the *_atp*
+suffic refers to atom or mole percent.  
+
+Optional parameters required for LKT-BCT models:
 
 - $a_0$ &nbsp; Solid atomic spacing - $m$
 - $V_0$ &nbsp; Speed of sound in liquid - $m/s$
@@ -28,14 +31,16 @@ not including this variance may be negligible compared to the error created by o
 
 ### Choice of Units
 
-Thermodynamic constants have been normalised by mole while phase diagram constants have been normalised by weight
-percent. The choice of units often do not matter as these constants appear as ratios (E.G $L/C_p$) or are converted to
-unitless forms (E.G. during dimensional analysis calculations). However some models use thermodynamic constans on their
-own (E.G. $L$ in the kinetic undercooling term in LKT_BCT), so molar normalisation avoids the need for easy to miss
-atomic mass terms.
+The thermodynamic constants $L$ and $c_p$ have been normalised by mole throughout for consistency. Volumetric and
+gravimetric values must be converted to molar for use in this library.
+
+Concentration based quantities ($m$ and $k_0$) can either be in at.% or wt.%. Alloys only used with the LGK model can be
+either as this model only uses these quantities in their unitless forms during dimensional analysis calculations.
+**Alloys used with the LKT-BCT model must be in at.%** as this model contains terms that require the proportion of atoms
+in a given phase.
 
 Units for $k_0$ are often omitted as it is unitless overall. However it has a different value when in wt.% / wt.%
-compared to mol frac / mol frac. Consider the situation where the solute metal atoms have a much lower atomic mass then
+compared to at.% / at.%. Consider the situation where the solute metal atoms have a much lower atomic mass then
 the bulk metal. If The solute has three times the wt.% in the liquid as the solid ($k_0$ = 0.33 wt.%/wt.%), it follows
-that it would have more than three times the atom fraction in the liquid as the solid. This conversion is easy to miss
-and so $k_0$ units should be checked.
+that it would have more than three times the atom fraction in the liquid as the solid. These units are easy to miss and
+cannot be easily interconverted in most cases. A full phase diagram line fit is required.

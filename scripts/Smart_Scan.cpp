@@ -16,7 +16,7 @@ int main()
     std::ofstream outf{dataPath + "/data.csv"};
     outf << solvers::Result::commaSeparatedColumns << '\n';
 
-    const alloys::Alloy A{alloys::AgCu};
+    const alloys::Alloy A{alloys::AgCu_wtp};
     double C0{15}, dT{1.0}, dTStep{1.0};
     double V0{approx::getV(dT, C0, A)}, R0{approx::getR(dT, C0, A)};
 

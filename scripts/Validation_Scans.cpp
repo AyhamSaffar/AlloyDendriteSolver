@@ -25,7 +25,7 @@ int main()
         for(double C0MolPercent{0.005}; C0MolPercent<=1; C0MolPercent+=0.005)
         {
             double C0{ 100 * (C0MolPercent*AceMr) / (C0MolPercent*AceMr + (100-C0MolPercent)*SucMr) }; // wt.% required
-            outfSucAce << solvers::newton<models::LGK>(dT, C0, alloys::SucAce).commaSeparatedValues() << '\n';
+            outfSucAce << solvers::newton<models::LGK>(dT, C0, alloys::SucAce_wtp).commaSeparatedValues() << '\n';
         }
 
 
@@ -36,11 +36,11 @@ int main()
     // approx module used for initial V, R guess assumes some solute present, so custom guesses needed here
     {
         double C0{0}, dT0{1.0}; 
-        double V0{approx::getV(dT0, C0+0.1, alloys::AlFe)}, R0(approx::getR(dT0, C0+0.1, alloys::AlFe));
+        double V0{approx::getV(dT0, C0+0.1, alloys::AlFe_wtp)}, R0(approx::getR(dT0, C0+0.1, alloys::AlFe_wtp));
         for(double dTPower{0}; dTPower<=2.7; dTPower+=0.01)
         {
             double dT{std::pow(10, dTPower)};
-            solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::AlFe, V0, R0)};
+            solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::AlFe_wtp, V0, R0)};
             outfAlFe << result.commaSeparatedValues() << '\n';
             std::tie(V0, R0) = std::tie(result.V, result.R);
         }
@@ -50,7 +50,7 @@ int main()
         for(double dTPower{0}; dTPower<=2.7; dTPower+=0.01)
         {
             double dT{std::pow(10, dTPower)};
-            outfAlFe << solvers::newton<models::LGK>(dT, C0, alloys::AlFe).commaSeparatedValues() << '\n';
+            outfAlFe << solvers::newton<models::LGK>(dT, C0, alloys::AlFe_wtp).commaSeparatedValues() << '\n';
         }
 
     // https://doi.org/10.1007/BF02646933 Fig. 12 & 13 (early LKT model skipped as this library doesn't support it)
@@ -58,7 +58,7 @@ int main()
     outfNiSn << solvers::Result::commaSeparatedColumns << '\n';
 
     for (double dT{1}, C0{25}; dT<=1000; ++dT)
-        outfNiSn << solvers::newton<models::LGK>(dT, C0, alloys::NiSn).commaSeparatedValues() << '\n';
+        outfNiSn << solvers::newton<models::LGK>(dT, C0, alloys::NiSn_wtp).commaSeparatedValues() << '\n';
 
 
     // https://doi.org/10.1016/j.actamat.2016.09.047 Fig. 3, 4, & 5
@@ -92,8 +92,8 @@ int main()
         for (double dT{1}; dT<=50; ++dT)
         {
             constexpr bool legacy{false}; // template arguement for LGK model that makes it consistent with LKT_BCT
-            outfSnAgLGK << solvers::newton<models::LGK<legacy>>(dT, C0, alloys::SnAg).commaSeparatedValues() << '\n';
-            outfSnAgLKTBCT << solvers::newton<models::LKT_BCT>(dT, C0, alloys::SnAg).commaSeparatedValues() << '\n';
+            outfSnAgLGK << solvers::newton<models::LGK<legacy>>(dT, C0, alloys::SnAg_wtp).commaSeparatedValues() << '\n';
+            outfSnAgLKTBCT << solvers::newton<models::LKT_BCT>(dT, C0, alloys::SnAg_wtp).commaSeparatedValues() << '\n';
         }
 
 
@@ -102,7 +102,7 @@ int main()
     std::ofstream outfNiB{dataPath + "NiB_LKT_BCT.csv"};
     outfNiB << solvers::Result::commaSeparatedColumns << ",Cl,Cs\n";
 
-    const alloys::Alloy A{alloys::NiB};
+    const alloys::Alloy A{alloys::NiB_atp};
     for (double C0: std::array{0.0, 0.7, 1.0})
     {
         double dT0{1}, C00{(C0==0) ? 0.1 : C0}; // approx module cannot handle 0 C0
