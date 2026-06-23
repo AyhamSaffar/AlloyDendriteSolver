@@ -9,7 +9,7 @@ The solidification parameters of interest are:
     R	Dendrite tip radius
     C0	Bulk alloy solute concentration
 
-Where typically dT & C0 are fixed so that V and R can solved iteratively.
+Where dT & C0 are fixed so that V and R can solved iteratively.
 
 ## Method
 
@@ -166,27 +166,9 @@ This library is still in early and active development. Planned additions include
 - Add Alloys with temperature dependant phase diagram parameters (m and k0). Solidus and liquidus slopes could be
 modelled by polynomials. Must figure out if this violates the model's assumptions.
 
-- An [LKT-BCT](https://doi.org/10.1016/0001-6160(87)90174-X) model which maintains accuracy at higher undercoolings.
-
 - Support for higher order gradients and their accompanying optimisers. One example is
 [Halley's Method](https://en.wikipedia.org/wiki/Halley%27s_method), which takes advantage of second order tangents for
 faster and more reliable convergence.
-
-- An *updators* module that improves convergence through clamping / scaling / adapting optimiser outputs. This could
-look like the following:
-    ```C++
-    #include <tuple>
-    #include "updators.h"
-
-    const double momentum{0.6};
-    updators::AdaptiveUpdator updator{momentum};
-    
-    ...
-        std::tie(V, R) = updator.apply(V, R, dV, dR); // in minimisation loop
-
-        if (updator.hasConverged() || updator.hasDiverged() || updator.hasStalled())
-    ...
-    ```
 
 - A Python / Matlab embedding to make common experiment types more accessible.
 
