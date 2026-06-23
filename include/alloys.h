@@ -25,10 +25,13 @@ namespace alloys
         double o{};     // Stability constant - m/m
 
         // LKT-BCT parameters 
-        // set to nan to ensure the object cannot be used with the LKT-BCT model if values are not given for these
-        double a0{NAN};    // Solid atomic spacing - m
-        double V0{NAN};    // speed of sound in liquid - m/s
-        double Tm{NAN};    // Solid melting point - K
+        double a0{};    // Solid atomic spacing - m
+        double V0{};    // speed of sound in liquid - m/s
+        double Tm{};    // Solid melting point - K
+
+        Alloy(double L, double Cp, double m, double k0, double r, double D, double a, double o,
+            double a0=NAN, double V0=NAN, double Tm=NAN
+        );
     };
     
     /// @brief extends Alloy by adjusting diffusivity parameters with C0 and dT
@@ -45,6 +48,24 @@ namespace alloys
     };
     
 }
+
+/// @brief create a new Alloy object. The final 3 parameters (a0, V0, and Tm) are only required if the alloy is to be
+/// used with the LKT-BCT model and so are optional.
+/// @param L Fusion enthalpy - J/mol
+/// @param Cp Melt heat capacity - J/(mol K)
+/// @param m Equilibrium liquidus slope - K/C%
+/// @param k0 Partition coefficient - C% / C%
+/// @param r Gibbs-Thomson coefficient - K m
+/// @param D Diffusion coefficient of solute in liquid - m2/s
+/// @param a Thermal diffusivity of liquid - m2/s
+/// @param o Stability constant - m/m
+/// @param a0 Solid atomic spacing - m. Only needed for LKT-BCT, so default to NAN.
+/// @param V0 speed of sound in liquid - m/s. Only needed for LKT-BCT, so default to NAN.
+/// @param Tm Solid melting point - K. Only needed for LKT-BCT, so default to NAN.
+inline alloys::Alloy::Alloy(double L, double Cp, double m, double k0, double r, double D, double a, double o,
+    double a0, double V0, double Tm
+): L{L}, Cp{Cp}, m{m}, k0{k0}, r{r}, D{D}, a{a}, o{o}, a0{a0}, V0{V0}, Tm{Tm} {}
+
 
 /// @brief Configure parameters needed to calculate diffusivity at any T using D = A0*exp(-Ea/RT)
 /// @param A alloy base object
