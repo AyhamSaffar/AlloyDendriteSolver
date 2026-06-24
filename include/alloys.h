@@ -106,6 +106,17 @@ namespace alloys
 {
     // standard solution to marginal stability criterion for a planar interace. Could vary with crystal structure.
     static constexpr double o{1.0/(4*std::numbers::pi*std::numbers::pi)};
+    static constexpr double R{8.3145}; // gas constant in J/molK
+
+    // Cobalt Copper system in wt.%. Taken from https://doi.org/10.1007/s11433-010-4167-y. Values used are averages
+    // between the 20wt.% Cu and the 60wt.% Cu where values differ. The default D used is the result of the Arrhenius
+    // fit at 100K dT. //! The a & a0 varies significantly between 60wt.% the 20wt.%.
+    static constexpr double DA0{(1.58e-7+2.04e-7)/2}, DEa{(55060.0+54096.0)/2}, Tl{(1701.0+1663.0)/2};
+    static inline double D{DA0*std::exp( DEa/(R*(Tl-100)) )}; 
+    const Alloy CoCu_wtp{
+        (15033.0+14057.0)/2, (39.06+36.05)/2, -3.3, 0.67, (3.4e-7+3.33e-7)/2, D, (1.424e-5+2.9e-5)/2, o,
+        (1.697e-10+4.294e-10)/2, 4000.0, Tl
+    };
 
     // Nickel Borom system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. m and k0 were fit using
     // ThermoCalc database TCNI8. Default m and k0 used were the average over the first 100K dT.
