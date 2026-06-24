@@ -38,7 +38,7 @@ namespace solvers{
     /// @tparam MODEL coupled equations that score how consistent a V R pair are with the given Alloy, C0, and dT.
     /// @tparam LINESEARCH line search technique to be used. If none given, solver just uses a step size of 0.01.
     /// @param dT undercooling - K
-    /// @param C0 bulk alloy solute concentration - wt.%
+    /// @param C0 bulk alloy solute concentration - C.%
     /// @param A struct containing key physical alloy parameters
     /// @param V0 initial guess for velocity - m/s. Defaults to -1, which uses approx module to get initial guess.
     /// @param R0 initial guess for dendrite tip radius - m. Defaults to -1, which uses approx module to get initial

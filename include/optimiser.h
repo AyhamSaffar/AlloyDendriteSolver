@@ -44,7 +44,7 @@ namespace optimisers
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
-    /// @param C0 bulk alloy solute concentration - wt.%
+    /// @param C0 bulk alloy solute concentration - C.%
     /// @param dV velocity direction to search - m/s
     /// @param dR dendrite tip radius direction to search - m
     /// @param prevFNorm euclidean norm of model f1 and f2 from previous optimisation step

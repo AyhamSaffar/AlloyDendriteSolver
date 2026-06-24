@@ -97,12 +97,12 @@ int main()
         }
 
 
-    // https://doi.org/10.1103/PhysRevB.45.5019 Fig. 1 & 2b (note Alloy and parameters here are at.% instead of wt.%)
+    // https://doi.org/10.1103/PhysRevB.45.5019 Fig. 1 & 2b
     //! currently does not quite match published results at higher undercoolings
     std::ofstream outfNiB{dataPath + "NiB_LKT_BCT.csv"};
     outfNiB << solvers::Result::commaSeparatedColumns << ",Cl,Cs\n";
 
-    const alloys::Alloy A{alloys::NiB_atp};
+    const alloys::Alloy A{alloys::NiB1997_atp};
     for (double C0: std::array{0.0, 0.7, 1.0})
     {
         double dT0{1}, C00{(C0==0) ? 0.1 : C0}; // approx module cannot handle 0 C0

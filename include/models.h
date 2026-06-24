@@ -44,7 +44,7 @@ namespace models
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
-    /// @param C0 bulk alloy solute concentration - wt.%
+    /// @param C0 bulk alloy solute concentration - C.%
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
     template <bool LEGACY=true>
@@ -84,7 +84,7 @@ namespace models
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
-    /// @param C0 bulk alloy solute concentration - wt.%
+    /// @param C0 bulk alloy solute concentration - C.%
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
     template <bool NO_PARTITIONING=false>

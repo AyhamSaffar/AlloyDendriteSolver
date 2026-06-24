@@ -12,8 +12,8 @@
 int main()
 {
     // initialise variables
-    const alloys::Alloy A{alloys::SnAg_wtp}; // common solder material
-    double f1{}, f2{}, dV{}, dR{}, dT{10.0}, C0{5.0}; // only non SI unit is concentration (wt.%)
+    const alloys::Alloy A{alloys::SnAg_wtp}; // common solder material, with concentrations in wt.%
+    double f1{}, f2{}, dV{}, dR{}, dT{10.0}, C0{5.0};
     double V{approx::getV(dT, C0, A)}, R{approx::getR(dT, C0, A)};
     diff::Jacobian J{};
 

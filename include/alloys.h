@@ -27,24 +27,28 @@ namespace alloys
         // LKT-BCT parameters 
         double a0{};    // Solid atomic spacing - m
         double V0{};    // speed of sound in liquid - m/s
-        double Tm{};    // Solid melting point - K
+        double Tm{};    // Pure solid melting point - K
 
         Alloy(double L, double Cp, double m, double k0, double r, double D, double a, double o,
             double a0=NAN, double V0=NAN, double Tm=NAN
         );
     };
     
-    /// @brief extends Alloy by adjusting diffusivity parameters with C0 and dT
-    class AlloyTDependant: public Alloy
+    /// @brief extends Alloy by adjusting D and k0 with T as well as m with C0
+    class DynamicAlloy: public Alloy
     {
         public:
-            AlloyTDependant(const Alloy& A, double TmPure, double DA0, double DEa);
-            void updateDiffusivity(double dT, double C0);
+            DynamicAlloy(const Alloy& Alloy,
+                double DA0, double DEa, double Tm, std::array<double, 6> mFit, std::array<double, 6> k0Fit
+            );
+            void updateParams(double dT, double C0);
 
         private:
-            double m_TmPure{}; // melting point of alloy with zero solute concentration - K
             double m_DA0{}; // Arrhenius constant of diffusivity - m2/s
             double m_DEa{}; // activation energy for diffusion - J/mol
+            double m_Tm{}; // Pure solid melting point - K
+            std::array<double, 6> m_mFit{}; // polynomial fit of m for a given C0 (0th order coefficient to 5th)
+            std::array<double, 6> m_k0Fit{}; // polynomial fit of k0 for a given T (0th order coefficient to 5th)
     };
     
 }
@@ -61,30 +65,40 @@ namespace alloys
 /// @param o Stability constant - m/m
 /// @param a0 Solid atomic spacing - m. Only needed for LKT-BCT, so default to NAN.
 /// @param V0 speed of sound in liquid - m/s. Only needed for LKT-BCT, so default to NAN.
-/// @param Tm Solid melting point - K. Only needed for LKT-BCT, so default to NAN.
+/// @param Tm Pure solid melting point - K. Only needed for LKT-BCT, so default to NAN.
 inline alloys::Alloy::Alloy(double L, double Cp, double m, double k0, double r, double D, double a, double o,
     double a0, double V0, double Tm
 ): L{L}, Cp{Cp}, m{m}, k0{k0}, r{r}, D{D}, a{a}, o{o}, a0{a0}, V0{V0}, Tm{Tm} {}
 
 
-/// @brief Configure parameters needed to calculate diffusivity at any T using D = A0*exp(-Ea/RT)
-/// @param A alloy base object
-/// @param TmPure melting point of alloy with zero solute concentration - K
+/// @brief create an T dependant Alloy object whose m, k0, and D parameters can be updated at each C0 and dT
+/// @param A container for key physical constants of a given alloy system
 /// @param DA0 Arrhenius constant of diffusivity - m2/s
 /// @param DEa activation energy for diffusion - J/mol
-inline alloys::AlloyTDependant::AlloyTDependant(const alloys::Alloy& A, double TmPure, double DA0, double DEa)
-    :Alloy{A}, m_TmPure{TmPure}, m_DA0{DA0}, m_DEa{DEa} {};
+/// @param Tm Pure solid melting point - K
+/// @param liquidusFit polynomial liquidus line fit (0th order coefficient to 5th)
+/// @param solidusFit polynomial solidus line fit (0th order coefficient to 5th)
+inline alloys::DynamicAlloy::DynamicAlloy(const Alloy& Alloy,
+    double DA0, double DEa, double Tm, std::array<double, 6> mFit, std::array<double, 6> k0Fit
+): Alloy{Alloy}, m_DA0{DA0}, m_DEa{DEa}, m_Tm{Tm}, m_mFit{mFit}, m_k0Fit{k0Fit} {}
 
-
-/// @brief Update alloy diffusivity by calculating T at liquid interface and using Arrhenius relationship
+/// @brief updates D and k0 with T as well as m with C0
 /// @param dT undercooling - K
-/// @param C0 bulk alloy solute concentration - wt.%
-inline void alloys::AlloyTDependant::updateDiffusivity(double dT, double C0)
+/// @param C0 bulk alloy solute concentration - C.%
+inline void alloys::DynamicAlloy::updateParams(double dT, double C0)
 {
-    double T{m_TmPure + m*C0 - dT}; // note undercooling is how much colder liquid at interface is
-    const double R{8.31446262}; // molar gas constant
-    D = m_DA0 * std::exp(-m_DEa / (R*T));
+    double T{m_Tm-dT}; // dendrite tip temperature
+    constexpr double R{8.3145}; // gas constant in J/molK
+    D = m_DA0*std::exp(m_DEa/(R*T));
+    k0 = 0;
+    m = 0;
+    for (std::size_t i{0}; i<=5; ++i)
+    {
+        k0 += m_k0Fit[i]*std::pow(T, i);
+        m += m_mFit[i]*std::pow(C0, i);
+    }
 }
+
 
 // bank of known alloy systems
 
@@ -93,10 +107,14 @@ namespace alloys
     // standard solution to marginal stability criterion for a planar interace. Could vary with crystal structure.
     static constexpr double o{1.0/(4*std::numbers::pi*std::numbers::pi)};
 
+    // Nickel Borom system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. m and k0 were fit using
+    // ThermoCalc database TCNI8. Default m and k0 used were the average over the first 100K dT.
+    const Alloy NiB2007_atp{1.72e4, 36.39, -16.3, 3.45e-2, 3.42e-7, 3e-9, 8.5e-6, o, (3e-9)/18.9, 425, 1726};
+
     static constexpr double NiAr{58.693e-3}, NiDensity{8.907e3}; // In Kg/mol and Kg/m3 respectively
-    static constexpr double NiS{(1.72e4*NiDensity/NiAr)/1726}; // S = L/Tm converted to J/m3K
+    static constexpr double NiS{(1.72e4*NiDensity/NiAr)/1726}; // S = L/Tm and converted to J/m3K. Not supplied in paper
     // Nickel Boron system in at.%. Taken from https://doi.org/10.1103/PhysRevB.45.5019.
-    const Alloy NiB_atp{1.72e4, 36.39, -14.3, 8e-6, 0.464/NiS, 2.42e-9, 1e-5, o, (2.42e-9)/7.6, 2e3, 1726};
+    const Alloy NiB1997_atp{1.72e4, 36.39, -14.3, 8e-6, 0.464/NiS, 2.42e-9, 1e-5, o, (2.42e-9)/7.6, 2e3, 1726};
 
     static constexpr double FeMeltDensity{7352.53}, FeAr{55.845e-3}; // Ar in Kg/mol
     // Iron Cobalt system in both wt.% and at.%, as Fe and Co have such similar atomic masses (55.845 & 58.993). Taken
@@ -132,7 +150,7 @@ namespace alloys
 
     // Tm taking from https://periodic-table.rsc.org/element/50/tin and diffusion constants taken from
     // https://doi.org/10.1063/1.1708821 using slower c axis. //! note these seem to high compared to TermoCalc numbers
-    inline AlloyTDependant SnAgTDependant{SnAg_wtp, 505.1, 7.1e-7, 12300.0};
+    inline DynamicAlloy SnAgTDependant{SnAg_wtp, 505.1, 7.1e-7, 12300.0};
     
     static constexpr double SucMr{80.090e-3}, AceMr{58.08e-3}; // relative molecular mass of succinonitrile in Kg/mol
     // Succinonitrile Acetone system in wt.%. Taken from https://doi.org/10.1016/0025-5416(84)90199-X. This polymer
