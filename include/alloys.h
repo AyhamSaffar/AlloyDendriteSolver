@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <numbers>
-#include <array>
+#include <vector>
 #include <cmath>
 
 
@@ -38,8 +38,8 @@ namespace alloys
     class DynamicAlloy: public Alloy
     {
         public:
-            DynamicAlloy(const Alloy& Alloy,
-                double DA0, double DEa, double Tm, std::array<double, 6> mFit, std::array<double, 6> k0Fit
+            DynamicAlloy(const Alloy& alloy,
+                double DA0, double DEa, double Tm, std::vector<double> mFit, std::vector<double> k0Fit
             );
             void updateParams(double dT, double C0);
 
@@ -47,8 +47,8 @@ namespace alloys
             double m_DA0{}; // Arrhenius constant of diffusivity - m2/s
             double m_DEa{}; // activation energy for diffusion - J/mol
             double m_Tm{}; // Pure solid melting point - K
-            std::array<double, 6> m_mFit{}; // polynomial fit of m for a given C0 (0th order coefficient to 5th)
-            std::array<double, 6> m_k0Fit{}; // polynomial fit of k0 for a given T (0th order coefficient to 5th)
+            std::vector<double> m_mFit{}; // polynomial fit of m for a given C0 (0th to nth order coefficient)
+            std::vector<double> m_k0Fit{}; // polynomial fit of k0 for a given T (0th to nth order coefficient)
     };
     
 }
@@ -72,15 +72,15 @@ inline alloys::Alloy::Alloy(double L, double Cp, double m, double k0, double r, 
 
 
 /// @brief create an T dependant Alloy object whose m, k0, and D parameters can be updated at each C0 and dT
-/// @param A container for key physical constants of a given alloy system
+/// @param alloy container for key physical constants of a given alloy system
 /// @param DA0 Arrhenius constant of diffusivity - m2/s
 /// @param DEa activation energy for diffusion - J/mol
 /// @param Tm Pure solid melting point - K
 /// @param liquidusFit polynomial liquidus line fit (0th order coefficient to 5th)
 /// @param solidusFit polynomial solidus line fit (0th order coefficient to 5th)
-inline alloys::DynamicAlloy::DynamicAlloy(const Alloy& Alloy,
-    double DA0, double DEa, double Tm, std::array<double, 6> mFit, std::array<double, 6> k0Fit
-): Alloy{Alloy}, m_DA0{DA0}, m_DEa{DEa}, m_Tm{Tm}, m_mFit{mFit}, m_k0Fit{k0Fit} {}
+inline alloys::DynamicAlloy::DynamicAlloy(const Alloy& alloy,
+    double DA0, double DEa, double Tm, std::vector<double> mFit, std::vector<double> k0Fit
+): Alloy{alloy}, m_DA0{DA0}, m_DEa{DEa}, m_Tm{Tm}, m_mFit{mFit}, m_k0Fit{k0Fit} {}
 
 /// @brief updates D and k0 with T as well as m with C0
 /// @param dT undercooling - K
@@ -90,13 +90,12 @@ inline void alloys::DynamicAlloy::updateParams(double dT, double C0)
     double T{m_Tm-dT}; // dendrite tip temperature
     constexpr double R{8.3145}; // gas constant in J/molK
     D = m_DA0*std::exp(m_DEa/(R*T));
-    k0 = 0;
     m = 0;
-    for (std::size_t i{0}; i<=5; ++i)
-    {
-        k0 += m_k0Fit[i]*std::pow(T, i);
+    for (std::size_t i{0}; i<=std::size(m_mFit); ++i)
         m += m_mFit[i]*std::pow(C0, i);
-    }
+    k0 = 0;
+    for (std::size_t i{0}; i<=std::size(m_k0Fit); ++i)
+        k0 += m_k0Fit[i]*std::pow(T, i);
 }
 
 
@@ -110,14 +109,16 @@ namespace alloys
 
     // Cobalt Copper system in wt.%. Taken from https://doi.org/10.1007/s11433-010-4167-y. Values used are averages
     // between the 20wt.% Cu and the 60wt.% Cu where values differ. The default D used is the result of the Arrhenius
-    // fit at 100K dT. //! The a & a0 varies significantly between 60wt.% the 20wt.%.
+    // fit at 100K dT. //! The a & a0 varies significantly between 60wt.% the 20wt.%. LKT-BCT alloys must be in at.%
     static constexpr double DA0{(1.58e-7+2.04e-7)/2}, DEa{(55060.0+54096.0)/2}, Tl{(1701.0+1663.0)/2};
     static inline double D{DA0*std::exp( DEa/(R*(Tl-100)) )}; 
     const Alloy CoCu_wtp{
         (15033.0+14057.0)/2, (39.06+36.05)/2, -3.3, 0.67, (3.4e-7+3.33e-7)/2, D, (1.424e-5+2.9e-5)/2, o,
         (1.697e-10+4.294e-10)/2, 4000.0, Tl
     };
-
+    // Cobalt Copper system in wt.%. Taken from https://doi.org/10.1007/s11433-010-4167-y. Values used are averages
+    // between the 20wt.% Cu and the 60wt.% Cu where values differ.
+    DynamicAlloy CoCuD_wtp{CoCu_wtp, DA0, DEa, 1768};
     // Nickel Borom system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. m and k0 were fit using
     // ThermoCalc database TCNI8. Default m and k0 used were the average over the first 100K dT.
     const Alloy NiB2007_atp{1.72e4, 36.39, -16.3, 3.45e-2, 3.42e-7, 3e-9, 8.5e-6, o, (3e-9)/18.9, 425, 1726};
@@ -158,10 +159,6 @@ namespace alloys
     // Tin Silver system in wt.%. Taken from ThermoCalc TCSLD 4.1 database as in
     // https://doi.org/10.1007/s10854-025-14979-6. //! LKT-BCT alloys must be in at.%
     const Alloy SnAg_wtp{61'810.62*SnAr, 249.0*SnAr, -3.14, 0.0191, 8.54e-8, 1.82e-9, 1.5e-5, o, 3.07e-10, 2.47e3, 505.1};
-
-    // Tm taking from https://periodic-table.rsc.org/element/50/tin and diffusion constants taken from
-    // https://doi.org/10.1063/1.1708821 using slower c axis. //! note these seem to high compared to TermoCalc numbers
-    inline DynamicAlloy SnAgTDependant{SnAg_wtp, 505.1, 7.1e-7, 12300.0};
     
     static constexpr double SucMr{80.090e-3}, AceMr{58.08e-3}; // relative molecular mass of succinonitrile in Kg/mol
     // Succinonitrile Acetone system in wt.%. Taken from https://doi.org/10.1016/0025-5416(84)90199-X. This polymer
