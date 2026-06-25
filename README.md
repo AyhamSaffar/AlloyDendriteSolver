@@ -38,7 +38,7 @@ through [VSCode](https://code.visualstudio.com/docs/remote/wsl)) which installs 
 
 Install the automatic differentiation compiler (Enzyme) using [Brew](https://brew.sh/)
 ```
-brew install ezyme lld
+brew install enzyme lld
 ```
 
 Clone repository with supporting libraries (via git submodules)
