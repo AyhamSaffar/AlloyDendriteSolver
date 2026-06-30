@@ -10,7 +10,8 @@
 namespace models
 {
     // template for all function headers in this module
-    using ModelFunc = std::tuple<double, double> (*)(double, double, double, double, const alloys::Alloy&);
+    template <typename AlloyLike>
+    using ModelFunc = std::tuple<double, double> (*)(double, double, double, double, const AlloyLike&);
 
     // cmath module uses a slightly different form of exponential integral compared to what is needed here
     inline double expint(double x) {return -std::expint(-x);}
@@ -48,7 +49,7 @@ namespace models
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
     template <bool LEGACY=true>
-    inline std::tuple<double, double> LGK(double V, double R, double dT, double C0, const alloys::Alloy& A)
+    inline std::tuple<double, double> LGK(double V, double R, double dT, double C0, const alloys::LGKAlloy& A)
     {
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Pc{V*R/(2*A.D)}; // solutal Péclet number
@@ -88,7 +89,7 @@ namespace models
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
     template <bool NO_PARTITIONING=false>
-    inline std::tuple<double, double> LKT_BCT(double V, double R, double dT, double C0, const alloys::Alloy& A)
+    inline std::tuple<double, double> LKT_BCT(double V, double R, double dT, double C0, const alloys::BCTAlloy& A)
     {
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Pc{V*R/(2*A.D)}; // solutal Péclet number
