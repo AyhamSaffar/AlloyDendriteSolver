@@ -3,6 +3,7 @@
 
 #include <cmath> // for std::exp and std::expint
 #include <tuple>
+#include <stdexcept>
 #include "alloys.h"
 
 /// @brief standard models that help calculate solidification parameters from alloy physical parameters. These assume
@@ -90,6 +91,9 @@ namespace models
     template <bool NO_PARTITIONING=false>
     inline std::tuple<double, double> LKT_BCT(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
+        if (!A.LKT_BCTCapable)
+            throw std::runtime_error("Attempted to pass non LKT-BCT capable Alloy to LKT-BCT model");
+
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Pc{V*R/(2*A.D)}; // solutal Péclet number
         double Ivt{Pt*std::exp(Pt)*expint(Pt)}; // thermal Ivantsov function

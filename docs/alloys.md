@@ -7,7 +7,7 @@ All *Alloy* objects must contain the following constants:
 - $L$ 	&nbsp; Fusion enthalpy - $J/mol$
 - $c_p$ &nbsp; Melt heat capacity - $J/(mol K)$
 - $m$ 	&nbsp; Equilibrium liquidus slope - $K / C\%$
-- $k_0$	&nbsp; Partition coefficient - $C\% / C\%$
+- $k_0$	&nbsp; Equilibrium partition coefficient - $C\% / C\%$
 - $Γ$ 	&nbsp; Gibbs-Thomson coefficient - $Km$
 - $D$ 	&nbsp; Diffusion coefficient of solute in liquid - $m^2/s$
 - $α$	&nbsp; Thermal diffusivity of liquid - $m^2/s$
