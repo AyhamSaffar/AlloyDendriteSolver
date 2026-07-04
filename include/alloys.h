@@ -191,14 +191,11 @@ namespace alloys
     // https://doi.org/10.1007/s10854-025-14979-6. //! LKT-BCT alloys must be in at.%
     const Alloy SnAg_wtp{61'810.62*SnAr, 249.0*SnAr, -3.14, 0.0191, 8.54e-8, 1.82e-9, 1.5e-5, o, 3.07e-10, 2470, 505.1};
     
-    static constexpr double SucMr{80.090e-3}, AceMr{58.08e-3}; // relative molecular mass of succinonitrile in Kg/mol
-    // Succinonitrile Acetone system in wt.%. Taken from https://doi.org/10.1016/0025-5416(84)90199-X. This polymer
-    // system is often used in place of a molten alloy to test solidification models more easily in the lab. The
-    // equilibrium liquidus scope coversion from its K/mol% value in the paper to K/wt% only holds for small wt% values.
-    // Also the equivalence of k0 from mol.%/mol.% value in the paper to its wt.%/wt.% value also only holds for small
-    // wt% values.
-    const Alloy SucAce_wtp{46'260*SucMr, 1937.5*SucMr, -2.16*SucMr/AceMr, 0.103, 6.62e-8, 1.27e-9, 1.14e-7, o};
+    static constexpr double SucMr{80.090e-3}; // relative molecular mass of succinonitrile in Kg/mol
+    // Succinonitrile Acetone system in at.%. Taken from https://doi.org/10.1016/0025-5416(84)90199-X. This polymer
+    // system is often used in place of a molten alloy to test solidification models more easily in the lab. Conversion
+    // of L & Cp from /kg to /mol assume a small fraction of solute in succinonitrile. 
+    const Alloy SucAce_atp{46'260*SucMr, 1937.5*SucMr, -2.16, 0.103, 6.62e-8, 1.27e-9, 1.14e-7, o};
 }
-
 
 #endif

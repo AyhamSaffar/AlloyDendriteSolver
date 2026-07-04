@@ -22,11 +22,8 @@ int main()
 
     double SucMr{80.09}, AceMr{58.08};
     for (double dT{0.5}; dT<=0.9; dT+=0.4)
-        for(double C0MolPercent{0.005}; C0MolPercent<=1; C0MolPercent+=0.005)
-        {
-            double C0{ 100 * (C0MolPercent*AceMr) / (C0MolPercent*AceMr + (100-C0MolPercent)*SucMr) }; // wt.% required
-            outfSucAce << solvers::newton<models::LGK>(dT, C0, alloys::SucAce_wtp).commaSeparatedValues() << '\n';
-        }
+        for(double C0{0.005}; C0<=1; C0+=0.005)
+            outfSucAce << solvers::newton<models::LGK>(dT, C0, alloys::SucAce_atp).commaSeparatedValues() << '\n';
 
 
     // https://doi.org/10.1007/BF02643853 Fig. 14
