@@ -78,8 +78,8 @@ namespace alloys
 inline alloys::Alloy::Alloy(
     double L, double Cp, double m, double k0, double r, double D, double a, double o, double a0, double V0, double Tm,
     double DA0, double DEa, std::vector<double> TlAtCFit, std::vector<double> mAtCFit, std::vector<double> k0AtTFit 
-    ): L{L}, Cp{Cp}, m{m}, k0{k0}, r{r}, D{D}, a{a}, o{o}, a0{a0}, V0{V0}, Tm{Tm}, m_DA0{DA0}, m_DEa{DEa},
-        m_TlAtCFit{TlAtCFit}, m_mAtCFit{mAtCFit}, m_k0AtTFit{k0AtTFit} 
+): L{L}, Cp{Cp}, m{m}, k0{k0}, r{r}, D{D}, a{a}, o{o}, a0{a0}, V0{V0}, Tm{Tm}, m_DA0{DA0}, m_DEa{DEa},
+    m_TlAtCFit{TlAtCFit}, m_mAtCFit{mAtCFit}, m_k0AtTFit{k0AtTFit} 
 {
     if ((a0!=0) && (V0!=0) && (Tm!=0))
         LKT_BCTCapable = true;
@@ -180,6 +180,12 @@ namespace alloys
     static constexpr double AlMeltDensity{2375}, AlAr{26.982e-3}; // Ar in Kg/mol
     // Aluminum Iron system in wt.%. Taken from https://doi.org/10.1007/BF02643853
     const Alloy AlFe_wtp{971e6*AlAr/AlMeltDensity, 2.67e6*AlAr/AlMeltDensity, -3.7, 0.038, 1e-7, 2e-9, 0.34e-4, o};
+
+    // Silver Copper system in at.%. Taken from Fourth Conference on Rapid Solidification Processing: Principles and
+    // Technologies, Application of dendritic growth theory to the interpretation of rapid solidification
+    // microstructures, pages 13-25, W.J. Boettinger, S.R. Coriell and R. Trivedi. Converted to at.% by converting
+    // wt.% line to at.% at each point and fitting the result.
+    const Alloy AgCu_atp{11'900, 31.8, -11.349, 0.35, 1.53e-7, 2.1e-9, 6.6e-5, o, 1.05e-9, 2e3, 1234};
 
     // Silver Copper system in wt.%. Taken from Fourth Conference on Rapid Solidification Processing: Principles and
     // Technologies, Application of dendritic growth theory to the interpretation of rapid solidification
