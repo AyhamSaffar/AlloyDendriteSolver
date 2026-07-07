@@ -5,9 +5,12 @@ import pathlib as pl
 import numpy as np
 
 # %%
-# must have more than 1 experiment
 home_path = pl.Path(__file__).parent
-experiments = {path.name: pd.read_csv(path/"data.csv") for path in home_path.glob(pattern='Fig11d*') if path.is_dir()}
+prefix = input('Experiment prefix: ')
+experiment_paths = [path for path in home_path.glob(pattern=f'{prefix}*') if path.is_dir()]
+assert len(experiment_paths)>1, 'Fewer than 2 experiments with this prefix found.'
+
+experiments = {path.name: pd.read_csv(path/"data.csv") for path in experiment_paths}
 
 # %%
 fig, ax = plt.subplots(figsize=(8,6))

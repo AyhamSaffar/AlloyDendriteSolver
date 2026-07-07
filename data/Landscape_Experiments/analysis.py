@@ -5,8 +5,8 @@ import pandas as pd
 import pathlib as pl
 
 # %%
-experiment_path = pl.Path(__file__).parent / 'NiB'
-assert experiment_path.is_dir()
+experiment_path = pl.Path(__file__).parent / input('Enter experiment name: ')
+assert experiment_path.is_dir(), 'Given experiment name not found.'
 
 # %%
 raw_data = pd.read_csv(experiment_path / 'scan_data.csv')
