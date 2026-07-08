@@ -16,6 +16,16 @@ namespace models
     // cmath module uses a slightly different form of exponential integral compared to what is needed here
     inline double expint(double x) {return -std::expint(-x);}
 
+    // The Ivantsov function is numerically unstable for high Peclet numbers (as P grows, std::exp(P) -> ∞ and
+    // expint(P) -> 1/∞), so an upper bound check is needed to prevent floating point overflow errors.
+    inline double ivantsov(double p)
+    {
+        if (p<200)
+            return p*std::exp(p)*expint(p);
+        else
+            return 1;
+    }
+
     /// @brief Lipton, Glicksman, and Kurz model. Useful at moderate undercoolings and velocities (VR/2D << 2π).
     ///
     /// The first equation calculates the LGK dendrite undercooling. It quantifies how the liquid must be cooled below
@@ -53,8 +63,8 @@ namespace models
     {
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Pc{V*R/(2*A.D)}; // solutal Péclet number
-        double Ivt{Pt*std::exp(Pt)*expint(Pt)}; // thermal Ivantsov function
-        double Ivc{Pc*std::exp(Pc)*expint(Pc)}; // solutal Ivantsov function
+        double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
+        double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
 
         double factor{LEGACY ? 1 : 2}; // solutal field gradient factor
         double f1{A.L*Ivt/A.Cp + A.m*C0*(1 - 1/(1-(1-A.k0)*Ivc)) + 2*A.r/R - dT};
@@ -96,8 +106,8 @@ namespace models
 
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Pc{V*R/(2*A.D)}; // solutal Péclet number
-        double Ivt{Pt*std::exp(Pt)*expint(Pt)}; // thermal Ivantsov function
-        double Ivc{Pc*std::exp(Pc)*expint(Pc)}; // solutal Ivantsov function
+        double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
+        double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
 
         double k{NAN};
         if constexpr (NO_PARTITIONING)
