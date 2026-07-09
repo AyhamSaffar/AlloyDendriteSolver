@@ -35,6 +35,7 @@ for dT in data['dT'].unique():
 axes[0].legend()
 axes[1].legend()
 
+fig.tight_layout()
 fig.savefig(experiment_path / 'SucAce_LGK.png')
 
 # %%
@@ -54,6 +55,7 @@ for C0 in data['C0'].unique():
     ax.plot(subset['dT'], subset['V']*100, label=f'Al-{C0:.1f}wt% Fe')
 
 ax.legend()
+fig.tight_layout()
 fig.savefig(experiment_path / 'AlFe_LGK.png')
 
 # %%
@@ -77,6 +79,7 @@ axes[1].set_ylim(1e-10, 1e-2)
 axes[0].plot(data['dT'], data['V'])
 axes[1].plot(data['dT'], data['R'])
 
+fig.tight_layout()
 fig.savefig(experiment_path / 'NiSn_LGK.png')
 
 # %%
@@ -101,7 +104,7 @@ for i, C0 in enumerate(data_gamma['C0'].unique()):
     axes[i].vlines(T_offset, ymin=0, ymax=30)
     axes[i].plot(subset_delta['dT']+T_offset, subset_delta['V'], color='black', linestyle='-')
 
-
+fig.tight_layout()
 fig.savefig(experiment_path / 'FeCo_LKT_BCT.png')
 
 # %%
@@ -124,12 +127,13 @@ for model, data in [('LGK', data_LGK), ('LKT_BCT', data_LKT_BCT)]:
 
 ax.legend()
 
+fig.tight_layout()
 fig.savefig(experiment_path / 'SnAg_LKT_BCT.png')
 
 # %%
 data = experiments['NiB_LKT_BCT']
 data = data[data['converged'] & (data['R']>0) & (data['V']>0)]
-fig, axes = plt.subplots(nrows=3, figsize=(7,15))
+fig, axes = plt.subplots(nrows=3, figsize=(7,13))
 
 axes[0].set_xlabel('Undercooling    ΔT (K)')
 axes[0].set_xlim(0, 320)
@@ -137,6 +141,9 @@ axes[0].set_xticks(range(0, 301, 100))
 axes[0].set_ylabel('Dendrite growth velocity V (m/s)')
 axes[0].set_ylim(0, 30)
 axes[0].set_yticks(range(0, 31, 10))
+
+axes[0].axvline(214, color='orange', linestyle=':')
+axes[0].axvline(267, color='green', linestyle=':')
 
 for ax in [axes[1], axes[2]]:
     ax.set_xlabel('Undercooling ΔT (K)')
@@ -171,4 +178,5 @@ axes[0].legend(title='$Ni_{100-x}B_x$', loc='upper left')
 axes[1].legend(title='$Ni_{99}B_1$', loc='upper left')
 axes[2].legend()
 
+fig.tight_layout()
 fig.savefig(experiment_path / 'NiB_LKT_BCT.png')

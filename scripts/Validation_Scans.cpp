@@ -108,7 +108,7 @@ int main()
         {
             solvers::Result result{solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0)};
             double Pc{result.V*result.R/(2*A.D)}; // solutal Péclet number
-            double Ivc{Pc*std::exp(Pc)*models::expint(Pc)}; // solutal Ivantsov function
+            double Ivc{models::ivantsov(Pc)}; // solutal Ivantsov function
             double k{(A.k0+(A.a0*result.V/A.D)) / (1+(A.a0*result.V/A.D)-(1-A.k0)*(C0/100))}; // velocity dependant k
             double Cl{C0/(1-Ivc*(1-k))}; // interface liquid solute conentration
             double Cs{k*Cl}; // interface solid solute concentration
