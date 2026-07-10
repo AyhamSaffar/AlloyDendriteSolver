@@ -44,15 +44,13 @@ namespace alloys
                 // LKT-BCT
                 double a0=0, double V0=0, double Tm=0,
                 // dynamic
-                double DA0=0, double DEa=0, std::vector<double> TlAtCFit={}, std::vector<double> mAtCFit={},
-                    std::vector<double> k0AtTFit={} 
+                double DA0=0, double DEa=0, std::vector<double> TlAtCFit={}, std::vector<double> k0AtTFit={} 
             );
 
         private:
             double m_DA0{}; // Arrhenius constant of diffusivity - m2/s
             double m_DEa{}; // activation energy for diffusion - J/mol
             std::vector<double> m_TlAtCFit{}; // polynomial fit of Tl for a given C (0th to nth order coefficient)
-            std::vector<double> m_mAtCFit{}; // polynomial fit of m for a given C (0th to nth order coefficient)
             std::vector<double> m_k0AtTFit{}; // polynomial fit of k0 for a given T (0th to nth order coefficient)
     }; 
 }
@@ -77,13 +75,13 @@ namespace alloys
 /// @param k0AtTFit polynomial fit of k0 for a given T (0th to nth order coefficient). Only needed for dynamic alloys.
 inline alloys::Alloy::Alloy(
     double L, double Cp, double m, double k0, double r, double D, double a, double o, double a0, double V0, double Tm,
-    double DA0, double DEa, std::vector<double> TlAtCFit, std::vector<double> mAtCFit, std::vector<double> k0AtTFit 
+    double DA0, double DEa, std::vector<double> TlAtCFit, std::vector<double> k0AtTFit 
 ): L{L}, Cp{Cp}, m{m}, k0{k0}, r{r}, D{D}, a{a}, o{o}, a0{a0}, V0{V0}, Tm{Tm}, m_DA0{DA0}, m_DEa{DEa},
-    m_TlAtCFit{TlAtCFit}, m_mAtCFit{mAtCFit}, m_k0AtTFit{k0AtTFit} 
+    m_TlAtCFit{TlAtCFit}, m_k0AtTFit{k0AtTFit} 
 {
     if ((a0!=0) && (V0!=0) && (Tm!=0))
         LKT_BCTCapable = true;
-    if ((!TlAtCFit.empty()) && (!mAtCFit.empty()) && (!k0AtTFit.empty()))
+    if ((!TlAtCFit.empty()) && (!k0AtTFit.empty()))
         dynamicCapable = true;
 }            
             
@@ -115,8 +113,8 @@ inline double alloys::Alloy::TlAtC(double C) const
 inline double alloys::Alloy::mAtC(double C) const
 {
     double m{0};
-    for (std::size_t i{0}; i<=std::size(m_mAtCFit); ++i)
-        m += m_mAtCFit[i] * std::pow(C, i);
+    for (std::size_t i{1}; i<=std::size(m_TlAtCFit); ++i)
+        m += i * m_TlAtCFit[i] * std::pow(C, i-1); // m(C) = dTl(C)/dC = 0*k0*C^-1 + 1*k1*C^0 + 2*k2*C + 3*k3*C^2 + ...
     return m;
 }
 
@@ -142,12 +140,13 @@ namespace alloys
     static constexpr double DA0{(1.58e-7+2.04e-7)/2}, DEa{(55060.0+54096.0)/2}, Tl{(1701.0+1663.0)/2};
     static inline double D{DA0*std::exp( DEa/(R*(Tl-100)) )}; 
     // Cobalt Copper system in wt.%. Taken from https://doi.org/10.1007/s11433-010-4167-y. Values used are averages
-    // between the 20wt.% Cu and the 60wt.% Cu where values differ. The default D used is the result of the Arrhenius
-    // fit at 100K dT. //! The a & a0 varies significantly between 60wt.% the 20wt.%. LKT-BCT alloys must be in at.%
+    // between the 20wt.% Cu and the 60wt.% Cu where values differ. The default D, m, and ko used is the result of
+    // T fit at 100K dT. //! The a & a0 varies significantly between 60wt.% the 20wt.%.
     const Alloy CoCu_wtp{
         (15033.0+14057.0)/2, (39.06+36.05)/2, -3.3, 0.67, (3.4e-7+3.33e-7)/2, D, (1.424e-5+2.9e-5)/2, o,
         (1.697e-10+4.294e-10)/2, 4000.0, Tl, // paper uses Tl instead of Tm in kinetic undercooling
-        DA0, DEa //! still requires phase diagram fits for use in dynamic model
+        DA0, DEa, {1.77e3, -3.21, -4.18e-2, 5.41e-4, 2.38e-5, -2.79e-7}, 
+            {2883.0, -9.892, 1.348e-2, -9.122e-6, 3.066e-9, -4.093e-13} // phase diagram only fits data >1385K
     };
 
     // Nickel Borom system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. m and k0 were fit using
@@ -194,7 +193,7 @@ namespace alloys
 
     static constexpr double SnAr{0.11871}; // Ar in Kg/mol 
     // Tin Silver system in wt.%. Taken from ThermoCalc TCSLD 4.1 database as in
-    // https://doi.org/10.1007/s10854-025-14979-6. //! LKT-BCT alloys must be in at.%
+    // https://doi.org/10.1007/s10854-025-14979-6.
     const Alloy SnAg_wtp{61'810.62*SnAr, 249.0*SnAr, -3.14, 0.0191, 8.54e-8, 1.82e-9, 1.5e-5, o, 3.07e-10, 2470, 505.1};
     
     static constexpr double SucMr{80.090e-3}; // relative molecular mass of succinonitrile in Kg/mol

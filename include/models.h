@@ -125,6 +125,34 @@ namespace models
         double f2{(A.r/A.o) / ( xit*Pt*A.L/A.Cp - (2*A.m*C0*(1-k)*Pc*xic)/(1-(1-k)*Ivc) ) - R};
         return std::make_tuple(f1, f2);
     }
+
+    inline std::tuple<double, double> dynamic(double V, double R, double dT, double C0, const alloys::Alloy& A)
+    {
+        if (!A.dynamicCapable)
+            throw std::runtime_error("Attempted to pass non dynamic capable Alloy to dynamic model");
+
+        double Tl{A.TlAtC(C0)}; // liquidus temperature
+        double D{A.DAtT(Tl-dT)}; // diffusivity constant
+        double m{A.mAtC(C0)}; // liquidus gradient
+        double k0{A.k0AtT(Tl-dT)}; // equilibrium partition coefficient
+    
+        double Pt{V*R/(2*A.a)}; // thermal Péclet number
+        double Pc{V*R/(2*D)}; // solutal Péclet number
+        double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
+        double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
+
+        double k{(k0+(A.a0*V/D)) / (1+(A.a0*V/D)-(1-k0)*(C0/100))}; // velocity dependant partition coefficient
+        double mP{m*(1+ (k0-k*(1-std::log(k/k0))) / (1-k0) )}; // velocity dependant liquidus slope (m prime)
+        double R0{8.314}; // gas constant
+        double mu{A.L*A.V0/(R0*Tl*Tl)}; // interfacial kinetic coefficient //? BCT says to use Tm instead of Tl
+        double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
+        double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // solutal stability function
+        double Ci{C0/(1-(1-k)*Ivc)}; // interface solute concentration
+
+        double f1{A.L*Ivt/A.Cp + (Tl-A.TlAtC(Ci)) + 2*A.r/R + V/mu - dT};
+        double f2{(A.r/A.o) / ( xit*Pt*A.L/A.Cp - (2*m*C0*(1-k)*Pc*xic)/(1-(1-k)*Ivc) ) - R};
+        return std::make_tuple(f1, f2);
+    }
 }
 
 #endif
