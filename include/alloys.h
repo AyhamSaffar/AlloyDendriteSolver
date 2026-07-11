@@ -93,7 +93,7 @@ inline alloys::Alloy::Alloy(
 inline double alloys::Alloy::DAtT(double T) const
 {
     constexpr double R{8.3145}; // gas constant in J/molK
-    return m_DA0*std::exp(m_DEa/(R*T));
+    return m_DA0*std::exp(-m_DEa/(R*T));
 }
 
 /// @brief Calculates the liquidus temperature at a given C
@@ -102,7 +102,7 @@ inline double alloys::Alloy::DAtT(double T) const
 inline double alloys::Alloy::TlAtC(double C) const
 {
     double Tl{0};
-    for (std::size_t i{0}; i<=std::size(m_TlAtCFit); ++i)
+    for (std::size_t i{0}; i<std::size(m_TlAtCFit); ++i)
         Tl += m_TlAtCFit[i] * std::pow(C, i);
     return Tl;
 }
@@ -113,7 +113,7 @@ inline double alloys::Alloy::TlAtC(double C) const
 inline double alloys::Alloy::mAtC(double C) const
 {
     double m{0};
-    for (std::size_t i{1}; i<=std::size(m_TlAtCFit); ++i)
+    for (std::size_t i{1}; i<std::size(m_TlAtCFit); ++i)
         m += i * m_TlAtCFit[i] * std::pow(C, i-1); // m(C) = dTl(C)/dC = 0*k0*C^-1 + 1*k1*C^0 + 2*k2*C + 3*k3*C^2 + ...
     return m;
 }
@@ -124,7 +124,7 @@ inline double alloys::Alloy::mAtC(double C) const
 inline double alloys::Alloy::k0AtT(double T) const
 {
     double k0{0};
-    for (std::size_t i{0}; i<=std::size(m_k0AtTFit); ++i)
+    for (std::size_t i{0}; i<std::size(m_k0AtTFit); ++i)
         k0 += m_k0AtTFit[i] * std::pow(T, i);
     return k0;
 }

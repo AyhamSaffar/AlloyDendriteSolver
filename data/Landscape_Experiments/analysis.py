@@ -20,7 +20,7 @@ for dT in np.sort(raw_data['dT'].unique()):
 	data[dT] = grids
 
 # %%
-fig, axes = plt.subplots(ncols=len(data), figsize=(7*len(data), 5))
+fig, axes = plt.subplots(ncols=len(data), figsize=(6*len(data), 5))
 
 for i, (dT, grids) in enumerate(data.items()):
 
@@ -39,5 +39,6 @@ for i, (dT, grids) in enumerate(data.items()):
 
 	fig.colorbar(F_mean_im, label=r'Mean|F| / $log_{10}$')
 
+fig.tight_layout()
 fig.savefig(experiment_path / "plots.png")
 
