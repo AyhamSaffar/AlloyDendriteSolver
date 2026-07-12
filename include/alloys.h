@@ -42,9 +42,9 @@ namespace alloys
                 // LGK
                 double L, double Cp, double m, double k0, double r, double D, double a, double o,
                 // LKT-BCT
-                double a0=0, double V0=0, double Tm=0,
+                double a0=-1, double V0=-1, double Tm=-1,
                 // dynamic
-                double DA0=0, double DEa=0, std::vector<double> TlAtCFit={}, std::vector<double> k0AtTFit={} 
+                double DA0=-1, double DEa=-1, std::vector<double> TlAtCFit={}, std::vector<double> k0AtTFit={} 
             );
 
         private:
@@ -55,8 +55,7 @@ namespace alloys
     }; 
 }
 
-/// @brief create a new Alloy object. The final 3 parameters (a0, V0, and Tm) are only required if the alloy is to be
-/// used with the LKT-BCT model and so are optional.
+/// @brief create a new Alloy object.
 /// @param L Fusion enthalpy - J/mol
 /// @param Cp Melt heat capacity - J/(mol K)
 /// @param m Equilibrium liquidus slope - K/C%
@@ -79,9 +78,9 @@ inline alloys::Alloy::Alloy(
 ): L{L}, Cp{Cp}, m{m}, k0{k0}, r{r}, D{D}, a{a}, o{o}, a0{a0}, V0{V0}, Tm{Tm}, m_DA0{DA0}, m_DEa{DEa},
     m_TlAtCFit{TlAtCFit}, m_k0AtTFit{k0AtTFit} 
 {
-    if ((a0!=0) && (V0!=0) && (Tm!=0))
+    if ((a0!=-1) && (V0!=-1) && (Tm!=-1))
         LKT_BCTCapable = true;
-    if ((!TlAtCFit.empty()) && (!k0AtTFit.empty()))
+    if ((DA0!=-1) && (DEa!=-1) && (!TlAtCFit.empty()) && (!k0AtTFit.empty()))
         dynamicCapable = true;
 }            
             

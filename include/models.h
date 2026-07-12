@@ -120,8 +120,9 @@ namespace models
         double mu{A.L*A.V0/(R0*A.Tm*A.Tm)}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
         double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // - solutal stability function
+        double Ci{C0/(1-(1-k)*Ivc)}; // interface solute concentration
 
-        double f1{A.L*Ivt/A.Cp + A.m*C0*(1 - (mP/A.m)/(1-(1-k)*Ivc)) + 2*A.r/R + V/mu - dT};
+        double f1{A.L*Ivt/A.Cp + (A.m*C0 - mP*Ci) + 2*A.r/R + V/mu - dT};
         double f2{(A.r/A.o) / ( xit*Pt*A.L/A.Cp - (2*A.m*C0*(1-k)*Pc*xic)/(1-(1-k)*Ivc) ) - R};
         return std::make_tuple(f1, f2);
     }
