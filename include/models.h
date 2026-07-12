@@ -143,7 +143,6 @@ namespace models
         double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
 
         double k{(k0+(A.a0*V/D)) / (1+(A.a0*V/D)-(1-k0)*(C0/100))}; // velocity dependant partition coefficient
-        double mP{m*(1+ (k0-k*(1-std::log(k/k0))) / (1-k0) )}; // velocity dependant liquidus slope (m prime)
         double R0{8.314}; // gas constant
         double mu{A.L*A.V0/(R0*Tl*Tl)}; // interfacial kinetic coefficient //? BCT says to use Tm instead of Tl
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function

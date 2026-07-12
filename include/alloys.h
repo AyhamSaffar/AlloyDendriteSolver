@@ -112,8 +112,8 @@ inline double alloys::Alloy::TlAtC(double C) const
 inline double alloys::Alloy::mAtC(double C) const
 {
     double m{0};
-    for (std::size_t i{1}; i<std::size(m_TlAtCFit); ++i)
-        m += i * m_TlAtCFit[i] * std::pow(C, i-1); // m(C) = dTl(C)/dC = 0*k0*C^-1 + 1*k1*C^0 + 2*k2*C + 3*k3*C^2 + ...
+    for (std::size_t i{0}; i<std::size(m_TlAtCFit); ++i)
+        m += i * m_TlAtCFit[i] * std::pow(C, i-1); // m(C) = dTl(C)/dC
     return m;
 }
 

@@ -48,3 +48,33 @@ TEST_CASE("LKT-BCT model V prediction agrees with LGK at low undercooling and gi
             REQUIRE(std::abs(LKT_BCTResult.V-LGKResult.V)/LGKResult.V < 0.05); // maximum of 5% error
         }
 }
+
+
+TEST_CASE("Linearised Dynamic model agrees with LKT-BCT at pre solute trapping undercoolings", "[Solvers]")
+{
+    const alloys::Alloy A{alloys::AgCu_wtp}; // LGK-BCT capable Alloy
+    const alloys::Alloy ALin{ // dynamic model with fixed D, k0 and linear Tl
+        A.L, A.Cp, A.m, A.k0, A.r, A.D, A.a, A.o, A.a0, A.V0, A.Tm, A.D, 0, {A.Tm, A.m}, {A.k0}
+    };
+    const double C0{15}, dT0{1}, Vd{A.D/A.a0}; // solute trapping starts as V approaches max diffusive Velocity Vd 
+    double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
+    
+    for (double dT{1}; dT<500; ++dT)
+    {
+        INFO("dT = " + std::to_string(dT));
+        solvers::Result LKT_BCTResult{solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0)};
+        solvers::Result dynamicResult{solvers::newton<models::dynamic>(dT, C0, ALin, V0, R0)};
+        INFO("V LKT-BCT = " + std::to_string(LKT_BCTResult.V) + ", V dynamic = " + std::to_string(dynamicResult.V) + '\n');
+        INFO("R LKT-BCT = " + std::to_string(LKT_BCTResult.R) + ", R dynamic = " + std::to_string(dynamicResult.R) + '\n');
+
+        REQUIRE(LKT_BCTResult.hasConverged);
+        REQUIRE(dynamicResult.hasConverged);
+        REQUIRE((std::abs(LKT_BCTResult.R - dynamicResult.R)/LKT_BCTResult.R) < 2); // tolerance for rounding errors
+        REQUIRE((std::abs(LKT_BCTResult.V - dynamicResult.V)/LKT_BCTResult.V) < 2);
+
+        if (dynamicResult.V > (Vd/10))
+            break;  // dynamic model not neccessarily equivalent to LKT_BCT when solute trapping starts
+        std::tie(V0, R0) = std::tie(dynamicResult.V, dynamicResult.R);
+    }
+
+}
