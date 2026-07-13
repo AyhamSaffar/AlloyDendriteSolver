@@ -112,7 +112,7 @@ inline double alloys::Alloy::TlAtC(double C) const
 inline double alloys::Alloy::mAtC(double C) const
 {
     double m{0};
-    for (std::size_t i{0}; i<std::size(m_TlAtCFit); ++i)
+    for (std::size_t i{1}; i<std::size(m_TlAtCFit); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
         m += i * m_TlAtCFit[i] * std::pow(C, i-1); // m(C) = dTl(C)/dC
     return m;
 }

@@ -126,7 +126,7 @@ int main()
 
     {
         const alloys::Alloy A{alloys::CoCu_wtp};
-        double C0{60}, dT0{55};
+        double C0{60}, dT0{1};
         double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
         for (double dT{dT0}; dT<=120; ++dT)
         {
