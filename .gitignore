@@ -11,6 +11,7 @@ data/uv.lock
 data/*.csv
 data/*Experiments/*/
 data/*Experiments/*.png
+data/Phase_Diagrams/*/
 
 # temporary files
 _*
