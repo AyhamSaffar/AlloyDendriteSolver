@@ -52,7 +52,7 @@ TEST_CASE("LKT-BCT model V prediction agrees with LGK at low undercooling and gi
 // Currently fails. Does slightly better if in using an atp alloy.
 TEST_CASE("Linearised Dynamic model agrees with LKT-BCT at pre solute trapping undercoolings", "[Solvers]")
 {
-    const alloys::Alloy A{alloys::AgCu_wtp}; // LGK-BCT capable Alloy
+    const alloys::Alloy A{alloys::AgCu_wtp}; // LKT-BCT capable Alloy
     const alloys::Alloy ALin{ // dynamic model with fixed D, k0 and linear Tl
         A.L, A.Cp, A.m, A.k0, A.r, A.D, A.a, A.o, A.a0, A.V0, A.Tm, A.D, 0, {A.Tm, A.m}, {A.k0}
     };
