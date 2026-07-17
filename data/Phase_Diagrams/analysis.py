@@ -16,8 +16,8 @@ for col in ["T / K", "Cl", "Cs"]:
     assert col in data.columns, f"Could not find {col} Column in {data.columns.to_list()} columns"
 
 # %%
-orders = range(2, 7)
-fig, axes = plt.subplots(ncols=len(orders), nrows=2, figsize=(30,10))
+orders = range(2, 8)
+fig, axes = plt.subplots(ncols=len(orders), nrows=2, figsize=(6*len(orders),10))
 data['k0'] = data['Cs'] / data['Cl']
 Tl_fits, all_Tl_fit_errors, k0_fits, all_k0_fit_errors = [], [], [], []
 
@@ -29,8 +29,7 @@ for i, order in enumerate(orders):
     axes[0, i].set_ylabel("T / K")
     axes[0, i].scatter(data['Cl'], data['T / K'], color='black', marker='x')
     Tl_fit = np.polynomial.Polynomial.fit(data['Cl'], data['T / K'], deg=order)
-    fit_Cl, fit_T = Tl_fit.linspace()
-    axes[0, i].plot(fit_Cl, fit_T, color='red', linestyle='--')
+    axes[0, i].plot(np.arange(1, 101), Tl_fit(np.arange(1, 101)), color='red', linestyle='--')
     twin_ax = axes[0, i].twinx()
     twin_ax.set_ylabel('error')
     T_errors = np.abs(data['T / K']-Tl_fit(data['Cl']))
@@ -49,7 +48,7 @@ for i, order in enumerate(orders):
     twin_ax = axes[1, i].twinx()
     twin_ax.set_ylabel('error')
     k0_errors = np.abs(data['k0']-k0_fit(data['T / K']))
-    twin_ax.bar(data['T / K'], k0_errors, color='grey', alpha=0.3)
+    twin_ax.bar(data['T / K'], k0_errors, color='grey', alpha=0.5)
     k0_fits.append(k0_fit)
     all_k0_fit_errors.append(k0_errors)
 
@@ -62,6 +61,7 @@ for fits, error_arrays in ((Tl_fits, all_Tl_fit_errors), (k0_fits, all_k0_fit_er
     for fit, error_array in zip(fits, error_arrays):
         fit_stats = {"kind": "Cl to Tl" if fits==Tl_fits else "T to k0"}
         coefs = fit.convert().coef
+        fit_stats['order'] = len(coefs) - 1 # -1 as 0th order coefficient exists 
         for order in range(max(orders)+1):
             fit_stats[f'{order} order coefficient'] = coefs[order] if order<len(coefs) else 0
         fit_stats['mean error'] = np.mean(error_array)
