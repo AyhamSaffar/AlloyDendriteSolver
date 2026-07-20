@@ -50,10 +50,10 @@ TEST_CASE("LKT-BCT model V prediction agrees with LGK at low undercooling and gi
 }
 
 // Currently fails. Does slightly better if in using an atp alloy.
-TEST_CASE("Linearised Dynamic model agrees with LKT-BCT at pre solute trapping undercoolings", "[Solvers]")
+TEST_CASE("Linearised CLW model agrees with LKT-BCT at pre solute trapping undercoolings", "[Solvers]")
 {
     const alloys::Alloy A{alloys::AgCu_wtp}; // LKT-BCT capable Alloy
-    const alloys::Alloy ALin{ // dynamic model with fixed D, k0 and linear Tl
+    const alloys::Alloy ALin{ // CLW model with fixed D, k0 and linear Tl
         A.L, A.Cp, A.m, A.k0, A.r, A.D, A.a, A.o, A.a0, A.V0, A.Tm, A.D, 0, {A.Tm, A.m}, {A.k0}
     };
     const double C0{15}, dT0{1}, Vd{A.D/A.a0}; // solute trapping starts as V approaches max diffusive Velocity Vd 
@@ -63,18 +63,18 @@ TEST_CASE("Linearised Dynamic model agrees with LKT-BCT at pre solute trapping u
     {
         INFO("dT = " + std::to_string(dT));
         solvers::Result LKT_BCTResult{solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0)};
-        solvers::Result dynamicResult{solvers::newton<models::dynamic>(dT, C0, ALin, V0, R0)};
-        INFO("V LKT-BCT = " + std::to_string(LKT_BCTResult.V) + ", V dynamic = " + std::to_string(dynamicResult.V) + '\n');
-        INFO("R LKT-BCT = " + std::to_string(LKT_BCTResult.R) + ", R dynamic = " + std::to_string(dynamicResult.R) + '\n');
+        solvers::Result CLWResult{solvers::newton<models::CLW>(dT, C0, ALin, V0, R0)};
+        INFO("V LKT-BCT = " + std::to_string(LKT_BCTResult.V) + ", V CLW = " + std::to_string(CLWResult.V) + '\n');
+        INFO("R LKT-BCT = " + std::to_string(LKT_BCTResult.R) + ", R CLW = " + std::to_string(CLWResult.R) + '\n');
 
         REQUIRE(LKT_BCTResult.hasConverged);
-        REQUIRE(dynamicResult.hasConverged);
-        REQUIRE((std::abs(LKT_BCTResult.R - dynamicResult.R)/LKT_BCTResult.R) < 2); // tolerance for rounding errors
-        REQUIRE((std::abs(LKT_BCTResult.V - dynamicResult.V)/LKT_BCTResult.V) < 2);
+        REQUIRE(CLWResult.hasConverged);
+        REQUIRE((std::abs(LKT_BCTResult.R - CLWResult.R)/LKT_BCTResult.R) < 2); // tolerance for rounding errors
+        REQUIRE((std::abs(LKT_BCTResult.V - CLWResult.V)/LKT_BCTResult.V) < 2);
 
-        if (dynamicResult.V > (Vd/10))
-            break;  // dynamic model not neccessarily equivalent to LKT_BCT when solute trapping starts
-        std::tie(V0, R0) = std::tie(dynamicResult.V, dynamicResult.R);
+        if (CLWResult.V > (Vd/10))
+            break;  // CLW model not neccessarily equivalent to LKT_BCT when solute trapping starts
+        std::tie(V0, R0) = std::tie(CLWResult.V, CLWResult.R);
     }
 
 }

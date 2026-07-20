@@ -121,7 +121,7 @@ int main()
 
     
     // https://doi.org/10.1007/s11433-010-4167-y, Fig.5
-    std::ofstream outfCoCu{dataPath + "CoCu_Dynamic.csv"};
+    std::ofstream outfCoCu{dataPath + "CoCu_CLW.csv"};
     outfCoCu << solvers::Result::commaSeparatedColumns << '\n';
 
     {
@@ -130,7 +130,7 @@ int main()
         double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
         for (double dT{dT0}; dT<=120; ++dT)
         {
-            solvers::Result result{solvers::newton<models::dynamic>(dT, C0, A, V0, R0)};
+            solvers::Result result{solvers::newton<models::CLW>(dT, C0, A, V0, R0)};
             outfCoCu << result.commaSeparatedValues() << '\n';
             if (result.hasConverged)
                 std::tie(V0, R0) = std::tie(result.V, result.R);

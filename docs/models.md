@@ -1,9 +1,8 @@
 # Models
 
-TODO - list assumptions for each model. 
-
 Models are used to evaluate how accurate a given V and R pair are given C0, dT, and a given alloy. They are analytically
-derived from theory given a set of physical assumptions.
+derived from theory given a set of physical assumptions. All models assume a single nucleation event, which is common
+in small liquid solder balls that don't have any available nucleants.
 
 When a given model is implemented, each equation given below is rearranged such that the right hand side equals zero.
 This means that if all parameters are consistent, the right hand side of the first equation (f1) and the second equation
@@ -17,14 +16,16 @@ All alloy thermodynamic constants used below are documented in the [*alloys*](al
 
 [Lipton, J., Glicksman, M. E., & Kurz, W.](https://doi.org/10.1016/0025-5416(84)90199-X)
 
-This equation holds up to moderate undercooling and when there is only a single nucleation event. The latter is common
-in small liquid solder balls that don't have any available nucleants.
+This equation holds up to moderate undercooling for alloys with linear phase diagrams. 
 
-$$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \left[ 1 - \frac{1}{1-(1-k_0 )Iv_c} \right] + \frac{2Γ}{R} $$
+$$ ∆T = \frac{L}{c_p} Iv_t + m(C_0-C_i) + \frac{2Γ}{R} $$
 
-$$ R = \frac {Γ/σ^*} {\frac{P_t L}{c_p} -\frac{2 P_c m C_0 (1-k_0 )}{1-(1-k_0 ) Iv_c}} $$
+$$ R = \frac {Γ/σ^*} {\frac{L}{c_p}P_t - 2 m P_c (1-k_0) C_i} $$
 
 Given the following
+
+$C_i = \frac{C_0}{1-(1-k_0)Iv_c}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; - solute concentration of liquid at
+ interface
 
 $P_t = \frac{VR}{2α}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - thermal Péclet number
 
@@ -56,25 +57,24 @@ this factor in their paper in order to coerce this equation into agreeing with a
 where there is zero thermal field gradient and the second equation only depends on the solutal field gradient. This
 change is not otherwise justified and is ignored in future iterations of this model such as LKT-BCT.
 
-*Assumptions* (unfinished)
-- most constants do not vary with composition (E.G m, k0, r)
-
 ### The LKT-BCT Model
 
 [J. Lipton, W. Kurz, R. Trivedi](https://doi.org/10.1016/0001-6160(87)90174-X) - [W.J. Boettinger, S.R. Coriell and R. 
 Trivedi*](https://search.library.uq.edu.au/discovery/fulldisplay/alma991011497109703131/61UQ_INST:61UQ)
 
-An extension of the LGK model that maintains accuracy at higher undercoolings and growth rates via fewer modelling
-assumptions.
+An extension of the LGK model that maintains accuracy at higher undercoolings and growth rates for alloys with linear
+phase diagrams. 
 
-$$ ∆T = \frac{L}{c_p} Iv_t + mC_0 \left[ 1 - \frac{m'/m}{1-(1-k)Iv_c} \right] + \frac{2Γ}{R} + \frac{V}{\mu} $$
+$$ ∆T = \frac{L}{c_p} Iv_t + (mC_0 - m'C_i) + \frac{2Γ}{R} + \frac{V}{\mu} $$
 
-$$ R = \frac {Γ/σ^*} {\frac{\xi_t P_t L}{c_p} - \frac{2 P_c m C_0 (1-k) \xi_c}{1-(1-k) Iv_c}} $$
+$$ R = \frac {Γ/σ^*} {\frac{\xi_t P_t L}{c_p} - 2 m P_c (1-k) \xi_c C_i} $$
 
 GIven the following:
 
-$k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D) - (1-k_0)\frac{C_0}{100}}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity
- dependant partition coefficient
+$k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D) - (1-k_0)\frac{C_0}{100}}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity dependant partition coefficient
+
+$C_i = \frac{C_0}{1-(1-k)Iv_c}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; - solute
+concentration of liquid at interface
 
 $m' = m \left[1 + \frac{k_0 - k(1-ln(k/k_0))}{1-k_0} \right]$ &emsp;&emsp;&emsp;&emsp; - velocity dependant liquidus slope
 
@@ -107,3 +107,9 @@ and the basis for this implementation. For a full derivation of this model, it c
 of the linked conference paper. Note that a $P_c$ is missing in the denominator of the paper's R equation, and the paper
 assumes the dilute solute limit when deriving the velocity dependant $k$, meaning the $(1-k_0)C_0$ term is assumed to be
 negligible. To better generalise to higher solute concentrations, this implementation keeps the term in.
+
+<!-- ### The CLW Model -->
+<!--  -->
+<!-- [Chong-de Cao, Xiao-yu Lu, Bing-bo Wei](http://cpl.iphy.ac.cn/en/article/id/32758) -->
+<!--  -->
+<!-- An extension of the LKT-BCT model for non-linear phase diagrams and variable solute diffusivity. -->

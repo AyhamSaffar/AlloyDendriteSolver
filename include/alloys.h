@@ -31,8 +31,8 @@ namespace alloys
             double V0{};    // speed of sound in liquid - m/s
             double Tm{};    // Pure solid melting point - K
 
-            // dynamic parameters
-            bool dynamicCapable{false};
+            // CLW parameters
+            bool CLWCapable{false};
             inline double DAtT(double T) const;
             inline double TlAtC(double C) const;
             inline double mAtC(double C) const;
@@ -43,7 +43,7 @@ namespace alloys
                 double L, double Cp, double m, double k0, double r, double D, double a, double o,
                 // LKT-BCT
                 double a0=-1, double V0=-1, double Tm=-1,
-                // dynamic
+                // CLW
                 double DA0=-1, double DEa=-1, std::vector<double> TlAtCFit={}, std::vector<double> k0AtTFit={} 
             );
 
@@ -67,11 +67,11 @@ namespace alloys
 /// @param a0 Solid atomic spacing - m. Only needed for LKT-BCT capable alloys.
 /// @param V0 speed of sound in liquid - m/s. Only needed for LKT-BCT capable alloys.
 /// @param Tm Pure solid melting point - K. Only needed for LKT-BCT capable alloys.
-/// @param DA0 Arrhenius constant of diffusivity - m2/s. Only needed for dynamic alloys.
-/// @param DEa activation energy for diffusion - J/mol. Only needed for dynamic alloys.
-/// @param TlAtCFit polynomial fit of Tl for a given C (0th to nth order coefficient). Only needed for dynamic alloys.
-/// @param mAtCFit polynomial fit of m for a given C (0th to nth order coefficient). Only needed for dynamic alloys.
-/// @param k0AtTFit polynomial fit of k0 for a given T (0th to nth order coefficient). Only needed for dynamic alloys.
+/// @param DA0 Arrhenius constant of diffusivity - m2/s. Only needed for CLW alloys.
+/// @param DEa activation energy for diffusion - J/mol. Only needed for CLW alloys.
+/// @param TlAtCFit polynomial fit of Tl for a given C (0th to nth order coefficient). Only needed for CLW alloys.
+/// @param mAtCFit polynomial fit of m for a given C (0th to nth order coefficient). Only needed for CLW alloys.
+/// @param k0AtTFit polynomial fit of k0 for a given T (0th to nth order coefficient). Only needed for CLW alloys.
 inline alloys::Alloy::Alloy(
     double L, double Cp, double m, double k0, double r, double D, double a, double o, double a0, double V0, double Tm,
     double DA0, double DEa, std::vector<double> TlAtCFit, std::vector<double> k0AtTFit 
@@ -81,7 +81,7 @@ inline alloys::Alloy::Alloy(
     if ((a0!=-1) && (V0!=-1) && (Tm!=-1))
         LKT_BCTCapable = true;
     if ((DA0!=-1) && (DEa!=-1) && (!TlAtCFit.empty()) && (!k0AtTFit.empty()))
-        dynamicCapable = true;
+        CLWCapable = true;
 }            
             
             
