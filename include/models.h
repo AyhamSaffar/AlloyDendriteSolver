@@ -86,8 +86,8 @@ namespace models
         double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // - solutal stability function
         double Ci{C0/(1-(1-k)*Ivc)}; // solute concentration of liquid at interface
 
-        double f1{A.L*Ivt/A.Cp + (A.m*C0 - mP*Ci) + 2*A.r/R + V/mu - dT};
-        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*A.m*Pc*(1-k)*xic*Ci) - R};
+        double f1{A.L*Ivt/A.Cp + (A.m*C0 - mP*Ci) + 2*A.r/R + V/mu - dT}; // undercooling error
+        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*A.m*Pc*(1-k)*xic*Ci) - R}; // radius error
         return std::make_tuple(f1, f2);
     }
 
@@ -113,16 +113,19 @@ namespace models
         double Pc{V*R/(2*D)}; // solutal Péclet number
         double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
         double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
-
-        double k{(k0+(A.a0*V/D)) / (1+(A.a0*V/D)-(1-k0)*(C0/100))}; // velocity dependant partition coefficient
+        
+        // assumes dilute limit for solute trapping
+        double k{(k0+(A.a0*V/D)) / (1+(A.a0*V/D))}; // velocity dependant partition coefficient
         double R0{8.314}; // gas constant
-        double mu{A.L*A.V0/(R0*Tl*Tl)}; // interfacial kinetic coefficient //? BCT says to use Tm instead of Tl
+        // BCT paper uses Tm while this model uses Tl
+        double mu{A.L*A.V0/(R0*Tl*Tl)}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
         double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // solutal stability function
         double Ci{C0/(1-(1-k)*Ivc)}; // interface solute concentration
 
-        double f1{A.L*Ivt/A.Cp + (Tl-A.TlAtC(Ci)) + 2*A.r/R + V/mu - dT};
-        double f2{(A.r/A.o) / ( xit*Pt*A.L/A.Cp - (2*m*C0*(1-k)*Pc*xic)/(1-(1-k)*Ivc) ) - R};
+        double f1{A.L*Ivt/A.Cp + (Tl-A.TlAtC(Ci)) + 2*A.r/R + V/mu - dT}; // undercooling error
+        // Paper divides by xic instead of times by xic, but this must be a missprint.
+        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*m*(1-k)*Pc*xic*Ci) - R}; // radius error
         return std::make_tuple(f1, f2);
     }
 }
