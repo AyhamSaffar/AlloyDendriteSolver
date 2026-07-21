@@ -180,3 +180,38 @@ axes[2].legend()
 
 fig.tight_layout()
 fig.savefig(experiment_path / 'NiB_LKT_BCT.png')
+
+# %%
+data_LKT_BCT = experiments['CoCu_LKT_BCT']
+data_CLW = experiments['CoCu_CLW']
+fig, axes = plt.subplots(ncols=2, figsize=(12,5))
+
+for ax in axes:
+    ax.set_xlabel('ΔT (K)')
+    ax.set_ylabel('V (m/s)')
+
+axes[0].set_xlim(0, 300)
+axes[0].set_xticks(range(0, 301, 100))
+axes[0].set_ylim(0, 40)
+axes[0].set_yticks(range(0, 41, 10))
+
+x_off = 20
+axes[0].axvline(x=66, linestyle='--', color='black', alpha=0.3)
+axes[0].text(x=66-x_off, y=13, s='$ ΔT_t > ΔT_c $')
+axes[0].axvline(x=120, linestyle='--', color='black', alpha=0.3)
+axes[0].text(x=120-x_off, y=4, s='$ ΔT_k > ΔT_c $')
+axes[0].axvline(x=259, linestyle='--', color='black', alpha=0.3)
+axes[0].text(x=259-x_off, y=10, s='$ ΔT_k > ΔT_c $')
+axes[0].axhline(y=19, linestyle='--', color='black', alpha=0.3)
+axes[0].text(x=10, y=20, s='$ V_D = 19 m/s $')
+axes[0].plot(data_LKT_BCT['dT'], data_LKT_BCT['V'])
+
+axes[1].set_xlim(50, 120)
+axes[1].set_xticks(range(60, 121, 20))
+axes[1].set_ylim(-0.025, 0.2)
+axes[1].set_yticks(np.arange(0, 0.21, 0.05))
+
+axes[1].plot(data_CLW['dT'], data_CLW['V'])
+
+fig.tight_layout()
+fig.savefig(experiment_path / 'CoCu_Plots.png')
