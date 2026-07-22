@@ -127,9 +127,9 @@ int main()
     outfCoCuCLW << solvers::Result::commaSeparatedColumns << '\n';
 
     {
-        const alloys::Alloy A{alloys::CoCu_wtp};
-        
-        double C0{20}, dT0{1}, V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
+        const alloys::Alloy A{alloys::CoCu_20wtp};
+        double C0{20}, dT0{1};
+        double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
         for (double dT{dT0}; dT<=300; ++dT)
         {
             solvers::Result result{solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0)};
@@ -137,8 +137,12 @@ int main()
             if (result.hasConverged)
                 std::tie(V0, R0) = std::tie(result.V, result.R);
         }
+    }
 
-        C0 = 6, V0 = approx::getV(dT0, C0, A), R0 = approx::getR(dT0, C0, A);
+    {
+        const alloys::Alloy A{alloys::CoCu_60wtp};
+        double C0{60}, dT0{1};
+        double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
         for (double dT{dT0}; dT<=120; ++dT)
         {
             solvers::Result result{solvers::newton<models::CLW>(dT, C0, A, V0, R0)};
