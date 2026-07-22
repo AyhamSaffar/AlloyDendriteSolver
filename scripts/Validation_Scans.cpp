@@ -39,7 +39,8 @@ int main()
             double dT{std::pow(10, dTPower)};
             solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::AlFe_wtp, V0, R0)};
             outfAlFe << result.commaSeparatedValues() << '\n';
-            std::tie(V0, R0) = std::tie(result.V, result.R);
+            if (result.hasConverged)
+                std::tie(V0, R0) = std::tie(result.V, result.R);
         }
     }
 

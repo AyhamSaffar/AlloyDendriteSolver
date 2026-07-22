@@ -16,18 +16,22 @@ namespace solvers{
 
     // struct to hold and log data from a solver attempt
     struct Result{
-        bool hasDiverged{};
-        bool hasConverged{};
-        int steps{};
-        double dT{};
-        double C0{};
-        double V{};
-        double R{};
-        double f1{};
-        double f2{};
+        bool hasDiverged{};     // calculated dV or dR is NaN
+        bool hasConverged{};    // undercooling and radius errors within tolerance
+        int steps{};            // number of optimisation steps (excluding line search iterations)
+        double dT{};            // undercooling - K
+        double C0{};            // bulk alloy solute concentration - C.%
+        double V{};             // dendrite velocity - m/s
+        double R{};             // dendrite tip radius - m
+        double f1{};            // undercooling error
+        double f2{};            // radius error
+        double dTt{};           // calculated thermal undercooling - K
+        double dTc{};           // calculated solutal undercooling - K
+        double dTr{};           // calculated curvature undercooling - K
+        double dTk{};           // calculated kinetic undercooling - K (not calculated in all models)            
         
         inline std::string commaSeparatedValues();
-        static inline std::string commaSeparatedColumns{"diverged,converged,steps,dT,C0,V,R,f1,f2"};
+        static inline std::string commaSeparatedColumns{"diverged,converged,steps,dT,C0,V,R,f1,f2,dTt,dTc,dTr,dTk"};
     };
 
     using SolverFunc = Result (*)(double, double, const alloys::Alloy&);
@@ -82,7 +86,7 @@ namespace solvers{
             R += a*dR;
         }
         
-        return Result{diverged, converged, step, dT, C0, V, R, f1, f2};
+        return Result{diverged, converged, step, dT, C0, V, R, f1, f2, dTs.t, dTs.c, dTs.r, dTs.k};
     }
 
     
@@ -93,7 +97,7 @@ namespace solvers{
         std::stringstream values{};
         values << std::boolalpha;
         values << hasDiverged << ',' << hasConverged << ',' << steps << ',' <<  dT << ',' << C0 << ',' << V << ',' << R
-               << ',' << f1 << ',' << f2 ;
+               << ',' << f1 << ',' << f2 << ',' <<  dTt << ',' << dTc << ',' << dTr << ',' << dTk;
         return values.str();
     }
 }
