@@ -106,11 +106,12 @@ int main()
     double f1{}, f2{}, dV{}, dR{}, dT{10.0}, C0{5.0};
     double V{approx::getV(dT, C0, A)}, R{approx::getR(dT, C0, A)};
     diff::Jacobian J{};
+    models::DTs _{}; // unused struct
 
     // iteratively solve for V and R
     for (int step{0}; step<100; ++step)
     {
-        std::tie(f1, f2) = models::LGK(V, R, dT, C0, A);
+        std::tie(f1, f2, _) = models::LGK(V, R, dT, C0, A);
         J = diff::calculateGrads<models::LGK>(V, R, dT, C0, A);
         std::tie(dV, dR) = optimisers::newtonRaphson(f1, f2, J);
         V += 0.1 * dV; // smaller steps prevent divergence

@@ -54,10 +54,11 @@ namespace optimisers
         double dV, double dR, double prevFNorm
     )
     {
+        models::DTs _{};
         double a{1}, f1{}, f2{}; // step size
         for (int nAttemps{0}; nAttemps<=8; ++nAttemps)
         {
-            std::tie(f1, f2) = model(V+a*dV, R+a*dR, dT, C0, A);
+            std::tie(f1, f2, _) = model(V+a*dV, R+a*dR, dT, C0, A);
             double fNorm{std::sqrt(f1*f1 + f2*f2)};
             if (fNorm < prevFNorm)
                 return a;

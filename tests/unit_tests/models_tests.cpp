@@ -9,9 +9,10 @@ TEST_CASE("LGK model roughly agrees with approximation at low undercooling", "[m
 {
     double dT{0.001}, C0{5.0}, f1{}, f2{}; 
     alloys::Alloy A{alloys::SnAg_wtp};
+    models::DTs _{};
 
     double V{approx::getV(dT, C0, A)}, R{approx::getR(dT, C0, A)};
-    std::tie(f1, f2) = models::LGK(V, R, dT, C0, A);
+    std::tie(f1, f2, _) = models::LGK(V, R, dT, C0, A);
     
     // near zero values for f1 and f2 means the models predict the values V and R are correct for the dT & C0 used
     REQUIRE(std::abs(f1) < 0.1);
@@ -22,9 +23,10 @@ TEST_CASE("LKT_BCT model roughly agrees with approximation at low undercooling",
 {
     double dT{0.001}, C0{5.0}, f1{}, f2{}; 
     alloys::Alloy A{alloys::SnAg_wtp};
+    models::DTs _{};
 
     double V{approx::getV(dT, C0, A)}, R{approx::getR(dT, C0, A)};
-    std::tie(f1, f2) = models::LKT_BCT(V, R, dT, C0, A);
+    std::tie(f1, f2, _) = models::LKT_BCT(V, R, dT, C0, A);
     
     // near zero values for f1 and f2 means the models predict the values V and R are correct for the dT & C0 used
     REQUIRE(std::abs(f1) < 0.1);

@@ -10,8 +10,17 @@
 /// a single nucleation event, for example in small liquid solder balls that don't have any available nucleants.
 namespace models
 {
+    // stores different undercooling components
+    struct DTs
+    {
+        double t{}; // thermal undercooling
+        double c{}; // solutal undercooling
+        double r{}; // curvature undercooling
+        double k{}; // kinetic undercooling
+    };
+
     // template for all function headers in this module
-    using ModelFunc = std::tuple<double, double> (*)(double, double, double, double, const alloys::Alloy&);
+    using ModelFunc = std::tuple<double, double, DTs> (*)(double, double, double, double, const alloys::Alloy&);
 
     // cmath module uses a slightly different form of exponential integral compared to what is needed here
     inline double expint(double x) {return -std::expint(-x);}
@@ -38,7 +47,7 @@ namespace models
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
     template <bool LEGACY=true>
-    inline std::tuple<double, double> LGK(double V, double R, double dT, double C0, const alloys::Alloy& A)
+    inline std::tuple<double, double, DTs> LGK(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Pc{V*R/(2*A.D)}; // solutal Péclet number
@@ -47,9 +56,10 @@ namespace models
         double Ci{C0/(1-(1-A.k0)*Ivc)}; // solute concentration of liquid at interface
 
         double factor{LEGACY ? 1 : 2}; // solutal field gradient factor
-        double f1{A.L*Ivt/A.Cp + A.m*(C0-Ci) + 2*A.r/R - dT};
-        double f2{(A.r/A.o) / (Pt*A.L/A.Cp - factor*Pc*A.m*(1-A.k0)*Ci) - R};
-        return std::make_tuple(f1, f2);
+        double dTt{A.L*Ivt/A.Cp}, dTc{A.m*(C0-Ci)}, dTr{2*A.r/R}; // undercooling components
+        double f1{dTt+dTc+dTr-dT}; // undercooling error
+        double f2{(A.r/A.o) / (Pt*A.L/A.Cp - factor*Pc*A.m*(1-A.k0)*Ci) - R}; // radius error
+        return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr});
     }
 
     /// @brief Lipton, Kurz, and Trivedi - Boettinger Coriell and Trivedi model. Generalises better to higher
@@ -63,7 +73,7 @@ namespace models
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
     template <bool NO_PARTITIONING=false>
-    inline std::tuple<double, double> LKT_BCT(double V, double R, double dT, double C0, const alloys::Alloy& A)
+    inline std::tuple<double, double, DTs> LKT_BCT(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         if (!A.LKT_BCTCapable)
             throw std::runtime_error("Attempted to pass non LKT-BCT capable Alloy to LKT-BCT model");
@@ -86,9 +96,10 @@ namespace models
         double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // - solutal stability function
         double Ci{C0/(1-(1-k)*Ivc)}; // solute concentration of liquid at interface
 
-        double f1{A.L*Ivt/A.Cp + (A.m*C0 - mP*Ci) + 2*A.r/R + V/mu - dT}; // undercooling error
+        double dTt{A.L*Ivt/A.Cp}, dTc{A.m*C0 - mP*Ci}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
+        double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
         double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*A.m*Pc*(1-k)*xic*Ci) - R}; // radius error
-        return std::make_tuple(f1, f2);
+        return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
 
     /// @brief Cao, Wang, Duan, and Bai model. Generalises better to higher undercoolings and velocities for non-linear
@@ -99,7 +110,7 @@ namespace models
     /// @param C0 bulk alloy solute concentration - C.%
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
-    inline std::tuple<double, double> CLW(double V, double R, double dT, double C0, const alloys::Alloy& A)
+    inline std::tuple<double, double, DTs> CLW(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         if (!A.CLWCapable)
             throw std::runtime_error("Attempted to pass non CLW capable Alloy to CLW model");
@@ -123,10 +134,11 @@ namespace models
         double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // solutal stability function
         double Ci{C0/(1-(1-k)*Ivc)}; // interface solute concentration
 
-        double f1{A.L*Ivt/A.Cp + (Tl-A.TlAtC(Ci)) + 2*A.r/R + V/mu - dT}; // undercooling error
+        double dTt{A.L*Ivt/A.Cp}, dTc{Tl-A.TlAtC(Ci)}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
+        double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
         // Paper divides by xic instead of times by xic, but this must be a missprint.
         double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*m*(1-k)*Pc*xic*Ci) - R}; // radius error
-        return std::make_tuple(f1, f2);
+        return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
 }
 

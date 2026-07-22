@@ -53,10 +53,11 @@ namespace solvers{
         diff::Jacobian J{};
         int maxSteps{1000}, step{0};
         bool converged{false}, diverged{false};
-    
+        models::DTs dTs{};
+
         for (; step<maxSteps; ++step)
         {
-            std::tie(f1, f2) = MODEL(V, R, dT, C0, A);
+            std::tie(f1, f2, dTs) = MODEL(V, R, dT, C0, A);
             if ((std::abs(f1)<1e-12) && (std::abs(f2)<1e-12))
             {
                 converged = true;

@@ -14,7 +14,7 @@ namespace diff
     template <models::ModelFunc func, int fToReturn>
     inline double wrapper(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
-        std::tuple<double, double> f{func(V, R, dT, C0, A)};
+        std::tuple<double, double, models::DTs> f{func(V, R, dT, C0, A)};
         return std::get<fToReturn-1>(f);
     }
     struct Jacobian{double df1dV{}; double df1dR{}; double df2dV{}; double df2dR{};};
