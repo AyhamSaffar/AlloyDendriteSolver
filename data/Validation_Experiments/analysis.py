@@ -184,34 +184,62 @@ fig.savefig(experiment_path / 'NiB_LKT_BCT.png')
 # %%
 data_LKT_BCT = experiments['CoCu_LKT_BCT']
 data_CLW = experiments['CoCu_CLW']
-fig, axes = plt.subplots(ncols=2, figsize=(12,5))
+fig, axes = plt.subplots(ncols=2, nrows=2, figsize=(12,8))
 
-for ax in axes:
-    ax.set_xlabel('ΔT (K)')
-    ax.set_ylabel('V (m/s)')
+axes[0, 0].set_xlabel('ΔT (K)')
+axes[0, 0].set_xlim(0, 300)
+axes[0, 0].set_xticks(range(0, 301, 100))
+axes[0, 0].set_ylabel('V (m/s)')
+axes[0, 0].set_yticks(range(0, 41, 10))
+axes[0, 0].set_ylim(0, 40)
 
-axes[0].set_xlim(0, 300)
-axes[0].set_xticks(range(0, 301, 100))
-axes[0].set_ylim(0, 40)
-axes[0].set_yticks(range(0, 41, 10))
+axes[0, 0].axhline(y=19, linestyle='--', color='black', alpha=0.3)
+axes[0, 0].text(x=10, y=20, s='$ V_D = 19 m/s $')
+axes[0, 0].plot(data_LKT_BCT['dT'], data_LKT_BCT['V'])
 
-x_off = 20
-axes[0].axvline(x=66, linestyle='--', color='black', alpha=0.3)
-axes[0].text(x=66-x_off, y=13, s='$ ΔT_t > ΔT_c $')
-axes[0].axvline(x=120, linestyle='--', color='black', alpha=0.3)
-axes[0].text(x=120-x_off, y=4, s='$ ΔT_k > ΔT_c $')
-axes[0].axvline(x=259, linestyle='--', color='black', alpha=0.3)
-axes[0].text(x=259-x_off, y=10, s='$ ΔT_k > ΔT_c $')
-axes[0].axhline(y=19, linestyle='--', color='black', alpha=0.3)
-axes[0].text(x=10, y=20, s='$ V_D = 19 m/s $')
-axes[0].plot(data_LKT_BCT['dT'], data_LKT_BCT['V'])
+axes[0, 1].set_xlabel('ΔT (K)')
+axes[0, 1].set_xlim(50, 120)
+axes[0, 1].set_xticks(range(60, 121, 20))
+axes[0, 1].set_ylabel('V (m/s)')
+axes[0, 1].set_ylim(-0.025, 0.2)
+axes[0, 1].set_yticks(np.arange(0, 0.21, 0.05))
 
-axes[1].set_xlim(50, 120)
-axes[1].set_xticks(range(60, 121, 20))
-axes[1].set_ylim(-0.025, 0.2)
-axes[1].set_yticks(np.arange(0, 0.21, 0.05))
+axes[0, 1].plot(data_CLW['dT'], data_CLW['V'])
 
-axes[1].plot(data_CLW['dT'], data_CLW['V'])
+axes[1, 0].set_xlabel('Bulk undercooling (K)')
+axes[1, 0].set_xlim(0, 350)
+axes[1, 0].set_xticks(range(0, 301, 100))
+axes[1, 0].set_ylabel('Partial undercoolings (K)')
+axes[1, 0].set_yscale('log')
+axes[1, 0].set_ylim(0.1, 150)
+axes[1, 0].set_yticks([1, 10, 100])
+
+axes[1, 1].set_xlabel('Bulk undercooling (K)')
+axes[1, 1].set_xlim(0, 120)
+axes[1, 1].set_xticks(range(0, 121, 20))
+axes[1, 1].set_ylabel('Partial undercoolings (K)')
+axes[1, 1].set_yscale('log')
+axes[1, 1].set_ylim(0.03, 120)
+axes[1, 1].set_yticks([0.1, 1, 10, 100])
+
+for col, data in ((0, data_LKT_BCT), (1, data_CLW)):
+    ax = axes[1, col]
+    ax.plot(data['dT'], data['dTt'], label='$ ΔT_t $')
+    ax.plot(data['dT'], data['dTc'], label='$ ΔT_c $')
+    ax.plot(data['dT'], data['dTr'], label='$ ΔT_r $')
+    ax.plot(data['dT'], data['dTk'], label='$ ΔT_k $')
+    ax.legend()
+
+for row in range(2):
+    ax = axes[row, 0]
+    x_off = 20
+    y = 5 if row==0 else 0.2
+    ax.axvline(x=66, linestyle='--', color='black', alpha=0.3)
+    ax.text(x=66-x_off, y=y, s='$ ΔT_t > ΔT_c $')
+    ax.axvline(x=120, linestyle='--', color='black', alpha=0.3)
+    ax.text(x=120-x_off, y=y, s='$ ΔT_k > ΔT_c $')
+    ax.axvline(x=259, linestyle='--', color='black', alpha=0.3)
+    ax.text(x=259-x_off, y=y, s='$ ΔT_k > ΔT_c $')
 
 fig.tight_layout()
 fig.savefig(experiment_path / 'CoCu_Plots.png')

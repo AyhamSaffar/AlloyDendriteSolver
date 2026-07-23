@@ -121,30 +121,18 @@ int main()
     }
 
     
-    // https://doi.org/10.1007/s11433-010-4167-y, Fig. 2 & 5
-    std::ofstream outfCoCuLKTBCT{dataPath + "CoCu_LKT_BCT.csv"};
+    // https://doi.org/10.1007/s11433-010-4167-y, Fig. 2, 3, 5 & 6. 20wt.% results assume linear liquidus and solidus, 
+    // which is not true beyond 100K dT. Therefore the CLW model is used instead of LKT-BCT.
     std::ofstream outfCoCuCLW{dataPath + "CoCu_CLW.csv"};
-    outfCoCuLKTBCT << solvers::Result::commaSeparatedColumns << '\n';
     outfCoCuCLW << solvers::Result::commaSeparatedColumns << '\n';
 
+    for (double C0: {20.0, 60.0})
     {
-        const alloys::Alloy A{alloys::CoCu_20wtp};
-        double C0{20}, dT0{1};
-        double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
-        for (double dT{dT0}; dT<=300; ++dT)
-        {
-            solvers::Result result{solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0)};
-            outfCoCuLKTBCT << result.commaSeparatedValues() << '\n';
-            if (result.hasConverged)
-                std::tie(V0, R0) = std::tie(result.V, result.R);
-        }
-    }
-
-    {
-        const alloys::Alloy A{alloys::CoCu_60wtp};
-        double C0{60}, dT0{1};
-        double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
-        for (double dT{dT0}; dT<=120; ++dT)
+        const alloys::Alloy A{(C0==20) ? alloys::CoCu_20wtp : alloys::CoCu_60wtp};
+        double dT0{1};
+        // double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
+        double V0{1e-3}, R0{1e-6}; // better solution needed for initial guess of non-linear phase diagrams
+        for (double dT{dT0}; dT<=350; ++dT)
         {
             solvers::Result result{solvers::newton<models::CLW>(dT, C0, A, V0, R0)};
             outfCoCuCLW << result.commaSeparatedValues() << '\n';
@@ -153,6 +141,5 @@ int main()
         }
     }
 
-    return 0;
 }
 

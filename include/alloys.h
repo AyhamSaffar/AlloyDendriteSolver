@@ -135,27 +135,37 @@ namespace alloys
     // standard solution to marginal stability criterion for a planar interace. Could vary with crystal structure.
     static constexpr double o{1.0/(4*std::numbers::pi*std::numbers::pi)};
     static constexpr double R{8.3145}; // gas constant in J/molK
+    
+    /// ThermoCalc 2026b with the TCBIN v1.1 database was used to get phase diagram data and this was fit to 7th order
+    // polynomials using the least squares method in Python's Numpy library. This fit is only valid above 1385K (316K
+    // dT), as below this T, the phase diagram transitions from an FCC Cu & Liquid mix to an FCC Cu & FCC Co mix. 
+    static std::vector<double> CoCuTlAtCFit{
+        1768.4309105217317, -2.4830585090005366, -0.06569466381811043, -0.002782299761566121, 0.00024348143492583415,
+        -5.255801655884799e-06, 4.880250303891831e-08, -1.7583823392354547e-10
+    };
+    /// ThermoCalc 2026b with the TCBIN v1.1 database was used to get phase diagram data and this was fit to 7th order
+    // polynomials using the least squares method in Python's Numpy library. This fit is only valid above 1385K (316K
+    // dT), as below this T, the phase diagram transitions from an FCC Cu & Liquid mix to an FCC Cu & FCC Co mix. 
+    static std::vector<double> CoCuK0AtTFit{
+        -3801518.987086376, 17152.39587739071, -33.12264184201521, 0.03548609677502506, -2.277955192972038e-05,
+        8.76159778193873e-09, -1.8695933461684003e-12, 1.7073854174172395e-16
+    };
 
-    // below paper uses noticably different a0 and a for C0=20wt.% and C0=60wt.%, and so these must be 2 seperate Alloys
+    // below paper uses noticably different a0 and a for C0=20wt.% and C0=60wt.%, so these must be 2 seperate Alloys.
 
-    // Cobalt Copper system for 20wt.% Cu. Taken from https://doi.org/10.1007/s11433-010-4167-y. D is fixed to value at
-    // ~100K dT whereas paper uses T dependant D. Also paper uses Tl instead of Tm in kinetic undercooling term.
-    const Alloy CoCu_20wtp{15033, 39.05, -3.3, 0.67, 3.4e-7, 2.5e-9, 1.424e-5, o, 1.697e-10, 4000, 1701};
+    // Cobalt Copper system for 20wt.% Cu. Taken from https://doi.org/10.1007/s11433-010-4167-y. Phase diagram fits used
+    // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit. The default D, m, Tm, 
+    // and k0 is set to NaN to ensure this alloy is not used with the LGK / LKT-BCT models. These models assume linear
+    // Tl & Ts, which is not the case here.
+    const Alloy CoCu_20wtp{15033, 39.06, NAN, NAN, 3.4e-7, NAN, 1.424e-5, o, 1.697e-10, 4000, NAN, 1.58e-7, 55060,
+        CoCuTlAtCFit, CoCuK0AtTFit};
 
     // Cobalt Copper system for 60wt.% Cu. Taken from https://doi.org/10.1007/s11433-010-4167-y. Phase diagram fits used
-    // in papers lacked decimal places in coefficients as well as a Tl(C) fit. Instead ThermoCalc 2026b with the TCBIN
-    // v1.1 database was used to get phase diagram data and this was fit to 7th order polynomials using the least
-    // squares method in Python's Numpy library. This fit is only valid above 1385K (316K dT), as below this T, the
-    // phase diagram transitions from an FCC Cu & Liquid mix to an FCC Cu & FCC Co mix. The default D, m, and ko is set
-    // to NaN to ensure this alloy is not used with the LGK / LKT-BCT models. These models assume linear Tl & Ts, which
-    // is definitely not the case at this C0. Also paper uses Tl instead of Tm in kinetic undercooling term.
-    const Alloy CoCu_60wtp{
-        14057, 36.05, NAN, NAN, 3.33e-7, NAN, 2.9e-5, o, 4.294e-10, 4000.0, 1663, 2.04e-7, 54069,
-        {1768.4309105217317, -2.4830585090005366, -0.06569466381811043, -0.002782299761566121,
-            0.00024348143492583415, -5.255801655884799e-06, 4.880250303891831e-08, -1.7583823392354547e-10}, 
-        {-3801518.987086376, 17152.39587739071, -33.12264184201521, 0.03548609677502506, -2.277955192972038e-05,
-            8.76159778193873e-09, -1.8695933461684003e-12, 1.7073854174172395e-16}
-    };
+    // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit. The default D, m, Tm, 
+    // and k0 is set to NaN to ensure this alloy is not used with the LGK / LKT-BCT models. These models assume linear
+    // Tl & Ts, which is not the case here.
+    const Alloy CoCu_60wtp{14057, 36.05, NAN, NAN, 3.33e-7, NAN, 2.9e-5, o, 4.294e-10, 4000, NAN, 2.04e-7, 54069,
+        CoCuTlAtCFit, CoCuK0AtTFit};
 
     // Nickel Borom system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. m and k0 were fit using
     // ThermoCalc database TCNI8. Default m and k0 used were the average over the first 100K dT.

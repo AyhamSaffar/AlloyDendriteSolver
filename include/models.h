@@ -115,7 +115,7 @@ namespace models
         if (!A.CLWCapable)
             throw std::runtime_error("Attempted to pass non CLW capable Alloy to CLW model");
 
-        double Tl{A.TlAtC(C0)}; // liquidus temperature
+        double Tl{A.TlAtC(C0)}; // C0 liquidus temperature
         double D{A.DAtT(Tl-dT)}; // diffusivity constant
         double m{A.mAtC(C0)}; // liquidus gradient
         double k0{A.k0AtT(Tl-dT)}; // equilibrium partition coefficient
