@@ -44,14 +44,16 @@ namespace alloys
                 // LKT-BCT
                 double a0=-1, double V0=-1, double Tm=-1,
                 // CLW
-                double DA0=-1, double DEa=-1, std::vector<double> TlAtCFit={}, std::vector<double> k0AtTFit={} 
+                double DA0=-1, double DEa=-1, std::vector<double> TlAtCFit={}, std::vector<double> ClAtTFit={},
+                    std::vector<double> CsAtTFit={} 
             );
 
         private:
             double m_DA0{}; // Arrhenius constant of diffusivity - m2/s
             double m_DEa{}; // activation energy for diffusion - J/mol
             std::vector<double> m_TlAtCFit{}; // polynomial fit of Tl for a given C (0th to nth order coefficient)
-            std::vector<double> m_k0AtTFit{}; // polynomial fit of k0 for a given T (0th to nth order coefficient)
+            std::vector<double> m_ClAtTFit{}; // polynomial fit of Cl for a given T (0th to nth order coefficient)
+            std::vector<double> m_CsAtTFit{}; // polynomial fit of Cs for a given T (0th to nth order coefficient)
     }; 
 }
 
@@ -71,16 +73,17 @@ namespace alloys
 /// @param DEa activation energy for diffusion - J/mol. Only needed for CLW alloys.
 /// @param TlAtCFit polynomial fit of Tl for a given C (0th to nth order coefficient). Only needed for CLW alloys.
 /// @param mAtCFit polynomial fit of m for a given C (0th to nth order coefficient). Only needed for CLW alloys.
-/// @param k0AtTFit polynomial fit of k0 for a given T (0th to nth order coefficient). Only needed for CLW alloys.
+/// @param ClAtTFit polynomial fit of Cl for a given T (0th to nth order coefficient). Only needed for CLW alloys.
+/// @param CsAtTFit polynomial fit of Cs for a given T (0th to nth order coefficient). Only needed for CLW alloys.
 inline alloys::Alloy::Alloy(
     double L, double Cp, double m, double k0, double r, double D, double a, double o, double a0, double V0, double Tm,
-    double DA0, double DEa, std::vector<double> TlAtCFit, std::vector<double> k0AtTFit 
+    double DA0, double DEa, std::vector<double> TlAtCFit, std::vector<double> ClAtTFit, std::vector<double> CsAtTFit  
 ): L{L}, Cp{Cp}, m{m}, k0{k0}, r{r}, D{D}, a{a}, o{o}, a0{a0}, V0{V0}, Tm{Tm}, m_DA0{DA0}, m_DEa{DEa},
-    m_TlAtCFit{TlAtCFit}, m_k0AtTFit{k0AtTFit} 
+    m_TlAtCFit{TlAtCFit}, m_ClAtTFit{ClAtTFit}, m_CsAtTFit{CsAtTFit} 
 {
     if ((a0!=-1) && (V0!=-1) && (Tm!=-1))
         LKT_BCTCapable = true;
-    if ((DA0!=-1) && (DEa!=-1) && (!TlAtCFit.empty()) && (!k0AtTFit.empty()))
+    if ((DA0!=-1) && (DEa!=-1) && (!TlAtCFit.empty()) && (!ClAtTFit.empty()) && (!CsAtTFit.empty()))
         CLWCapable = true;
 }            
             
@@ -122,10 +125,12 @@ inline double alloys::Alloy::mAtC(double C) const
 /// @return Equilibrium partition coefficient - C% / C%
 inline double alloys::Alloy::k0AtT(double T) const
 {
-    double k0{0};
-    for (std::size_t i{0}; i<std::size(m_k0AtTFit); ++i)
-        k0 += m_k0AtTFit[i] * std::pow(T, i);
-    return k0;
+    double Cl{0}, Cs{0};
+    for (std::size_t i{0}; i<std::size(m_ClAtTFit); ++i)
+        Cl += m_ClAtTFit[i] * std::pow(T, i);
+    for (std::size_t i{0}; i<std::size(m_CsAtTFit); ++i)
+        Cs += m_CsAtTFit[i] * std::pow(T, i);
+    return Cs/Cl;
 }
 
 // bank of known alloy systems
@@ -143,14 +148,14 @@ namespace alloys
         1768.4309105217317, -2.4830585090005366, -0.06569466381811043, -0.002782299761566121, 0.00024348143492583415,
         -5.255801655884799e-06, 4.880250303891831e-08, -1.7583823392354547e-10
     };
-    /// ThermoCalc 2026b with the TCBIN v1.1 database was used to get phase diagram data and this was fit to 7th order
-    // polynomials using the least squares method in Python's Numpy library. This fit is only valid above 1385K (316K
-    // dT), as below this T, the phase diagram transitions from an FCC Cu & Liquid mix to an FCC Cu & FCC Co mix. 
-    static std::vector<double> CoCuK0AtTFit{
-        -3801518.987086376, 17152.39587739071, -33.12264184201521, 0.03548609677502506, -2.277955192972038e-05,
-        8.76159778193873e-09, -1.8695933461684003e-12, 1.7073854174172395e-16
+    static std::vector<double> CoCuClAtTFit{
+        779838079.9241728, -3507066.1641644835, 6748.775967182457, -7.203433488153699, 0.00460573309595906,
+        -1.7639643327132657e-06, 3.746931408209084e-10, -3.4051708146153894e-14
     };
-
+    static std::vector<double> CoCuCsAtTFit{
+        -35635062.73621782, 163520.05663544996, -321.2683140293004, 0.35032250139780624, -0.0002289764005790414,
+        8.970805214138605e-08, -1.9505707064548234e-11, 1.8158181787312304e-15
+    };
     // below paper uses noticably different a0 and a for C0=20wt.% and C0=60wt.%, so these must be 2 seperate Alloys.
 
     // Cobalt Copper system for 20wt.% Cu. Taken from https://doi.org/10.1007/s11433-010-4167-y. Phase diagram fits used
@@ -158,14 +163,14 @@ namespace alloys
     // and k0 is set to NaN to ensure this alloy is not used with the LGK / LKT-BCT models. These models assume linear
     // Tl & Ts, which is not the case here.
     const Alloy CoCu_20wtp{15033, 39.06, NAN, NAN, 3.4e-7, NAN, 1.424e-5, o, 1.697e-10, 4000, NAN, 1.58e-7, 55060,
-        CoCuTlAtCFit, CoCuK0AtTFit};
+        CoCuTlAtCFit, CoCuClAtTFit, CoCuCsAtTFit};
 
     // Cobalt Copper system for 60wt.% Cu. Taken from https://doi.org/10.1007/s11433-010-4167-y. Phase diagram fits used
     // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit. The default D, m, Tm, 
     // and k0 is set to NaN to ensure this alloy is not used with the LGK / LKT-BCT models. These models assume linear
     // Tl & Ts, which is not the case here.
     const Alloy CoCu_60wtp{14057, 36.05, NAN, NAN, 3.33e-7, NAN, 2.9e-5, o, 4.294e-10, 4000, NAN, 2.04e-7, 54069,
-        CoCuTlAtCFit, CoCuK0AtTFit};
+        CoCuTlAtCFit, CoCuClAtTFit, CoCuCsAtTFit};
 
     // Nickel Borom system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. m and k0 were fit using
     // ThermoCalc database TCNI8. Default m and k0 used were the average over the first 100K dT.
@@ -180,10 +185,11 @@ namespace alloys
     // Iron Cobalt system in both wt.% and at.%, as Fe and Co have such similar atomic masses (55.845 & 58.993). Taken
     // from https://doi.org/10.1016/j.actamat.2016.09.047. Gamma and Delta refer to different crystal phases that
     // form during solidification. The paper lists slighly different parameters for 30, 40, and 50 atom.% Co. The 40
-    // atom.% Co parameters are used here as an average of the similar values.
+    // atom.% Co parameters are used here as an average of the similar values. Note while all are small, m at each C0
+    // vary a fair amount (-0.69, -0.45, and -0.13 at 30, 40, and 50 atom.% Co repectively)
     const Alloy FeCoGamma{
         14083, 5796451*FeAr/FeMeltDensity, -0.45, 0.989, 0.319/1032396, 4.7e-9, 5.36e-06, o, 2.354e-10, 550, 1757
-    }; //! should use C0 dependant m as is -0.69, -0.45, and -0.13 at 30, 40, and 50 atom.% Co repectively.
+    };
     const Alloy FeCoDelta{
         10767, 5704510*FeAr/FeMeltDensity, -1.98, 0.96, 0.206/801030, 4.7e-9, 5.36e-06, o, 2.354e-10, 350, 1733
     };
