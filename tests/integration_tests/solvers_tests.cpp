@@ -49,14 +49,15 @@ TEST_CASE("LKT-BCT model V prediction agrees with LGK at low undercooling and gi
         }
 }
 
-// Currently fails. Does slightly better if in using an atp alloy.
 TEST_CASE("Linearised CLW model agrees with LKT-BCT at pre solute trapping undercoolings", "[Solvers]")
 {
+    // CLW starts to diverge from LKT-BCT at higher V as dTk expression slighly different and CLW does not adjust Tl
+    // as solute trapping begins (as V -> Vd). It only adjusts k0.
     const alloys::Alloy A{alloys::AgCu_wtp}; // LKT-BCT capable Alloy
     const alloys::Alloy ALin{ // CLW model with fixed D, k0 and linear Tl
-        A.L, A.Cp, A.m, A.k0, A.r, A.D, A.a, A.o, A.a0, A.V0, A.Tm, A.D, 0, {A.Tm, A.m}, {A.k0}
+        A.L, A.Cp, A.m, A.k0, A.r, A.D, A.a, A.o, A.a0, A.V0, A.Tm, A.D, 0, {A.Tm, A.m}, {1}, {A.k0}
     };
-    const double C0{15}, dT0{1}, Vd{A.D/A.a0}; // solute trapping starts as V approaches max diffusive Velocity Vd 
+    const double C0{3}, dT0{1}, Vd{A.D/A.a0}; // C0 low as CLW assumes dilute limit in solute trapping expression
     double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
     
     for (double dT{1}; dT<500; ++dT)
@@ -69,11 +70,11 @@ TEST_CASE("Linearised CLW model agrees with LKT-BCT at pre solute trapping under
 
         REQUIRE(LKT_BCTResult.hasConverged);
         REQUIRE(CLWResult.hasConverged);
-        REQUIRE((std::abs(LKT_BCTResult.R - CLWResult.R)/LKT_BCTResult.R) < 2); // tolerance for rounding errors
-        REQUIRE((std::abs(LKT_BCTResult.V - CLWResult.V)/LKT_BCTResult.V) < 2);
+        REQUIRE((std::abs(LKT_BCTResult.R - CLWResult.R)/LKT_BCTResult.R) < 0.05); // maximum of 5% error
+        REQUIRE((std::abs(LKT_BCTResult.V - CLWResult.V)/LKT_BCTResult.V) < 0.05);
 
         if (CLWResult.V > (Vd/10))
-            break;  // CLW model not neccessarily equivalent to LKT_BCT when solute trapping starts
+            break;
         std::tie(V0, R0) = std::tie(CLWResult.V, CLWResult.R);
     }
 
