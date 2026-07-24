@@ -20,7 +20,7 @@ namespace diff
     struct Jacobian{double df1dV{}; double df1dR{}; double df2dV{}; double df2dR{};};
     
     template <models::ModelFunc modelFunc>
-    inline Jacobian calculateGrads(double V, double R, double dT, double C0, alloys::Alloy A)
+    inline Jacobian calculateGrads(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         Jacobian J{};
         J.df1dV = __enzyme_autodiff<double>(
