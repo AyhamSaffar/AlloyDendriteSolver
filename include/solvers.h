@@ -118,7 +118,7 @@ namespace solvers{
                 if(result.hasConverged && (result.V>0) && (result.R>0))
                     return result;
             }
-        }`
+        }
         bool hasDiverged{false}, hasConverged{false};
         return Result{hasDiverged, hasConverged};
     }

@@ -127,6 +127,8 @@ namespace models
         
         // assumes dilute limit for solute trapping
         double k{(k0+(A.a0*V/D)) / (1+(A.a0*V/D))}; // velocity dependant partition coefficient
+        // shouldn't apply to non-linear liquidus and solidus lines, but fits experimental data better when included
+        double mP{m * ( 1 + (k0-k*(1-std::log(k/k0))) / (1-k0) )}; // velocity dependant liquidus slope (m prime)
         double R0{8.314}; // gas constant
         // BCT paper uses Tm while this model uses Tl
         double mu{A.L*A.V0/(R0*Tl*Tl)}; // interfacial kinetic coefficient
@@ -137,7 +139,7 @@ namespace models
         double dTt{A.L*Ivt/A.Cp}, dTc{Tl-A.TlAtC(Ci)}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
         double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
         // Paper divides by xic instead of times by xic, but this must be a missprint.
-        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*m*(1-k)*Pc*xic*Ci) - R}; // radius error
+        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*(1-k)*Pc*xic*Ci) - R}; // radius error
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
 }
