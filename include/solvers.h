@@ -89,7 +89,41 @@ namespace solvers{
         return Result{diverged, converged, step, dT, C0, V, R, f1, f2, dTs.t, dTs.c, dTs.r, dTs.k};
     }
 
-    
+    /// @brief Brute force newton solver. Searches every possible starting V (1e-6 to 1e3 m/s) and R (1e-9 to 1e-3 m)
+    /// pair and attempts to solve pairs that give reasonable initial guesse (f1<1e-3 or f2<1e-3). Returns a solution
+    /// if it converges and is physical (R>0 and V>0). Is not especially slow, as the solver has a good chance at
+    /// reaching the optimal solution when starting at a point with low f1 or f2.
+    /// @tparam MODEL coupled equations that score how consistent a V R pair are with the given Alloy, C0, and dT.
+    /// @tparam LINESEARCH line search technique to be used. If none given, solver just uses a step size of 0.01.
+    /// @param dT undercooling - K
+    /// @param C0 bulk alloy solute concentration - C.%
+    /// @param A struct containing key physical alloy parameters
+    /// @return struct containing V, R, dT, and C0 as well as optimisation flags and parameters
+    template <models::ModelFunc MODEL, optimisers::LineSearch LINESEARCH = nullptr>
+    inline Result bruteForceNewton(double dT, double C0, const alloys::Alloy& A)
+    {
+        double f1{}, f2{}, searchStep{0.2}; // size of each search step in log10
+        for (double V0Power{-6}; V0Power<=3; V0Power+=searchStep)
+        {
+            double V0{std::pow(10.0, V0Power)};
+            for (double R0Power{-9}; R0Power<=-3; R0Power+=searchStep)
+            {
+                double R0{std::pow(10.0, R0Power)};
+                models::DTs _{}; // unused struct
+                std::tie(f1, f2, _) = MODEL(V0, R0, dT, C0, A);
+                double threshold{1e-3};
+                if ((f1>threshold) && (f2>threshold))
+                    continue;
+                Result result{newton<MODEL, LINESEARCH>(dT, C0, A, V0, R0)};
+                if(result.hasConverged && (result.V>0) && (result.R>0))
+                    return result;
+            }
+        }`
+        bool hasDiverged{false}, hasConverged{false};
+        return Result{hasDiverged, hasConverged};
+    }
+
+
     /// @brief parses struct member variables in a csv compliant form.
     /// @return string of member variables seperated by commas. Does not include trailing newline character.
     inline std::string Result::commaSeparatedValues()

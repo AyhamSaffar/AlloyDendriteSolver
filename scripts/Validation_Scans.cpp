@@ -131,8 +131,12 @@ int main()
     {
         const alloys::Alloy A{(C0==20) ? alloys::CoCu_20wtp : alloys::CoCu_60wtp};
         double dT0{10};
-        // double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
-        double V0{1e-3}, R0{1e-6}; // better solution needed for initial guess of non-linear phase diagrams
+        
+        solvers::Result startingResult{solvers::bruteForceNewton<models::CLW>(dT0, C0, A)};
+        if (!startingResult.hasConverged)
+            continue;
+        double V0{startingResult.V}, R0{startingResult.R}; // cannot use approx module for non linear phase diagrams
+
         for (double dT{dT0}; dT<=350; ++dT)
         {
             solvers::Result result{solvers::newton<models::CLW>(dT, C0, A, V0, R0)};
