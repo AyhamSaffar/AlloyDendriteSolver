@@ -137,11 +137,19 @@ int main()
             continue;
         double V0{startingResult.V}, R0{startingResult.R}; // cannot use approx module for non linear phase diagrams
 
-        for (double dT{dT0}; dT<=350; ++dT)
+        double Tl{A.TlAtC(C0)};
+        for (double dT{dT0}; dT<=310; ++dT) // cannot go below 316K due to phase diagram fit
         {
             solvers::Result result{solvers::newton<models::CLW>(dT, C0, A, V0, R0)};
-            outfCoCuCLW << result.commaSeparatedValues() << '\n';
-            if (result.hasConverged)
+            
+            // this experiment can sometimes lead to failed / non-physical solutions
+            if ((result.V<0) || (result.R<0) || (!result.hasConverged))
+                result = solvers::bruteForceNewton<models::CLW>(dT, C0, A);
+            if (!result.hasConverged) // no solution exists = model precits such high undercooling is impossible
+                break;
+
+            outfCoCuCLW << result.commaSeparatedValues() << ',' << A.k0AtT(Tl-dT) << '\n';
+            std::tie(V0, R0) = std::tie(result.V, result.R);
                 std::tie(V0, R0) = std::tie(result.V, result.R);
         }
     }

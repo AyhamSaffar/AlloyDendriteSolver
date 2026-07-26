@@ -120,7 +120,7 @@ namespace solvers{
             }
         }
         bool hasDiverged{false}, hasConverged{false};
-        return Result{hasDiverged, hasConverged};
+        return Result{hasDiverged, hasConverged, 0, dT, C0};
     }
 
 

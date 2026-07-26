@@ -18,20 +18,20 @@ int main()
     std::ofstream outfAprrox{dataPath + "/approx_data.csv"};
     outfAprrox << "dT,C0,V,R" << '\n';
     
-    const alloys::Alloy A{alloys::NiB1997_atp};
-    const double C0{1};
-    for (double dT{100}; dT<=300; dT+=100)
+    const alloys::Alloy A{alloys::CoCu_20wtp};
+    const double C0{20};
+    for (double dT{50}; dT<=300; dT+=100)
     {
         outfAprrox << dT << ',' << C0 << ',' << approx::getV(dT, C0, A) << ',' <<
             approx::getR(dT, C0, A) << '\n';
 
-        for (double V0Power{-3}; V0Power<=3.0; V0Power+=0.1)
+        for (double V0Power{-6}; V0Power<=3.0; V0Power+=0.1)
         {
             double V0{std::pow(10.0, V0Power)};
-            for (double R0Power{-8}; R0Power<=-5; R0Power+=0.1)
+            for (double R0Power{-9}; R0Power<=-3; R0Power+=0.1)
             {
                 double R0{std::pow(10.0, R0Power)};
-                outfSolver << solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0).commaSeparatedValues() << ',';
+                outfSolver << solvers::newton<models::CLW>(dT, C0, A, V0, R0).commaSeparatedValues() << ',';
                 outfSolver << V0 << ',' << R0 << '\n';
             } 
         }

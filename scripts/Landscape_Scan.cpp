@@ -16,7 +16,7 @@ int main()
     const alloys::Alloy A{alloys::CoCu_20wtp};
     double C0{20}, f1{}, f2{};
     models::DTs _{};
-    for (double dT{10}; dT<=160; dT+=50)
+    for (double dT{10}; dT<=200; dT+=10)
         for (double VPower{-6}; VPower<=3.0; VPower+=0.01)
         {
             double V{std::pow(10.0, VPower)};

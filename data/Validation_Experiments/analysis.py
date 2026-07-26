@@ -192,7 +192,7 @@ for col in [0, 1]:
     ax.set_xlabel('ΔT (K)')
     ax.set_ylabel('V (m/s)')
     subset = data[data['C0'] == (20 if col==0 else 60)]
-    ax.scatter(subset['dT'], subset['V'], color='black')
+    ax.plot(subset['dT'], subset['V'], color='black')
     
 
 axes[0, 0].set_xlim(0, 300)
@@ -213,16 +213,16 @@ for col in [0, 1]:
     ax.set_ylabel('Partial undercoolings (K)')
     ax.set_yscale('log')
     subset = data[data['C0'] == (20 if col==0 else 60)]
-    ax.scatter(subset['dT'], subset['dTt'], label='$ ΔT_t $')
-    ax.scatter(subset['dT'], subset['dTc'], label='$ ΔT_c $')
-    ax.scatter(subset['dT'], subset['dTr'], label='$ ΔT_r $')
-    ax.scatter(subset['dT'], subset['dTk'], label='$ ΔT_k $')
+    ax.plot(subset['dT'], subset['dTt'], label='$ ΔT_t $')
+    ax.plot(subset['dT'], subset['dTc'], label='$ ΔT_c $')
+    ax.plot(subset['dT'], subset['dTr'], label='$ ΔT_r $')
+    ax.plot(subset['dT'], subset['dTk'], label='$ ΔT_k $')
     ax.legend()
 
 
 axes[1, 0].set_xlim(0, 350)
 axes[1, 0].set_xticks(range(0, 301, 100))
-axes[1, 0].set_ylim(0.1, 150)
+axes[1, 0].set_ylim(0.1, 250)
 axes[1, 0].set_yticks([1, 10, 100])
 
 axes[1, 1].set_xlim(0, 120)
