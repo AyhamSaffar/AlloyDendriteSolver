@@ -65,7 +65,9 @@ namespace models
     /// @brief Lipton, Kurz, and Trivedi - Boettinger Coriell and Trivedi model. Generalises better to higher
     /// undercoolings and velocities for fully linear phase diagrams.
     /// @tparam NO_PARTITIONING whether to disable the solute from ever crossing the solidification front. This is
-    /// usually true at high V, but setting this value to true ensures this at low V aswell. Defaults to false.
+    /// usually true at high V, but can be manually set say if entering a single phase solid region. There the solid
+    /// would grow at C0, meaning no solute would be rejected across the solidification front. The model does not
+    /// automatically check this otherwise. Defaults to false.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
@@ -83,11 +85,11 @@ namespace models
         double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
         double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
 
-        double k{NAN};
+        double k{}; // non equilibrium partition coefficient
         if constexpr (NO_PARTITIONING)
             k = 1;
         else
-            k = (A.k0+(A.a0*V/A.D)) / (1+(A.a0*V/A.D)-(1-A.k0)*(C0/100)); // velocity dependant partition coefficient
+            k = (A.k0+(A.a0*V/A.D)) / (1+(A.a0*V/A.D)-(1-A.k0)*(C0/100));
 
         double mP{A.m*(1+ (A.k0-k*(1-std::log(k/A.k0))) / (1-A.k0) )}; // velocity dependant liquidus slope (m prime)
         double R0{8.314}; // gas constant
@@ -104,30 +106,39 @@ namespace models
 
     /// @brief Cao, Wang, Duan, and Bai model. Generalises better to higher undercoolings and velocities for non-linear
     /// phase diagrams.
+    /// @tparam NO_PARTITIONING whether to disable the solute from ever crossing the solidification front. This is
+    /// usually true at high V, but can be manually set say if entering a single phase solid region. There the solid
+    /// would grow at C0, meaning no solute would be rejected across the solidification front. The model does not
+    /// automatically check this otherwise. Defaults to false.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
     /// @param C0 bulk alloy solute concentration - C.%
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
+    template <bool NO_PARTITIONING=false>
     inline std::tuple<double, double, DTs> CLW(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         if (!A.CLWCapable)
             throw std::runtime_error("Attempted to pass non CLW capable Alloy to CLW model");
 
         double Tl{A.TlAtC(C0)}; // C0 liquidus temperature
-        double D{A.DAtT(Tl-dT)}; // diffusivity constant
         double m{A.mAtC(C0)}; // liquidus gradient
-        double k0{A.k0AtT(Tl-dT)}; // equilibrium partition coefficient
+        double k0{A.CsAtT(Tl-dT)/A.ClAtT(Tl-dT)}; // equilibrium partition coefficient
+        double D{A.DAtT(Tl-dT)}; // diffusivity constant
     
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Pc{V*R/(2*D)}; // solutal Péclet number
         double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
         double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
         
-        // assumes dilute limit for solute trapping
-        double k{(k0+(A.a0*V/D)) / (1+(A.a0*V/D))}; // velocity dependant partition coefficient
-        // shouldn't apply to non-linear liquidus and solidus lines, but fits experimental data better when included
+        double k{}; // non equilibrium partition coefficient
+        if constexpr (NO_PARTITIONING)
+            k = 1;
+        else
+            k = (k0+(A.a0*V/D)) / (1+(A.a0*V/D)); // model assumes dilute limit for solute trapping
+
+        //! derivation assumes linear liquidus and solidus which is not the case here, but model still uses mP
         double mP{m * ( 1 + (k0-k*(1-std::log(k/k0))) / (1-k0) )}; // velocity dependant liquidus slope (m prime)
         double R0{8.314}; // gas constant
         // BCT paper uses Tm while this model uses Tl

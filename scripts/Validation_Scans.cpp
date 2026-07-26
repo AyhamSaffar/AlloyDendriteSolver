@@ -148,7 +148,8 @@ int main()
             if (!result.hasConverged) // no solution exists = model precits such high undercooling is impossible
                 break;
 
-            outfCoCuCLW << result.commaSeparatedValues() << ',' << A.k0AtT(Tl-dT) << '\n';
+            double k0{A.CsAtT(Tl-dT) / A.ClAtT(Tl-dT)};
+            outfCoCuCLW << result.commaSeparatedValues() << ',' << k0 << '\n';
             std::tie(V0, R0) = std::tie(result.V, result.R);
                 std::tie(V0, R0) = std::tie(result.V, result.R);
         }

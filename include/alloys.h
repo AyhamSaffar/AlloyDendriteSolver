@@ -36,7 +36,8 @@ namespace alloys
             inline double DAtT(double T) const;
             inline double TlAtC(double C) const;
             inline double mAtC(double C) const;
-            inline double k0AtT(double T) const;
+            inline double ClAtT(double T) const;
+            inline double CsAtT(double T) const;
 
             inline Alloy(
                 // LGK
@@ -120,17 +121,26 @@ inline double alloys::Alloy::mAtC(double C) const
     return m;
 }
 
-/// @brief Calculates the equilibrium partition coefficient at a given T
+/// @brief Calculates the equilibrium liquidus concentration at a given T
 /// @param T Liquid temperature - K
-/// @return Equilibrium partition coefficient - C% / C%
-inline double alloys::Alloy::k0AtT(double T) const
+/// @return Equilibrium liquidus concentration - C% / C%
+inline double alloys::Alloy::ClAtT(double T) const
 {
-    double Cl{0}, Cs{0};
+    double Cl{0};
     for (std::size_t i{0}; i<std::size(m_ClAtTFit); ++i)
         Cl += m_ClAtTFit[i] * std::pow(T, i);
+    return Cl;
+}
+
+/// @brief Calculates the solidus concentration at a given T
+/// @param T Liquid temperature - K
+/// @return Equilibrium solidus concentration - C% / C%
+inline double alloys::Alloy::CsAtT(double T) const
+{
+    double Cs{0};
     for (std::size_t i{0}; i<std::size(m_CsAtTFit); ++i)
         Cs += m_CsAtTFit[i] * std::pow(T, i);
-    return Cs/Cl;
+    return Cs;
 }
 
 // bank of known alloy systems
