@@ -30,22 +30,34 @@ TEST_CASE("LGK model V prediction agrees with published LGK SnAg numerical fit a
 }
 
 
-TEST_CASE("LKT-BCT model V prediction agrees with LGK at low undercooling and gives positive R", "[solvers]")
+TEST_CASE("LKT-BCT model V prediction agrees with LGK at low undercooling", "[solvers]")
 {
-    // low undercoolings = lower V and R = k does not vary from k0, stability functions equal 1, and negligible kinetic
-    // undercooling. Therefore LKT_BCT reduces to LGK 
-    for (double dT{2.5}; dT<=20; dT+=2.5)
-        for (double C0{3.0}; C0<=6.0; C0+=1.0)
+    // low undercoolings -> lower V and R -> k does not vary from k0, stability functions equal 1, and negligible
+    // kinetic undercooling. Therefore LKT_BCT reduces to LGK 
+    for (double C0{1}; C0<=6; C0+=1)
+        for (double dT{1}; dT<=200; dT+=1)
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
 
+            const alloys::Alloy A{alloys::SnAg_wtp};
             constexpr bool legacy{false}; // ensures LGK form is consistent with LKT_BCT
-            solvers::Result LGKResult{solvers::newton<models::LGK<legacy>>(dT, C0, alloys::SnAg_wtp)};
-            solvers::Result LKT_BCTResult{solvers::newton<models::LKT_BCT>(dT, C0, alloys::SnAg_wtp)};
+            solvers::Result LGKResult{solvers::newton<models::LGK<legacy>>(dT, C0, A)};
+            solvers::Result LKT_BCTResult{solvers::newton<models::LKT_BCT>(dT, C0, A)};
+
+            const solvers::Result& R{LKT_BCTResult};
+            double Pt{R.V*R.R/(2*A.a)}; // thermal Péclet number
+            double Pc{R.V*R.R/(2*A.D)}; // solutal Péclet number
+            double k{(A.k0+(A.a0*R.V/A.D)) / (1+(A.a0*R.V/A.D))}; // non equilibrium partition coefficient
+            double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
+            double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // - solutal stability function
+            double dTk{R.V/(A.L*A.V0/(8.314*A.Tm*A.Tm))}; // thermal undercooling
+
+            if((xit<0.9) || (xic<0.9) || ((std::abs(k-A.k0)/A.k0)>0.1) || ((dTk/dT)>0.1))
+                break; // LKT-BCT no longer equivalent to LGK
 
             REQUIRE(LKT_BCTResult.hasConverged);
-            REQUIRE(LKT_BCTResult.R > 0);
-            REQUIRE(std::abs(LKT_BCTResult.V-LGKResult.V)/LGKResult.V < 0.05); // maximum of 5% error
+            REQUIRE(std::abs(LKT_BCTResult.R-LGKResult.R)/LGKResult.R < 0.01); // maximum of 1% error
+            REQUIRE(std::abs(LKT_BCTResult.V-LGKResult.V)/LGKResult.V < 0.01); // maximum of 1% error
         }
 }
 
