@@ -71,7 +71,8 @@ $$ R = \frac {Γ/σ^*} {\frac{\xi_t P_t L}{c_p} - 2 m P_c (1-k) \xi_c C_i} $$
 
 GIven the following:
 
-$k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D) - (1-k_0)\frac{C_0}{100}}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity dependant partition coefficient
+$k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D)}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity
+ dependant partition coefficient
 
 $C_i = \frac{C_0}{1-(1-k)Iv_c}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; - solute
 concentration of liquid at interface
@@ -95,6 +96,11 @@ the liquid. This means more solute gets frozen in the solid before crossing over
 both solid and liquid have the same solute concentration ($C_0$), meaning $k \rightarrow$ 1 and both the liquidus and
 solidus lines overlap with equal gradients.
 
+The derivation for $k$ assumes a small amount of solute, meaning the $-(1-k_0)\frac{C_0}{100}$ term that would otherwise
+be in the denominator is negligible. While this assumption would be violated for higher $C_0$, especially when $k_0$ is
+also small, including this term would mean that $k \not= k_0$ as $V \rightarrow 0$. As such, it is assumed that the
+origional model authors were justified in keeping this assumption.
+
 The first equation has an added fourth undercooling term, which specifies how much further the liquid must be cooled to
 overcome the kinetic energy barrier for adding extra liquid atoms onto the solid lattice. This is assumed to be
 negligible at the lower velocities expected in the LGK model. 
@@ -104,9 +110,7 @@ LKT-BCT equation however drops this low V assumption, meaning these terms must b
 
 \* While Boettinger, Coriell, and Trivedi's origional paper is not openly published online, it is famously well written
 and the basis for this implementation. For a full derivation of this model, it can be accessed by requesting pages 13-25
-of the linked conference paper. Note that a $P_c$ is missing in the denominator of the paper's R equation, and the paper
-assumes the dilute solute limit when deriving the velocity dependant $k$, meaning the $(1-k_0)C_0$ term is assumed to be
-negligible. To better generalise to higher solute concentrations, this implementation keeps the term in.
+of the linked conference paper. Note that a $P_c$ is missing in the denominator of the paper's R equation.
 
 <!-- ### The CLW Model -->
 <!--  -->

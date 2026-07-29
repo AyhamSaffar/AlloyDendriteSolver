@@ -51,8 +51,8 @@ TEST_CASE("LKT-BCT model V prediction agrees with LGK at low undercooling and gi
 
 TEST_CASE("Linearised CLW model agrees with LKT-BCT at pre solute trapping undercoolings", "[Solvers]")
 {
-    // CLW starts to diverge from LKT-BCT at higher V as dTk expression slighly different and CLW does not adjust Tl
-    // as solute trapping begins (as V -> Vd). It only adjusts k0.
+    // CLW starts to diverge from LKT-BCT at higher V as dTk expression slighly different. As such, test only goes up
+    // to V = Vd/20.
     const alloys::Alloy A{alloys::AgCu_wtp}; // LKT-BCT capable Alloy
     const alloys::Alloy ALin{ // CLW model with fixed D, k0 and linear Tl
         A.L, A.Cp, A.m, A.k0, A.r, A.D, A.a, A.o, A.a0, A.V0, A.Tm, A.D, 0, {A.Tm, A.m}, {1}, {A.k0}
@@ -73,7 +73,7 @@ TEST_CASE("Linearised CLW model agrees with LKT-BCT at pre solute trapping under
         REQUIRE((std::abs(LKT_BCTResult.R - CLWResult.R)/LKT_BCTResult.R) < 0.05); // maximum of 5% error
         REQUIRE((std::abs(LKT_BCTResult.V - CLWResult.V)/LKT_BCTResult.V) < 0.05);
 
-        if (CLWResult.V > (Vd/10))
+        if (CLWResult.V > (Vd/20))
             break;
         std::tie(V0, R0) = std::tie(CLWResult.V, CLWResult.R);
     }
