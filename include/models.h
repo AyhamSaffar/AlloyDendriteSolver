@@ -64,17 +64,16 @@ namespace models
 
     /// @brief Lipton, Kurz, and Trivedi - Boettinger Coriell and Trivedi model. Generalises better to higher
     /// undercoolings and velocities for fully linear phase diagrams.
-    /// @tparam NO_PARTITIONING whether to disable the solute from ever crossing the solidification front. This is
-    /// usually true at high V, but can be manually set say if entering a single phase solid region. There the solid
-    /// would grow at C0, meaning no solute would be rejected across the solidification front. The model does not
-    /// automatically check this otherwise. Defaults to false.
+    /// @tparam LEGACY whether to use Tm for kinetic undercooling and m for f2. This is what BCT used in their origional
+    /// paper. If false, uses Tl(C0) for kinetic undercooling and mP(V) for f2. This form tends to be used in more
+    /// recent papers. Defaults to true.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
     /// @param C0 bulk alloy solute concentration - C.%
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
-    template <bool NO_PARTITIONING=false>
+    template <bool LEGACY=true>
     inline std::tuple<double, double, DTs> LKT_BCT(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         if (!A.LKT_BCTCapable)
@@ -85,22 +84,20 @@ namespace models
         double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
         double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
 
-        double k{}; // non equilibrium partition coefficient
-        if constexpr (NO_PARTITIONING)
-            k = 1;
-        else
-            k = (A.k0+(A.a0*V/A.D)) / (1+(A.a0*V/A.D));
+        double k{(A.k0+(A.a0*V/A.D)) / (1+(A.a0*V/A.D))}; // velocity dependent partition coefficient
+        double mP{A.m*(1+ (A.k0-k*(1-std::log(k/A.k0))) / (1-A.k0) )}; // velocity dependent liquidus slope (m prime)
 
-        double mP{A.m*(1+ (A.k0-k*(1-std::log(k/A.k0))) / (1-A.k0) )}; // velocity dependant liquidus slope (m prime)
         double R0{8.314}; // gas constant
-        double mu{A.L*A.V0/(R0*A.Tm*A.Tm)}; // interfacial kinetic coefficient
+        double dTkT{LEGACY ? A.Tm : (A.Tm+A.m*C0)}; // temperature used in kinetic undercooling expression
+        double mu{A.L*A.V0/(R0*dTkT*dTkT)}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
         double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // - solutal stability function
         double Ci{C0/(1-(1-k)*Ivc)}; // solute concentration of liquid at interface
 
         double dTt{A.L*Ivt/A.Cp}, dTc{A.m*C0 - mP*Ci}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
         double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
-        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*A.m*Pc*(1-k)*xic*Ci) - R}; // radius error
+        double f2m{LEGACY ? A.m : mP}; // liquidus slope used in f2 expression
+        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*f2m*Pc*(1-k)*xic*Ci) - R}; // radius error
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
 
@@ -139,7 +136,7 @@ namespace models
             k = (k0+(A.a0*V/D)) / (1+(A.a0*V/D)); // model assumes dilute limit for solute trapping
 
         //! derivation assumes linear liquidus and solidus which is not the case here, but model still uses mP
-        double mP{m * ( 1 + (k0-k*(1-std::log(k/k0))) / (1-k0) )}; // velocity dependant liquidus slope (m prime)
+        double mP{m * ( 1 + (k0-k*(1-std::log(k/k0))) / (1-k0) )}; // velocity dependent liquidus slope (m prime)
         double R0{8.314}; // gas constant
         // BCT paper uses Tm while this model uses Tl
         double mu{A.L*A.V0/(R0*Tl*Tl)}; // interfacial kinetic coefficient

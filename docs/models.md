@@ -72,12 +72,13 @@ $$ R = \frac {Γ/σ^*} {\frac{\xi_t P_t L}{c_p} - 2 m P_c (1-k) \xi_c C_i} $$
 GIven the following:
 
 $k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D)}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity
- dependant partition coefficient
+ dependent partition coefficient
 
 $C_i = \frac{C_0}{1-(1-k)Iv_c}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; - solute
 concentration of liquid at interface
 
-$m' = m \left[1 + \frac{k_0 - k(1-ln(k/k_0))}{1-k_0} \right]$ &emsp;&emsp;&emsp;&emsp; - velocity dependant liquidus slope
+$m' = m \left[1 + \frac{k_0 - k(1-ln(k/k_0))}{1-k_0} \right]$ &emsp;&emsp;&emsp;&emsp; - velocity dependent liquidus
+slope
 
 $R_0$ = 8.314 $J/molK$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; - molar gas constant
 
@@ -108,9 +109,16 @@ negligible at the lower velocities expected in the LGK model.
 The LGK second equation assumes small Peclet numbers, where V*R << 1, meaning the stability functions ≈ 1. The second
 LKT-BCT equation however drops this low V assumption, meaning these terms must be included.
 
+The form of the equation above is exactly what BCT presented in their origional paper. More recently however, the
+temperature used in $\mu$ for kinetic undercooling is often replaced with the bulk concentration dependent liquidus
+temperature $ T_l = T_m + mC_0$, and the liquidus slope used in the second LKT-BCT equation is often replaced with the
+non equilibrium velocity dependent liquidus slope $m'$. The latter form of this model arguably represents a solute rich,
+fast moving interface more precisely.
+
 \* While Boettinger, Coriell, and Trivedi's origional paper is not openly published online, it is famously well written
 and the basis for this implementation. For a full derivation of this model, it can be accessed by requesting pages 13-25
-of the linked conference paper. Note that a $P_c$ is missing in the denominator of the paper's R equation.
+of the linked conference paper. Note that a factor of $P_c$ is mistakenly missing in the denominator of the paper's R
+equation.
 
 <!-- ### The CLW Model -->
 <!--  -->
