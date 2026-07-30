@@ -1,4 +1,4 @@
-// script used to test this library's implemention against existing published results for different alloy systems
+// script used to test this library's implemention against existing published Rs for different alloy systems
 
 #include <string>
 #include <fstream>
@@ -38,10 +38,10 @@ int main()
         for(double dTPower{0}; dTPower<=2.7; dTPower+=0.01)
         {
             double dT{std::pow(10, dTPower)};
-            solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::AlFe_wtp, V0, R0)};
-            outfAlFe << result.commaSeparatedValues() << '\n';
-            if (result.hasConverged)
-                std::tie(V0, R0) = std::tie(result.V, result.R);
+            solvers::Result R{solvers::newton<models::LGK>(dT, C0, alloys::AlFe_wtp, V0, R0)};
+            outfAlFe << R.commaSeparatedValues() << '\n';
+            if (R.hasConverged)
+                std::tie(V0, R0) = std::tie(R.V, R.R);
         }
     }
 
@@ -57,6 +57,7 @@ int main()
     outfNiSn << solvers::Result::commaSeparatedColumns << '\n';
 
     for (double dT{1}, C0{25}; dT<=1000; ++dT)
+        // model in paper did not include any kind of kinetic undercooling, which makes a difference at high V
         outfNiSn << solvers::newton<models::LGK>(dT, C0, alloys::NiSn_wtp).commaSeparatedValues() << '\n';
 
 
@@ -72,11 +73,16 @@ int main()
         double R0Gamma{approx::getR(1.0, C0, alloys::FeCoGamma)};
         for (double dT{1}; dT<=350; ++dT)
         {
+            constexpr bool legacy{false}; // paper uses a slighly more modern form of LKT_BCT
+            // paper uses a form of the model that does not assume the dilute limit, which is not supported here.
+            constexpr models::ModelFunc bct{models::LKT_BCT<legacy>};
+
+            solvers::Result R{solvers::newton<bct>(dT, C0, alloys::FeCoGamma, V0Gamma, R0Gamma)};
+            outfFeCoGamma << R.commaSeparatedValues() << '\n';
+
             // model diverges for Gamma at higher dT if approx funcs always used as initial guess for V and R
-            solvers::Result result{solvers::newton<models::LKT_BCT>(dT, C0, alloys::FeCoGamma, V0Gamma, R0Gamma)};
-            outfFeCoGamma << result.commaSeparatedValues() << '\n';
-            std::tie(V0Gamma, R0Gamma) = std::tie(result.V, result.R);
-            outfFeCoDelta << solvers::newton<models::LKT_BCT>(dT, C0, alloys::FeCoDelta).commaSeparatedValues() << '\n';
+            std::tie(V0Gamma, R0Gamma) = std::tie(R.V, R.R);
+            outfFeCoDelta << solvers::newton<bct>(dT, C0, alloys::FeCoDelta).commaSeparatedValues() << '\n';
         }
     }
 
@@ -90,14 +96,17 @@ int main()
     for (double C0{3.5}; C0<=5.0; C0+=1.5)
         for (double dT{1}; dT<=50; ++dT)
         {
-            constexpr bool legacy{false}; // template arguement for LGK model that makes it consistent with LKT_BCT
-            outfSnAgLGK << solvers::newton<models::LGK<legacy>>(dT, C0, alloys::SnAg_wtp).commaSeparatedValues() << '\n';
-            outfSnAgLKTBCT << solvers::newton<models::LKT_BCT>(dT, C0, alloys::SnAg_wtp).commaSeparatedValues() << '\n';
+            constexpr bool legacy{false}; // both LGK and LKT-BCT have a slighly more modern form in this paper
+            constexpr models::ModelFunc lgk{models::LGK<legacy>}; // form consistent with LKT-BCT
+            constexpr models::ModelFunc bct{models::LKT_BCT<legacy>};
+
+            outfSnAgLGK << solvers::newton<lgk>(dT, C0, alloys::SnAg_wtp).commaSeparatedValues() << '\n';
+            outfSnAgLKTBCT << solvers::newton<bct>(dT, C0, alloys::SnAg_wtp).commaSeparatedValues() << '\n';
         }
 
 
     // https://doi.org/10.1103/PhysRevB.45.5019 Fig. 1 & 2b
-    //! currently does not quite match published results at higher undercoolings. Assumed wrong paramters in paper.
+    //! currently does not quite match published Rs at higher undercoolings. Assumed wrong paramters in paper.
     std::ofstream outfNiB{dataPath + "NiB_LKT_BCT.csv"};
     outfNiB << solvers::Result::commaSeparatedColumns << ",Cl,Cs\n";
 
@@ -108,21 +117,21 @@ int main()
         double V0{approx::getV(dT0, C00, A)}, R0{approx::getR(dT0, C00, A)};
         for (double dT{dT0}; dT<=400; ++dT)
         {
-            solvers::Result result{solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0)};
-            double Pc{result.V*result.R/(2*A.D)}; // solutal Péclet number
+            solvers::Result R{solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0)};
+            double Pc{R.V*R.R/(2*A.D)}; // solutal Péclet number
             double Ivc{models::ivantsov(Pc)}; // solutal Ivantsov function
-            double k{(A.k0+(A.a0*result.V/A.D)) / (1+(A.a0*result.V/A.D)-(1-A.k0)*(C0/100))}; // velocity dependant k
+            double k{(A.k0+(A.a0*R.V/A.D)) / (1+(A.a0*R.V/A.D)-(1-A.k0)*(C0/100))}; // velocity dependant k
             double Cl{C0/(1-Ivc*(1-k))}; // interface liquid solute conentration
             double Cs{k*Cl}; // interface solid solute concentration
 
-            outfNiB << result.commaSeparatedValues() << ',' << Cl << ',' << Cs << '\n';
-            if (result.hasConverged)
-                std::tie(V0, R0) = std::tie(result.V, result.R);
+            outfNiB << R.commaSeparatedValues() << ',' << Cl << ',' << Cs << '\n';
+            if (R.hasConverged)
+                std::tie(V0, R0) = std::tie(R.V, R.R);
         }
     }
 
     
-    // https://doi.org/10.1007/s11433-010-4167-y, Fig. 2, 3, 5 & 6. 20wt.% results assume linear liquidus and solidus, 
+    // https://doi.org/10.1007/s11433-010-4167-y, Fig. 2, 3, 5 & 6. 20wt.% Rs assume linear liquidus and solidus, 
     // which is not true beyond 100K dT. Therefore the CLW model is used instead of LKT-BCT.
     std::ofstream outfCoCuCLW{dataPath + "CoCu_CLW.csv"};
     outfCoCuCLW << solvers::Result::commaSeparatedColumns << '\n';
@@ -140,18 +149,18 @@ int main()
         double Tl{A.TlAtC(C0)};
         for (double dT{dT0}; dT<=310; ++dT) // cannot go below 316K due to phase diagram fit
         {
-            solvers::Result result{solvers::newton<models::CLW>(dT, C0, A, V0, R0)};
+            solvers::Result R{solvers::newton<models::CLW>(dT, C0, A, V0, R0)};
             
             // this experiment can sometimes lead to failed / non-physical solutions
-            if ((result.V<0) || (result.R<0) || (!result.hasConverged))
-                result = solvers::bruteForceNewton<models::CLW>(dT, C0, A);
-            if (!result.hasConverged) // no solution exists = model precits such high undercooling is impossible
+            if ((R.V<0) || (R.R<0) || (!R.hasConverged))
+                R = solvers::bruteForceNewton<models::CLW>(dT, C0, A);
+            if (!R.hasConverged) // no solution exists = model precits such high undercooling is impossible
                 break;
 
             double k0{A.CsAtT(Tl-dT) / A.ClAtT(Tl-dT)};
-            outfCoCuCLW << result.commaSeparatedValues() << ',' << k0 << '\n';
-            std::tie(V0, R0) = std::tie(result.V, result.R);
-                std::tie(V0, R0) = std::tie(result.V, result.R);
+            outfCoCuCLW << R.commaSeparatedValues() << ',' << k0 << '\n';
+            std::tie(V0, R0) = std::tie(R.V, R.R);
+                std::tie(V0, R0) = std::tie(R.V, R.R);
         }
     }
 
