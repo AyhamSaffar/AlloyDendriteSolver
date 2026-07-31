@@ -47,7 +47,7 @@ are used to calculate the drop in liquidus temperature ahead of the solidificati
 
 The second equation calculates the LGK marginal stability criterion dendrite radius. A planar solidification front is
 modified by adding a periodic pertubation. Too small and the curvature will drive the pertubation to shrink. Too large
-and purtubation will grow by escaping the cold and solute rich solidification front. The dendrite radius is approximated
+and purtubation will grow by escaping the hot and solute rich solidification front. The dendrite radius is approximated
 as the smallest pertubation that won't shrink. This gives an expression that is a function of the solute and temperature
 field gradient, which can be calculated for a parabaloid dendrite using the same dimensional analysis as the first
 equation.

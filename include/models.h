@@ -87,7 +87,7 @@ namespace models
         double k{(A.k0+(A.a0*V/A.D)) / (1+(A.a0*V/A.D))}; // velocity dependent partition coefficient
         double mP{A.m*(1+ (A.k0-k*(1-std::log(k/A.k0))) / (1-A.k0) )}; // velocity dependent liquidus slope (m prime)
 
-        double R0{8.314}; // gas constant
+        double R0{8.314}; // molar gas constant
         double dTkT{LEGACY ? A.Tm : (A.Tm+A.m*C0)}; // temperature used in kinetic undercooling expression
         double mu{A.L*A.V0/(R0*dTkT*dTkT)}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
@@ -103,9 +103,6 @@ namespace models
 
     /// @brief Cao, Wang, Duan, and Bai model. Generalises better to higher undercoolings and velocities for non-linear
     /// phase diagrams.
-    /// @tparam NO_PARTITIONING whether to disable the solute from ever crossing the solidification front. This is
-    /// usually true at high V, but can be manually set say if entering a single phase solid region. There the solid
-    /// would grow at C0, meaning no solute would be rejected across the solidification front. The model does not
     /// automatically check this otherwise. Defaults to false.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
@@ -113,38 +110,35 @@ namespace models
     /// @param C0 bulk alloy solute concentration - C.%
     /// @param A struct containing key physical alloy parameters
     /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
-    template <bool NO_PARTITIONING=false>
     inline std::tuple<double, double, DTs> CLW(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         if (!A.CLWCapable)
             throw std::runtime_error("Attempted to pass non CLW capable Alloy to CLW model");
 
-        double Tl{A.TlAtC(C0)}; // C0 liquidus temperature
-        double m{A.mAtC(C0)}; // liquidus gradient
-        double k0{A.CsAtT(Tl-dT)/A.ClAtT(Tl-dT)}; // equilibrium partition coefficient
-        double D{A.DAtT(Tl-dT)}; // diffusivity constant
-    
+        // cannot get exact Ti at this point so must assume Ti ~= Tl(C0) - dT
+        double D{A.DAtT(A.TlAtC(C0)-dT)}; // diffusivity constant
+
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Pc{V*R/(2*D)}; // solutal Péclet number
         double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
         double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
         
-        double k{}; // non equilibrium partition coefficient
-        if constexpr (NO_PARTITIONING)
-            k = 1;
-        else
-            k = (k0+(A.a0*V/D)) / (1+(A.a0*V/D)); // model assumes dilute limit for solute trapping
+        double dTt{A.L*Ivt/A.Cp}; // thermal undercooling
+        double Ti{A.TlAtC(C0) - dT + dTt}; // interface temperature (dTk = difference in T between bulk and interface)
 
+        double k0{A.CsAtT(Ti)/A.ClAtT(Ti)}; // equilibrium partition coefficient
+        double k{(k0+(A.a0*V/D)) / (1+(A.a0*V/D))}; // non equilibrium partition coefficient
+        double Ci{C0/(1-(1-k)*Ivc)}; // interface solute concentration
+        double m{A.mAtC(Ci)}; // liquidus gradient at interface
+        
         //! derivation assumes linear liquidus and solidus which is not the case here, but model still uses mP
         double mP{m * ( 1 + (k0-k*(1-std::log(k/k0))) / (1-k0) )}; // velocity dependent liquidus slope (m prime)
         double R0{8.314}; // gas constant
-        // BCT paper uses Tm while this model uses Tl
-        double mu{A.L*A.V0/(R0*Tl*Tl)}; // interfacial kinetic coefficient
+        double mu{A.L*A.V0/(R0*Ti*Ti)}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
         double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // solutal stability function
-        double Ci{C0/(1-(1-k)*Ivc)}; // interface solute concentration
 
-        double dTt{A.L*Ivt/A.Cp}, dTc{Tl-A.TlAtC(Ci)}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
+        double dTc{A.TlAtC(C0)-A.TlAtC(Ci)}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
         double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
         // Paper divides by xic instead of times by xic, but this must be a missprint.
         double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*(1-k)*Pc*xic*Ci) - R}; // radius error
