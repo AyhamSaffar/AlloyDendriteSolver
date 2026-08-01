@@ -38,19 +38,18 @@ $Iv_c(P_c) = P_c e^{P_c} E_1(P_c)$ &emsp;&emsp;&emsp;&ensp;&nbsp;- thermal Ivant
 $E_1(x) = \int_u^\infty \frac{exp(-s)}{s} ds$ &emsp;&emsp;&ensp;&emsp;&ensp;&nbsp;- first exponential
 integral of $x$
 
-The first equation calculates the LGK dendrite undercooling. It quantifies how the liquid must be cooled below the
-temperature of the solid to 1. drive thermal diffusion away from the solid that gives out heat as it solidifies, 2.
-reach the lower melting temperature caused by a build up of solute just ahead of the solidification front, and 3.
-overcome the energy barrier created by the surface energy of a high curvature dendrite tip. It uses dimensional analysis
-to solve for solute and heat transport across an equilibrium solidification parabaloid dendrite. Phase diagram constants
-are used to calculate the drop in liquidus temperature ahead of the solidification front due to solute enrichment.
+The first equation calculates the LGK dendrite undercooling. It quantifies how much the bulk liquid must be cooled below
+the equilibrium liquidus temperature at C0 to drive solidification. This extra undercooling allows 1. any accumulated temperature given out by the liquid solidifying to diffuse away from the dendrite tip, 2. allows reaching the lower
+melting temperature caused by a build up of solute at the dendrite tip, and 3. allows overcoming the energy barrier
+created by the surface energy of a high curvature dendrite tip. It uses dimensional analysis to solve for solute and
+heat transport ahead of the parabaloid dendrite. Phase diagram constants are used to calculate the drop in liquidus temperature ahead of the solidification front due to solute enrichment.
 
 The second equation calculates the LGK marginal stability criterion dendrite radius. A planar solidification front is
 modified by adding a periodic pertubation. Too small and the curvature will drive the pertubation to shrink. Too large
 and purtubation will grow by escaping the hot and solute rich solidification front. The dendrite radius is approximated
 as the smallest pertubation that won't shrink. This gives an expression that is a function of the solute and temperature
-field gradient, which can be calculated for a parabaloid dendrite using the same dimensional analysis as the first
-equation.
+field gradient ahead of the dendrite, which can be calculated for a parabaloid using the same dimensional analysis as
+the first equation.
 
 Note the extra factor of 2 in the second term of the second equation's denominator. Lipton, Glicksman, & Kurz remove
 this factor in their paper in order to coerce this equation into agreeing with a prior published result for the case
