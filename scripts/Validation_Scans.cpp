@@ -131,7 +131,7 @@ int main()
     }
 
     
-    // https://doi.org/10.1007/s11433-010-4167-y, Fig. 2, 3, 5 & 6. 20wt.% Rs assume linear liquidus and solidus, 
+    // https://doi.org/10.1007/s11433-010-4167-y Fig. 2, 3, 5 & 6. 20wt.% Rs assume linear liquidus and solidus, 
     // which is not true beyond 100K dT. Therefore the CLW model is used instead of LKT-BCT.
     std::ofstream outfCoCuCLW{dataPath + "CoCu_CLW.csv"};
     outfCoCuCLW << solvers::Result::commaSeparatedColumns << ",k0\n";
@@ -151,8 +151,8 @@ int main()
         {
             solvers::Result R{solvers::newton<models::CLW>(dT, C0, A, V0, R0)};
             
-            // this experiment can sometimes lead to failed / non-physical solutions
-            if ((R.V<0) || (R.R<0) || (!R.hasConverged))
+            
+            if ((R.V<0) || (R.R<0) || (!R.hasConverged)) // sometimes gets failed / non-physical solutions
                 R = solvers::bruteForceNewton<models::CLW>(dT, C0, A);
             if (!R.hasConverged) // no solution exists = model predicts such high undercooling is impossible
                 break;
@@ -163,6 +163,36 @@ int main()
                 std::tie(V0, R0) = std::tie(R.V, R.R);
         }
     }
+
+    // https://doi.org/10.1080/09500830903002356 Fig. 2 & 3.
+    std::ofstream outfFeSb{dataPath + "FeSb_CLW.csv"};
+    outfFeSb << solvers::Result::commaSeparatedColumns << ",k0,kv\n";
+
+    {
+        const alloys::Alloy A{alloys::FeSb_wtp};
+        const double C0{8.5}, dT0{1};
+        solvers::Result R{solvers::bruteForceNewton<models::CLW>(dT0, C0, A)};
+        double V0{R.V}, R0{R.R};
+
+        for (double dT{dT0}; dT<=450; ++dT)
+        {
+            R = solvers::newton<models::CLW>(dT, C0, A, V0, R0);
+
+            if ((R.V<0) || (R.R<0) || (!R.hasConverged)) // sometimes gets failed / non-physical solutions
+                R = solvers::bruteForceNewton<models::CLW>(dT, C0, A);
+            if (!R.hasConverged) // no solution exists = model predicts such high undercooling is impossible
+                break;
+            std::tie(V0, R0) = std::tie(R.V, R.R);
+                            
+            double Tl(A.TlAtC(C0)); // liquidus T at bulk C0
+            double D{A.DAtT(Tl)}; // diffusivity constant
+            double k0{A.CsAtT(Tl)/A.ClAtT(Tl)}; // equilibrium partition coefficient
+            double kv{(k0+(A.a0*R.V/D)) / (1+(A.a0*R.V/D))}; // non equilibrium partition coefficient
+
+            outfFeSb << R.commaSeparatedValues() << ',' << k0 << ',' << kv << '\n';
+        }      
+    }
+
 
     return 0;
 }

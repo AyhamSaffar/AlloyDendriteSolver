@@ -163,7 +163,17 @@ namespace alloys
     // standard solution to marginal stability criterion for a planar interace. Could vary with crystal structure.
     static constexpr double o{1.0/(4*std::numbers::pi*std::numbers::pi)};
     static constexpr double R{8.3145}; // gas constant in J/molK
+    //* parameters set to NAN signify they should not be used E.G. m and k0 for alloys with non linear phase diagrams.
     
+    // Derived from Binary Alloy Phase Diagrams, Vol. 1104, American Society for Metals, Metals Park, OH, 1986.
+    static std::vector<double> FeSbTlAtCFit{1811.15, -5.7341, -0.02588, -0.00103};
+    static std::vector<double> FeSbClAtTFit{393.39, -0.6802, 4.8758e-4, -1.2803e-7};
+    static std::vector<double> FeSbCsAtTFit{33.559, -0.01853};
+
+    // Iron Antimony system in wt.%. Take from https://doi.org/10.1080/09500830903002356.
+    const Alloy FeSb_wtp{15'027, 43.77, NAN, NAN, 3.56e-7, NAN, 7.3e-6, o, 2.5e-10, 3000, NAN, 4.11e-7, 5e4, 
+        FeSbTlAtCFit, FeSbClAtTFit, FeSbCsAtTFit};
+
     /// ThermoCalc 2026b with the TCBIN v1.1 database was used to get phase diagram data and this was fit to 7th order
     // polynomials using the least squares method in Python's Numpy library. This fit is only valid above 1385K (316K
     // dT), as below this T, the phase diagram transitions from an FCC Cu & Liquid mix to an FCC Cu & FCC Co mix. 
@@ -182,16 +192,12 @@ namespace alloys
     // below paper uses noticably different a0 and a for C0=20wt.% and C0=60wt.%, so these must be 2 seperate Alloys.
 
     // Cobalt Copper system for 20wt.% Cu. Taken from https://doi.org/10.1007/s11433-010-4167-y. Phase diagram fits used
-    // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit. The default D, m, Tm, 
-    // and k0 is set to NaN to ensure this alloy is not used with the LGK / LKT-BCT models. These models assume linear
-    // Tl & Ts, which is not the case here.
+    // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit.
     const Alloy CoCu_20wtp{15033, 39.06, NAN, NAN, 3.4e-7, NAN, 1.424e-5, o, 1.697e-10, 4000, NAN, 1.58e-7, 55060,
         CoCuTlAtCFit, CoCuClAtTFit, CoCuCsAtTFit};
 
     // Cobalt Copper system for 60wt.% Cu. Taken from https://doi.org/10.1007/s11433-010-4167-y. Phase diagram fits used
-    // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit. The default D, m, Tm, 
-    // and k0 is set to NaN to ensure this alloy is not used with the LGK / LKT-BCT models. These models assume linear
-    // Tl & Ts, which is not the case here.
+    // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit.
     const Alloy CoCu_60wtp{14057, 36.05, NAN, NAN, 3.33e-7, NAN, 2.9e-5, o, 4.294e-10, 4000, NAN, 2.04e-7, 54069,
         CoCuTlAtCFit, CoCuClAtTFit, CoCuCsAtTFit};
 
