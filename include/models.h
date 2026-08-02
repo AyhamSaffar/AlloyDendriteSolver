@@ -115,18 +115,17 @@ namespace models
         if (!A.CLWCapable)
             throw std::runtime_error("Attempted to pass non CLW capable Alloy to CLW model");
 
-        // cannot get exact Ti at this point so must assume Ti ~= Tl(C0) - dT
-        double D{A.DAtT(A.TlAtC(C0)-dT)}; // diffusivity constant
-
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
-        double Pc{V*R/(2*D)}; // solutal Péclet number
         double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
+        double dTt{A.L*Ivt/A.Cp}; // thermal undercooling
+        double Tl(A.TlAtC(C0)); // liquidus T at bulk C0
+        double Ti{Tl - dT + dTt}; // interface temperature (dTk = difference in T between bulk and interface)
+
+        double D{A.DAtT(Tl)}; // diffusivity constant
+        double Pc{V*R/(2*D)}; // solutal Péclet number
         double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
         
-        double dTt{A.L*Ivt/A.Cp}; // thermal undercooling
-        double Ti{A.TlAtC(C0) - dT + dTt}; // interface temperature (dTk = difference in T between bulk and interface)
-
-        double k0{A.CsAtT(Ti)/A.ClAtT(Ti)}; // equilibrium partition coefficient
+        double k0{A.CsAtT(Tl)/A.ClAtT(Tl)}; // equilibrium partition coefficient
         double k{(k0+(A.a0*V/D)) / (1+(A.a0*V/D))}; // non equilibrium partition coefficient
         double Ci{C0/(1-(1-k)*Ivc)}; // interface solute concentration
         double m{A.mAtC(Ci)}; // liquidus gradient at interface
@@ -134,7 +133,7 @@ namespace models
         //! derivation assumes linear liquidus and solidus which is not the case here, but model still uses mP
         double mP{m * ( 1 + (k0-k*(1-std::log(k/k0))) / (1-k0) )}; // velocity dependent liquidus slope (m prime)
         double R0{8.314}; // gas constant
-        double mu{A.L*A.V0/(R0*Ti*Ti)}; // interfacial kinetic coefficient
+        double mu{A.L*A.V0/(R0*A.TlAtC(0)*A.TlAtC(0))}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
         double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // solutal stability function
 

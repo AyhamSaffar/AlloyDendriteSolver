@@ -110,7 +110,7 @@ int main()
     std::ofstream outfNiB{dataPath + "NiB_LKT_BCT.csv"};
     outfNiB << solvers::Result::commaSeparatedColumns << ",Cl,Cs\n";
 
-    const alloys::Alloy A{alloys::NiB1997_atp};
+    const alloys::Alloy A{alloys::NiB1991_atp};
     for (double C0: std::array{0.0, 0.7, 1.0})
     {
         double dT0{1}, C00{(C0==0) ? 0.1 : C0}; // approx module cannot handle 0 C0
@@ -134,12 +134,12 @@ int main()
     // https://doi.org/10.1007/s11433-010-4167-y, Fig. 2, 3, 5 & 6. 20wt.% Rs assume linear liquidus and solidus, 
     // which is not true beyond 100K dT. Therefore the CLW model is used instead of LKT-BCT.
     std::ofstream outfCoCuCLW{dataPath + "CoCu_CLW.csv"};
-    outfCoCuCLW << solvers::Result::commaSeparatedColumns << '\n';
+    outfCoCuCLW << solvers::Result::commaSeparatedColumns << ",k0\n";
 
     for (double C0: {20.0, 60.0})
     {
         const alloys::Alloy A{(C0==20) ? alloys::CoCu_20wtp : alloys::CoCu_60wtp};
-        double dT0{10};
+        double dT0{1};
         
         solvers::Result startingResult{solvers::bruteForceNewton<models::CLW>(dT0, C0, A)};
         if (!startingResult.hasConverged)
@@ -154,7 +154,7 @@ int main()
             // this experiment can sometimes lead to failed / non-physical solutions
             if ((R.V<0) || (R.R<0) || (!R.hasConverged))
                 R = solvers::bruteForceNewton<models::CLW>(dT, C0, A);
-            if (!R.hasConverged) // no solution exists = model precits such high undercooling is impossible
+            if (!R.hasConverged) // no solution exists = model predicts such high undercooling is impossible
                 break;
 
             double k0{A.CsAtT(Tl-dT) / A.ClAtT(Tl-dT)};

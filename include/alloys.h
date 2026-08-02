@@ -38,6 +38,7 @@ namespace alloys
             inline double mAtC(double C) const;
             inline double ClAtT(double T) const;
             inline double CsAtT(double T) const;
+            inline double mAtT(double T) const;
 
             inline Alloy(
                 // LGK
@@ -143,6 +144,18 @@ inline double alloys::Alloy::CsAtT(double T) const
     return Cs;
 }
 
+/// @brief Calculates the equilibrium liquidus slope at a given T
+/// @param T Liquid temperature - K
+/// @return Equilibrium liquidus slope - K/C%
+inline double alloys::Alloy::mAtT(double T) const
+{
+    double dCldT{0};
+    for (std::size_t i{1}; i<std::size(m_ClAtTFit); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
+        dCldT += i * m_ClAtTFit[i] * std::pow(T, i-1);
+    return 1/dCldT; // m = dT/dCl = 1 / (dCl/dT)
+}
+
+
 // bank of known alloy systems
 
 namespace alloys
@@ -189,7 +202,7 @@ namespace alloys
     static constexpr double NiAr{58.693e-3}, NiDensity{8.907e3}; // In Kg/mol and Kg/m3 respectively
     static constexpr double NiS{(1.72e4*NiDensity/NiAr)/1726}; // S = L/Tm and converted to J/m3K. Not supplied in paper
     // Nickel Boron system in at.%. Taken from https://doi.org/10.1103/PhysRevB.45.5019.
-    const Alloy NiB1997_atp{1.72e4, 36.39, -14.3, 8e-6, 0.464/NiS, 2.42e-9, 1e-5, o, (2.42e-9)/7.6, 2e3, 1726};
+    const Alloy NiB1991_atp{1.72e4, 36.39, -14.3, 8e-6, 0.464/NiS, 2.42e-9, 1e-5, o, (2.42e-9)/7.6, 2e3, 1726};
 
     static constexpr double FeMeltDensity{7352.53}, FeAr{55.845e-3}; // Ar in Kg/mol
     // Iron Cobalt system in both wt.% and at.%, as Fe and Co have such similar atomic masses (55.845 & 58.993). Taken

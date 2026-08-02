@@ -227,7 +227,7 @@ axes[1, 0].set_yticks([1, 10, 100])
 
 axes[1, 1].set_xlim(0, 120)
 axes[1, 1].set_xticks(range(0, 121, 20))
-axes[1, 1].set_ylim(0.03, 120)
+axes[1, 1].set_ylim(0.01, 120)
 axes[1, 1].set_yticks([0.1, 1, 10, 100])
 
 fig.tight_layout()
