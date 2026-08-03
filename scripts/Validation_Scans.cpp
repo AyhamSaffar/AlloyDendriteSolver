@@ -151,7 +151,6 @@ int main()
         {
             solvers::Result R{solvers::newton<models::CLW>(dT, C0, A, V0, R0)};
             
-            
             if ((R.V<0) || (R.R<0) || (!R.hasConverged)) // sometimes gets failed / non-physical solutions
                 R = solvers::bruteForceNewton<models::CLW>(dT, C0, A);
             if (!R.hasConverged) // no solution exists = model predicts such high undercooling is impossible

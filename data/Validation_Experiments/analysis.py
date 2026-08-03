@@ -231,4 +231,40 @@ axes[1, 1].set_ylim(0.01, 120)
 axes[1, 1].set_yticks([0.1, 1, 10, 100])
 
 fig.tight_layout()
-fig.savefig(experiment_path / 'CoCu_Plots.png')
+fig.savefig(experiment_path / 'CoCu_CLW.png')
+
+# %%
+data = experiments['FeSb_CLW']
+good_points = (data['R']>0) & (data['V']>0) & (data['converged'])
+fig, axes = plt.subplots(nrows=3, sharex=True, figsize=(6, 7))
+
+axes[2].set_xlabel("ΔT (K)")
+axes[2].set_xlim(0, 450)
+axes[2].set_xticks(range(0, 401, 100))
+
+axes[1].set_ylabel("V (m/s)")
+axes[1].set_ylim(0, 2)
+axes[1].set_yticks(range(3))
+
+axes[0].set_ylabel("V (m/s)")
+axes[0].set_yscale("log")
+axes[0].set_ylim(2, 1e3)
+axes[0].set_yticks([2, 10, 100, 1000])
+
+for i in range(2):
+    axes[i].plot(data.loc[good_points, 'dT'], data.loc[good_points, 'V'], color='black', linestyle='-.')
+    axes[i].vlines(data.loc[~good_points, 'dT'], ymin=0, ymax=1e3, color='red', alpha=0.2)
+
+axes[2].tick_params(labelleft=False)
+ax = axes[2].twinx()
+ax.set_ylabel("k")
+ax.set_ylim(0, 1)
+ax.set_yticks(np.arange(0, 1.01, 0.25))
+
+ax.plot(data['dT'], data['k0'], color='black', linestyle='-.')
+ax.plot(data['dT'], data['kv'], color='black', linestyle='-')
+ax.vlines(data.loc[~good_points, 'dT'], ymin=0, ymax=1e3, color='red', alpha=0.2)
+
+fig.tight_layout()
+fig.savefig(experiment_path / 'FeSb_CLW.png')
+
