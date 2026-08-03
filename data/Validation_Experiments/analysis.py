@@ -132,7 +132,7 @@ fig.savefig(experiment_path / 'SnAg_LKT_BCT.png')
 
 # %%
 data = experiments['NiB_LKT_BCT']
-data = data[data['converged'] & (data['R']>0) & (data['V']>0)]
+good_rows = data['converged'] & (data['R']>0) & (data['V']>0)
 fig, axes = plt.subplots(nrows=3, figsize=(7,13))
 
 axes[0].set_xlabel('Undercooling    ΔT (K)')
@@ -178,12 +178,15 @@ axes[0].legend(title='$Ni_{100-x}B_x$', loc='upper left')
 axes[1].legend(title='$Ni_{99}B_1$', loc='upper left')
 axes[2].legend()
 
+for ax in axes.flatten():
+    ax.vlines(data.loc[~good_rows, 'dT'], ymin=0, ymax=100, color='red', alpha=0.3)
+
 fig.tight_layout()
 fig.savefig(experiment_path / 'NiB_LKT_BCT.png')
 
 # %%
 data = experiments['CoCu_CLW']
-data = data[ (data['R']>0) & (data['V']>0) & (data['converged']) ]
+good_rows = (data['R']>0) & (data['V']>0) & (data['converged'])
 fig, axes = plt.subplots(ncols=2, nrows=2, figsize=(12,8))
 
 # velocity plots
@@ -230,12 +233,15 @@ axes[1, 1].set_xticks(range(0, 121, 20))
 axes[1, 1].set_ylim(0.01, 120)
 axes[1, 1].set_yticks([0.1, 1, 10, 100])
 
+for ax in axes.flatten():
+    ax.vlines(data.loc[~good_rows, 'dT'], ymin=0, ymax=1000, color='red', alpha=0.3)
+
 fig.tight_layout()
 fig.savefig(experiment_path / 'CoCu_CLW.png')
 
 # %%
 data = experiments['FeSb_CLW']
-good_points = (data['R']>0) & (data['V']>0) & (data['converged'])
+good_rows = (data['R']>0) & (data['V']>0) & (data['converged'])
 fig, axes = plt.subplots(nrows=3, sharex=True, figsize=(6, 7))
 
 axes[2].set_xlabel("ΔT (K)")
@@ -252,8 +258,8 @@ axes[0].set_ylim(2, 1e3)
 axes[0].set_yticks([2, 10, 100, 1000])
 
 for i in range(2):
-    axes[i].plot(data.loc[good_points, 'dT'], data.loc[good_points, 'V'], color='black', linestyle='-.')
-    axes[i].vlines(data.loc[~good_points, 'dT'], ymin=0, ymax=1e3, color='red', alpha=0.2)
+    axes[i].plot(data.loc[good_rows, 'dT'], data.loc[good_rows, 'V'], color='black', linestyle='-.')
+    axes[i].vlines(data.loc[~good_rows, 'dT'], ymin=0, ymax=1e3, color='red', alpha=0.2)
 
 axes[2].tick_params(labelleft=False)
 ax = axes[2].twinx()
@@ -263,7 +269,7 @@ ax.set_yticks(np.arange(0, 1.01, 0.25))
 
 ax.plot(data['dT'], data['k0'], color='black', linestyle='-.')
 ax.plot(data['dT'], data['kv'], color='black', linestyle='-')
-ax.vlines(data.loc[~good_points, 'dT'], ymin=0, ymax=1e3, color='red', alpha=0.2)
+ax.vlines(data.loc[~good_rows, 'dT'], ymin=0, ymax=1e3, color='red', alpha=0.2)
 
 fig.tight_layout()
 fig.savefig(experiment_path / 'FeSb_CLW.png')
