@@ -133,11 +133,11 @@ namespace models
         //! derivation assumes linear liquidus and solidus which is not the case here, but model still uses mP
         double mP{m * ( 1 + (k0-k*(1-std::log(k/k0))) / (1-k0) )}; // velocity dependent liquidus slope (m prime)
         double R0{8.314}; // gas constant
-        double mu{A.L*A.V0/(R0*A.TlAtC(0)*A.TlAtC(0))}; // interfacial kinetic coefficient
+        double mu{A.L*A.V0/(R0*Tl*Tl)}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
         double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // solutal stability function
 
-        double dTc{A.TlAtC(C0)-A.TlAtC(Ci)}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
+        double dTc{Tl-A.TlAtC(Ci)}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
         double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
         // Paper divides by xic instead of times by xic, but this must be a missprint.
         double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*(1-k)*Pc*xic*Ci) - R}; // radius error
