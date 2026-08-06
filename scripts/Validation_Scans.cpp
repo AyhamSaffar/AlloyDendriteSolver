@@ -61,28 +61,33 @@ int main()
         outfNiSn << solvers::newton<models::LGK>(dT, C0, alloys::NiSn_wtp).commaSeparatedValues() << '\n';
 
 
-    // https://doi.org/10.1016/j.actamat.2016.09.047 Fig. 3, 4, & 5
+    // https://doi.org/10.1016/j.actamat.2016.09.047 Fig. 3, 4, & 5. While paper does not assume the dilute limit for
+    // velocity dependent k in LKT-BCT, k0 is so large that it is unlikely to affect the results in a noticable way.
     std::ofstream outfFeCoGamma{dataPath + "FeCoGamma_LKT_BCT.csv"};
     std::ofstream outfFeCoDelta{dataPath + "FeCoDelta_LKT_BCT.csv"};
     outfFeCoGamma << solvers::Result::commaSeparatedColumns << '\n';
     outfFeCoDelta << solvers::Result::commaSeparatedColumns << '\n';
 
-    for (double C0{30}; C0<=50; C0+=10)
+    std::array C0s{30.0, 40.0, 50.0};
+    std::array AGammas{alloys::FeCoGamma_30atp, alloys::FeCoGamma_40atp, alloys::FeCoGamma_50atp};
+    std::array ADeltas{alloys::FeCoDelta_30atp, alloys::FeCoDelta_40atp, alloys::FeCoDelta_50atp};
+
+    for (std::size_t i{0}; i<=2; ++i)
     {
-        double V0Gamma{approx::getV(1.0, C0, alloys::FeCoGamma)};
-        double R0Gamma{approx::getR(1.0, C0, alloys::FeCoGamma)};
+        double C0{C0s[i]};
+        alloys::Alloy AGamma{AGammas[i]}, ADelta{ADeltas[i]};
+        
+        double V0Gamma{approx::getV(1.0, C0, AGamma)}, R0Gamma{approx::getR(1.0, C0, AGamma)};
         for (double dT{1}; dT<=350; ++dT)
         {
             constexpr bool legacy{false}; // paper uses a slighly more modern form of LKT_BCT
-            // paper uses a form of the model that does not assume the dilute limit, which is not supported here.
             constexpr models::ModelFunc bct{models::LKT_BCT<legacy>};
 
-            solvers::Result R{solvers::newton<bct>(dT, C0, alloys::FeCoGamma, V0Gamma, R0Gamma)};
+            solvers::Result R{solvers::newton<bct>(dT, C0, AGamma, V0Gamma, R0Gamma)};
             outfFeCoGamma << R.commaSeparatedValues() << '\n';
-
-            // model diverges for Gamma at higher dT if approx funcs always used as initial guess for V and R
-            std::tie(V0Gamma, R0Gamma) = std::tie(R.V, R.R);
-            outfFeCoDelta << solvers::newton<bct>(dT, C0, alloys::FeCoDelta).commaSeparatedValues() << '\n';
+            std::tie(V0Gamma, R0Gamma) = std::tie(R.V, R.R); // model diverges for Gamma if not given a good first guess
+            
+            outfFeCoDelta << solvers::newton<bct>(dT, C0, ADelta).commaSeparatedValues() << '\n';
         }
     }
 

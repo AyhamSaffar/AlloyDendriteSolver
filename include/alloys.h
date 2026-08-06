@@ -49,6 +49,7 @@ namespace alloys
                 double DA0=-1, double DEa=-1, std::vector<double> TlAtCFit={}, std::vector<double> ClAtTFit={},
                     std::vector<double> CsAtTFit={} 
             );
+            Alloy() = default;
 
         private:
             double m_DA0{}; // Arrhenius constant of diffusivity - m2/s
@@ -213,14 +214,26 @@ namespace alloys
     static constexpr double FeMeltDensity{7352.53}, FeAr{55.845e-3}; // Ar in Kg/mol
     // Iron Cobalt system in both wt.% and at.%, as Fe and Co have such similar atomic masses (55.845 & 58.993). Taken
     // from https://doi.org/10.1016/j.actamat.2016.09.047. Gamma and Delta refer to different crystal phases that
-    // form during solidification. The paper lists slighly different parameters for 30, 40, and 50 atom.% Co. The 40
-    // atom.% Co parameters are used here as an average of the similar values. Note while all are small, m at each C0
-    // vary a fair amount (-0.69, -0.45, and -0.13 at 30, 40, and 50 atom.% Co repectively)
-    const Alloy FeCoGamma{
-        14083, 5796451*FeAr/FeMeltDensity, -0.45, 0.989, 0.319/1032396, 4.7e-9, 5.36e-06, o, 2.354e-10, 550, 1757
+    // form during solidification. In order to model a non-linear phase diagram with a model that assumes a linear phase
+    // diagram (LKT-BCT), the alloy has different values for m and k0 within each concentration range. Also uses C
+    // dependent Tm.
+    const Alloy FeCoGamma_30atp{
+        14098, 5749190*FeAr/7612, -0.69, 0.977, 0.319/1020485, 4.7e-9, 5.46e-06, o, 2.358e-10, 550, 1763
     };
-    const Alloy FeCoDelta{
-        10767, 5704510*FeAr/FeMeltDensity, -1.98, 0.96, 0.206/801030, 4.7e-9, 5.36e-06, o, 2.354e-10, 350, 1733
+    const Alloy FeCoDelta_30atp{
+        10999, 5712909*FeAr/7242, -1.99, 0.949, 0.206/801219, 4.7e-9, 5.46e-06, o, 2.358e-10, 350, 1753
+    };
+    const Alloy FeCoGamma_40atp{ // m value in paper missing minus sign. See reference [1] in paper.
+        14083, 5796451*FeAr/7718, -0.45, 0.989, 0.319/1032396, 4.7e-9, 5.36e-06, o, 2.354e-10, 550, 1757
+    };
+    const Alloy FeCoDelta_40atp{
+        10767, 5704510*FeAr/7352.53, -1.98, 0.96, 0.206/801030, 4.7e-9, 5.36e-06, o, 2.354e-10, 350, 1733
+    };
+    const Alloy FeCoGamma_50atp{ // m value in paper also missing minus sign. See reference [1] in paper.
+        14154, 5822432*FeAr/7824, -0.13, 0.997, 0.319/1043547, 4.7e-9, 5.29e-06, o, 2.35e-10, 550, 1754
+    };
+    const Alloy FeCoDelta_50atp{
+        10795, 5666976*FeAr/7423.47, -1.85, 0.969, 0.206/815419, 4.7e-9, 5.29e-06, o, 2.35e-10, 350, 1714
     };
 
     // Nickel Tin system in wt.%. Taken from https://doi.org/10.1007/BF02646933 (m and k0 taken from Appendix A liquidus
