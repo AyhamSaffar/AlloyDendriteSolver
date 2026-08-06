@@ -60,6 +60,32 @@ int main()
         // model in paper did not include any kind of kinetic undercooling, which makes a difference at high V
         outfNiSn << solvers::newton<models::LGK>(dT, C0, alloys::NiSn_wtp).commaSeparatedValues() << '\n';
 
+    // Fourth Conference on Rapid Solidification Processing: Principles and Technologies, Application of dendritic
+    // growth theory to the interpretation of rapid solidification microstructures, pages 13-25, W.J. Boettinger, S.R.
+    // Coriell and R. Trivedi. Fig. 2
+    std::ofstream outfAgCu{dataPath + "AgCu_LKT_BCT.csv"};
+    outfAgCu << solvers::Result::commaSeparatedColumns << ",k,Cs\n";
+    {
+        const alloys::Alloy A{alloys::AgCu_wtp};
+        double C0{15}, dT0{1};
+        
+        double V0{approx::getR(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
+        for (double dT{dT0}; dT<=350; ++dT)
+        {
+            solvers::Result R{solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0)};
+            if (R.hasConverged) // model diverges if approx funcs always used as initial guess for V and R
+                std::tie(V0, R0) = std::tie(R.V, R.R); 
+
+            double Pc{R.V*R.R/(2*A.D)}; // solutal Péclet number
+            double Ivc{models::ivantsov(Pc)}; // solutal Ivantsov function
+            double k{(A.k0+(A.a0*R.V/A.D)) / (1+(A.a0*R.V/A.D))}; // velocity dependant partition coefficient
+            double Cl{C0/(1-Ivc*(1-k))}; // interface liquid solute conentration
+            double Cs{k*Cl}; // interface solid solute concentration
+                
+            outfAgCu << R.commaSeparatedValues() << ',' << k << ',' << Cs << '\n';
+        }
+    }
+
 
     // https://doi.org/10.1016/j.actamat.2016.09.047 Fig. 3, 4, & 5. While paper does not assume the dilute limit for
     // velocity dependent k in LKT-BCT, k0 is so large that it is unlikely to affect the results in a noticable way.

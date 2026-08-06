@@ -83,6 +83,38 @@ fig.tight_layout()
 fig.savefig(experiment_path / 'NiSn_LGK.png')
 
 # %%
+data = experiments['AgCu_LKT_BCT']
+fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(8, 8))
+
+for ax in axes.flatten():
+    ax.set_xlabel('Undercooling K')
+    ax.set_xscale('log')
+    ax.set_xlim(1, 600)
+    for dT in data.loc[(~data['converged']) | (data['R']<0), 'dT']: #bad results
+        ax.axvline(dT, color='grey', alpha=0.1)
+
+axes[0,0].set_ylabel('V     cm/s')
+axes[0,0].set_yscale('log')
+axes[0,0].set_ylim(1e-5, 1e6)
+axes[0,0].scatter(data['dT'], data['V']*100, color='black')
+
+axes[0,1].set_ylabel('Distribution Coefficient')
+axes[0,1].set_ylim(0.3, 1.01)
+axes[0,1].scatter(data['dT'], data['k'], color='black')
+
+axes[1,0].set_ylabel('Solid Concentration   wt% Cu')
+axes[1,0].set_ylim(4, 18)
+axes[1,0].scatter(data['dT'], data['Cs'], color='black')
+
+axes[1,1].set_ylabel('Radius    cm')
+axes[1,1].set_yscale('log')
+axes[1,1].set_ylim(1e-6, 10**(-2.5))
+axes[1,1].scatter(data['dT'], data['R']*100, color='black')
+
+fig.tight_layout()
+fig.savefig(experiment_path / 'AgCu_LKT_BCT.png')
+
+# %%
 data_gamma = experiments['FeCoGamma_LKT_BCT']
 data_delta = experiments['FeCoDelta_LKT_BCT']
 fig, axes = plt.subplots(ncols=3, figsize=(16, 4))
