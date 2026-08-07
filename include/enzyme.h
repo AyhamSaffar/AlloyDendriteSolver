@@ -3,7 +3,7 @@
 #ifndef ENZYME_H
 #define ENZYME_H
 
-// label for (decayed) object pointer arguement whose derivative should be returned to a second pointer of the same type
+// label for object pointer arguement whose derivative should be stored to a second object of the same type
 extern int enzyme_dup;
 
 // same as above but for when you dont need the return value of an out parameter, just the gradient. Should be faster.

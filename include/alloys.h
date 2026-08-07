@@ -50,6 +50,7 @@ namespace alloys
                     std::vector<double> CsAtTFit={} 
             );
             Alloy() = default;
+            bool operator<=>(const Alloy&) const = default;
 
         private:
             double m_DA0{}; // Arrhenius constant of diffusivity - m2/s
@@ -164,7 +165,7 @@ namespace alloys
     // standard solution to marginal stability criterion for a planar interace. Could vary with crystal structure.
     static constexpr double o{1.0/(4*std::numbers::pi*std::numbers::pi)};
     static constexpr double R{8.3145}; // gas constant in J/molK
-    //* parameters set to NAN signify they should not be used E.G. m and k0 for alloys with non linear phase diagrams.
+    static constexpr double NA{0}; //* used E.G. for m and k0 in alloys with non linear phase diagrams.
     
     // Derived from Binary Alloy Phase Diagrams, Vol. 1104, American Society for Metals, Metals Park, OH, 1986.
     static std::vector<double> FeSbTlAtCFit{1811.15, -5.7341, -0.02588, -0.00103};
@@ -172,7 +173,7 @@ namespace alloys
     static std::vector<double> FeSbCsAtTFit{33.559, -0.01853};
 
     // Iron Antimony system in wt.%. Take from https://doi.org/10.1080/09500830903002356.
-    const Alloy FeSb_wtp{15'027, 43.77, NAN, NAN, 3.56e-7, NAN, 7.3e-6, o, 2.5e-10, 3000, NAN, 4.11e-7, 5e4, 
+    const Alloy FeSb_wtp{15'027, 43.77, NA, NA, 3.56e-7, NA, 7.3e-6, o, 2.5e-10, 3000, NA, 4.11e-7, 5e4, 
         FeSbTlAtCFit, FeSbClAtTFit, FeSbCsAtTFit};
 
     /// ThermoCalc 2026b with the TCBIN v1.1 database was used to get phase diagram data and this was fit to 7th order
@@ -194,12 +195,12 @@ namespace alloys
 
     // Cobalt Copper system for 20wt.% Cu. Taken from https://doi.org/10.1007/s11433-010-4167-y. Phase diagram fits used
     // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit.
-    const Alloy CoCu_20wtp{15033, 39.06, NAN, NAN, 3.4e-7, NAN, 1.424e-5, o, 1.697e-10, 4000, NAN, 1.58e-7, 55060,
+    const Alloy CoCu_20wtp{15033, 39.06, NA, NA, 3.4e-7, NA, 1.424e-5, o, 1.697e-10, 4000, NA, 1.58e-7, 55060,
         CoCuTlAtCFit, CoCuClAtTFit, CoCuCsAtTFit};
 
     // Cobalt Copper system for 60wt.% Cu. Taken from https://doi.org/10.1007/s11433-010-4167-y. Phase diagram fits used
     // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit.
-    const Alloy CoCu_60wtp{14057, 36.05, NAN, NAN, 3.33e-7, NAN, 2.9e-5, o, 4.294e-10, 4000, NAN, 2.04e-7, 54069,
+    const Alloy CoCu_60wtp{14057, 36.05, NA, NA, 3.33e-7, NA, 2.9e-5, o, 4.294e-10, 4000, NA, 2.04e-7, 54069,
         CoCuTlAtCFit, CoCuClAtTFit, CoCuCsAtTFit};
 
     // Nickel Borom system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. m and k0 were fit using

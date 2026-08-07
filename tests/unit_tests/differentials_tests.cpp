@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <tuple>
 #include <cmath> // for std::exp
+#include <vector> //! TEMP
 #include "differentials.h"
 #include "models.h"
 #include "alloys.h"
@@ -35,4 +36,23 @@ TEST_CASE("diff::calculateGrads works for successive analytically differentiable
         REQUIRE(J.df2dR == 3);
         REQUIRE(J.df2dV == 1/V);
     }
+}
+
+
+TEST_CASE("diff::calculateGrads does not modify Alloy objects passed to it", "[differentials]")
+{
+    // checks enzyme bug (https://github.com/EnzymeAD/Enzyme/issues/3073) is prevent from modifying Alloy objects
+    diff::Jacobian J{};
+    
+    // cannot use CLW Alloy here as all params must be non zero to ensure they are included in differentiation
+    // calculation and not optimised out 
+    alloys::Alloy A{alloys::AgCu_wtp}, ACopy{alloys::AgCu_wtp};
+    J = diff::calculateGrads<models::LGK>(1, 1, 1, 1, A);
+    REQUIRE(A==ACopy);
+    J = diff::calculateGrads<models::LKT_BCT>(1, 1, 1, 1, A);
+    REQUIRE(A==ACopy);
+
+    std::tie(A, ACopy) = std::tie(alloys::CoCu_20wtp, alloys::CoCu_20wtp); // must use CLW capable Alloy here
+    J = diff::calculateGrads<models::CLW>(1, 1, 1, 1, A);
+    REQUIRE(A==ACopy);
 }
