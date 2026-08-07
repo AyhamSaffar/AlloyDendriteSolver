@@ -162,7 +162,7 @@ int main()
     }
 
     
-    // https://doi.org/10.1007/s11433-010-4167-y Fig. 2, 3, 5 & 6. 20wt.% Rs assume linear liquidus and solidus, 
+    // https://doi.org/10.1007/s11433-010-4167-y Fig. 2, 3, 5 & 6. 20wt.% R values assume linear liquidus and solidus, 
     // which is not true beyond 100K dT. Therefore the CLW model is used instead of LKT-BCT.
     std::ofstream outfCoCuCLW{dataPath + "CoCu_CLW.csv"};
     outfCoCuCLW << solvers::Result::commaSeparatedColumns << ",k0\n";
@@ -172,25 +172,18 @@ int main()
         const alloys::Alloy A{(C0==20) ? alloys::CoCu_20wtp : alloys::CoCu_60wtp};
         double dT0{1};
         
-        solvers::Result startingResult{solvers::bruteForceNewton<models::CLW>(dT0, C0, A)};
-        if (!startingResult.hasConverged)
-            continue;
-        double V0{startingResult.V}, R0{startingResult.R}; // cannot use approx module for non linear phase diagrams
+        solvers::Result R{solvers::bruteForceNewton<models::CLW>(dT0, C0, A)};
+        double V0{R.V}, R0{R.R}; // cannot use approx module for non linear phase diagrams
 
         double Tl{A.TlAtC(C0)};
-        for (double dT{dT0}; dT<=310; ++dT) // cannot go below 316K due to phase diagram fit
+        for (double dT{dT0}; dT<=400; ++dT) // cannot go below 316K due to phase diagram fit
         {
-            solvers::Result R{solvers::newton<models::CLW>(dT, C0, A, V0, R0)};
-            
-            if ((R.V<0) || (R.R<0) || (!R.hasConverged)) // sometimes gets failed / non-physical solutions
-                R = solvers::bruteForceNewton<models::CLW>(dT, C0, A);
-            if (!R.hasConverged) // no solution exists = model predicts such high undercooling is impossible
-                break;
+            R = solvers::newton<models::CLW>(dT, C0, A, V0, R0);
+            if (R.hasConverged) // no solution exists = model predicts such high undercooling is impossible
+                std::tie(V0, R0) = std::tie(R.V, R.R);
 
             double k0{A.CsAtT(Tl-dT) / A.ClAtT(Tl-dT)};
             outfCoCuCLW << R.commaSeparatedValues() << ',' << k0 << '\n';
-            std::tie(V0, R0) = std::tie(R.V, R.R);
-                std::tie(V0, R0) = std::tie(R.V, R.R);
         }
     }
 
@@ -207,12 +200,8 @@ int main()
         for (double dT{dT0}; dT<=450; ++dT)
         {
             R = solvers::newton<models::CLW>(dT, C0, A, V0, R0);
-
-            if ((R.V<0) || (R.R<0) || (!R.hasConverged)) // sometimes gets failed / non-physical solutions
-                R = solvers::bruteForceNewton<models::CLW>(dT, C0, A);
-            if (!R.hasConverged) // no solution exists = model predicts such high undercooling is impossible
-                break;
-            std::tie(V0, R0) = std::tie(R.V, R.R);
+            if (R.hasConverged)
+                std::tie(V0, R0) = std::tie(R.V, R.R);
                             
             double Tl(A.TlAtC(C0)); // liquidus T at bulk C0
             double D{A.DAtT(Tl)}; // diffusivity constant

@@ -12,7 +12,10 @@ experiments = {path.stem: pd.read_csv(path) for path in experiment_path.glob(pat
 # %%
 data = experiments['SucAce_LGK']
 fig, axes = plt.subplots(nrows=2, figsize=(5,7))
-suc_Mr, ace_Mr = 80.09, 58.08
+
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+for ax in axes.flatten():
+    ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
 
 axes[0].set_ylabel(r'$ V (10^{-5} ms^{-1}) $')
 axes[0].set_ylim(0, 22)
@@ -26,6 +29,7 @@ axes[1].set_yticks(range(0, 29, 4))
 axes[1].set_xlabel(r'$ C_{Ace} (mol.\%) $')
 axes[1].set_xlim(0, 1)
 
+suc_Mr, ace_Mr = 80.09, 58.08
 for dT in data['dT'].unique():
     subset = data[data['dT']==dT]
     C0_mol_percent = 100 * (subset['C0']/ace_Mr) / (subset['C0']/ace_Mr + (100-subset['C0'])/suc_Mr)
@@ -41,6 +45,9 @@ fig.savefig(experiment_path / 'SucAce_LGK.png')
 # %%
 data = experiments['AlFe_LGK']
 fig, ax = plt.subplots(figsize=(6, 6))
+
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
 
 ax.set_xlabel('Undercooling (K)')
 ax.set_xscale('log')
@@ -61,6 +68,10 @@ fig.savefig(experiment_path / 'AlFe_LGK.png')
 # %%
 data = experiments['NiSn_LGK']
 fig, axes = plt.subplots(ncols=2, figsize=(12,8))
+
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+for ax in axes.flatten():
+    ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
 
 axes[0].set_xlabel('BULK UNDERCOOLING K')
 axes[0].set_xscale('log')
@@ -86,12 +97,14 @@ fig.savefig(experiment_path / 'NiSn_LGK.png')
 data = experiments['AgCu_LKT_BCT']
 fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(8, 8))
 
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+for ax in axes.flatten():
+    ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
+
 for ax in axes.flatten():
     ax.set_xlabel('Undercooling K')
     ax.set_xscale('log')
     ax.set_xlim(1, 600)
-    for dT in data.loc[(~data['converged']) | (data['R']<0), 'dT']: #bad results
-        ax.axvline(dT, color='grey', alpha=0.1)
 
 axes[0,0].set_ylabel('V     cm/s')
 axes[0,0].set_yscale('log')
@@ -119,6 +132,11 @@ data_gamma = experiments['FeCoGamma_LKT_BCT']
 data_delta = experiments['FeCoDelta_LKT_BCT']
 fig, axes = plt.subplots(ncols=3, figsize=(16, 4))
 
+data = pd.concat([data_gamma, data_delta])
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+for ax in axes.flatten():
+    ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
+
 for ax in axes:
     ax.set_xlabel('ΔT/K')
     ax.set_xlim(0, 350)
@@ -143,6 +161,10 @@ fig.savefig(experiment_path / 'FeCo_LKT_BCT.png')
 data_LGK, data_LKT_BCT = experiments['SnAg_LGK'], experiments['SnAg_LKT_BCT']
 fig, ax = plt.subplots(figsize=(8,6))
 
+data = pd.concat([data_LGK, data_LKT_BCT])
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
+
 ax.set_ylabel('Growth velocity (m/s)')
 ax.set_yscale("log")
 ax.set_ylim(1e-5, 1e1)
@@ -164,8 +186,11 @@ fig.savefig(experiment_path / 'SnAg_LKT_BCT.png')
 
 # %%
 data = experiments['NiB_LKT_BCT']
-good_rows = data['converged'] & (data['R']>0) & (data['V']>0)
 fig, axes = plt.subplots(nrows=3, figsize=(7,13))
+
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+for ax in axes.flatten():
+    ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
 
 axes[0].set_xlabel('Undercooling    ΔT (K)')
 axes[0].set_xlim(0, 320)
@@ -210,16 +235,16 @@ axes[0].legend(title='$Ni_{100-x}B_x$', loc='upper left')
 axes[1].legend(title='$Ni_{99}B_1$', loc='upper left')
 axes[2].legend()
 
-for ax in axes.flatten():
-    ax.vlines(data.loc[~good_rows, 'dT'], ymin=0, ymax=100, color='red', alpha=0.3)
-
 fig.tight_layout()
 fig.savefig(experiment_path / 'NiB_LKT_BCT.png')
 
 # %%
 data = experiments['CoCu_CLW']
-good_rows = (data['R']>0) & (data['V']>0) & (data['converged'])
 fig, axes = plt.subplots(ncols=2, nrows=2, figsize=(12,8))
+
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+for ax in axes.flatten():
+    ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
 
 # velocity plots
 for col in [0, 1]:
@@ -265,16 +290,17 @@ axes[1, 1].set_xticks(range(0, 121, 20))
 axes[1, 1].set_ylim(0.01, 120)
 axes[1, 1].set_yticks([0.1, 1, 10, 100])
 
-for ax in axes.flatten():
-    ax.vlines(data.loc[~good_rows, 'dT'], ymin=0, ymax=1000, color='red', alpha=0.3)
 
 fig.tight_layout()
 fig.savefig(experiment_path / 'CoCu_CLW.png')
 
 # %%
 data = experiments['FeSb_CLW']
-good_rows = (data['R']>0) & (data['V']>0) & (data['converged'])
 fig, axes = plt.subplots(nrows=3, sharex=True, figsize=(6, 7))
+
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+for ax in axes.flatten():
+    ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
 
 axes[2].set_xlabel("ΔT (K)")
 axes[2].set_xlim(0, 450)
@@ -290,8 +316,7 @@ axes[0].set_ylim(2, 1e3)
 axes[0].set_yticks([2, 10, 100, 1000])
 
 for i in range(2):
-    axes[i].plot(data.loc[good_rows, 'dT'], data.loc[good_rows, 'V'], color='black', linestyle='-.')
-    axes[i].vlines(data.loc[~good_rows, 'dT'], ymin=0, ymax=1e3, color='red', alpha=0.2)
+    axes[i].plot(data['dT'], data['V'], color='black', linestyle='-.')
 
 axes[2].tick_params(labelleft=False)
 ax = axes[2].twinx()
@@ -301,7 +326,6 @@ ax.set_yticks(np.arange(0, 1.01, 0.25))
 
 ax.plot(data['dT'], data['k0'], color='black', linestyle='-.')
 ax.plot(data['dT'], data['kv'], color='black', linestyle='-')
-ax.vlines(data.loc[~good_rows, 'dT'], ymin=0, ymax=1e3, color='red', alpha=0.2)
 
 fig.tight_layout()
 fig.savefig(experiment_path / 'FeSb_CLW.png')
