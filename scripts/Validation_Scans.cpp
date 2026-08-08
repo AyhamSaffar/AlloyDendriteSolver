@@ -181,8 +181,10 @@ int main()
             R = solvers::newton<models::CLW>(dT, C0, A, V0, R0);
             if (R.hasConverged) // no solution exists = model predicts such high undercooling is impossible
                 std::tie(V0, R0) = std::tie(R.V, R.R);
-
-            double k0{A.CsAtT(Tl-dT) / A.ClAtT(Tl-dT)};
+        
+            double Tl(A.TlAtC(C0)); // liquidus T at bulk C0
+            double k0{A.CsAtT(Tl)/A.ClAtT(Tl)}; // equilibrium partition coefficient
+            
             outfCoCuCLW << R.commaSeparatedValues() << ',' << k0 << '\n';
         }
     }
