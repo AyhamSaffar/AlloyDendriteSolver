@@ -99,9 +99,8 @@ namespace models
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
 
-    /// @brief Cao, Wang, Duan, and Bai model. Generalises better to higher undercoolings and velocities for non-linear
-    /// phase diagrams.
-    /// automatically check this otherwise. Defaults to false.
+    /// @brief Cao, Wang, Duan, and Bai model. Designed to better generalise to higher undercoolings and velocities for
+    /// non-linear phase diagrams, but makes strong assumptions and precise implementation details were never published.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
@@ -116,28 +115,28 @@ namespace models
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
         double dTt{A.L*Ivt/A.Cp}; // thermal undercooling
-        double Tl(A.TlAtC(C0)); // liquidus T at bulk C0
-        double Ti{Tl - dT + dTt}; // interface temperature (dTk = difference in T between bulk and interface)
+        double T0(A.TlAtC(C0)); // liquidus T at bulk C0
 
-        double D{A.DAtT(Tl)}; // diffusivity constant
+        //! CLW papers never detail which T/C to use for D(T), m(C), or k0(T). This only gets close to published results
+        double D{A.DAtT(T0)}; // diffusivity constant
         double Pc{V*R/(2*D)}; // solutal Péclet number
         double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
-        
-        double k0{A.CsAtT(Tl)/A.ClAtT(Tl)}; // equilibrium partition coefficient
+
+        double k0{A.CsAtT(T0)/A.ClAtT(T0)}; // equilibrium partition coefficient
         double k{(k0+(A.a0*V/D)) / (1+(A.a0*V/D))}; // non equilibrium partition coefficient
         double Ci{C0/(1-(1-k)*Ivc)}; // interface solute concentration
         double m{A.mAtC(Ci)}; // liquidus gradient at interface
         
-        //! derivation assumes linear liquidus and solidus which is not the case here, but model still uses mP
+        //! derivation assumes linear liquidus and solidus which is far from true here
         double mP{m * ( 1 + (k0-k*(1-std::log(k/k0))) / (1-k0) )}; // velocity dependent liquidus slope (m prime)
         double R0{8.314}; // gas constant
-        double mu{A.L*A.V0/(R0*Tl*Tl)}; // interfacial kinetic coefficient
+        double mu{A.L*A.V0/(R0*T0*T0)}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
         double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // solutal stability function
 
-        double dTc{Tl-A.TlAtC(Ci)}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
+        double dTc{T0-A.TlAtC(Ci)}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
         double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
-        // Paper divides by xic instead of times by xic, but this must be a missprint.
+        //! derivation assumes T at any C = Tm + m*C, which is far from true here. 1998 paper also misplaces xic term 
         double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*(1-k)*Pc*xic*Ci) - R}; // radius error
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }

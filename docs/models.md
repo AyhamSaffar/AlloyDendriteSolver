@@ -66,9 +66,9 @@ phase diagrams.
 
 $$ ∆T = \frac{L}{c_p} Iv_t + (mC_0 - m'C_i) + \frac{2Γ}{R} + \frac{V}{\mu} $$
 
-$$ R = \frac {Γ/σ^*} {\frac{\xi_t P_t L}{c_p} - 2 m P_c (1-k) \xi_c C_i} $$
+$$ R = \frac {Γ/σ^*} {\frac{L}{c_p} P_t \xi_t  - 2 m P_c (1-k) C_i \xi_c} $$
 
-GIven the following:
+Given the following:
 
 $k = \frac{k_0 + (a_0V/D)}{1 + (a_0V/D)}$ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; - velocity
  dependent partition coefficient
@@ -119,8 +119,39 @@ and the basis for this implementation. For a full derivation of this model, it c
 of the linked conference paper. Note that a factor of $P_c$ is mistakenly missing in the denominator of the paper's R
 equation.
 
-<!-- ### The CLW Model -->
-<!--  -->
-<!-- [Chong-de Cao, Xiao-yu Lu, Bing-bo Wei](http://cpl.iphy.ac.cn/en/article/id/32758) -->
-<!--  -->
-<!-- An extension of the LKT-BCT model for non-linear phase diagrams and variable solute diffusivity. -->
+### The CLW Model
+
+[Chong-de Cao, Xiao-yu Lu, Bing-bo Wei](http://cpl.iphy.ac.cn/en/article/id/32758) 
+ 
+An extension of LKT-BCT designed to better generalise to higher undercoolings and velocities for non-linear
+phase diagrams, but makes strong assumptions and precise implementation details were never published. The below
+implementation gives results close to those published.
+
+$$ ∆T = \frac{L}{c_p} Iv_t + (mC_0 - m'C_i) + \frac{2Γ}{R} + \frac{V}{\mu} $$
+
+$$ R = \frac {Γ/σ^*} {\frac{L}{c_p} P_t \xi_t  - 2 m P_c (1-k) C_i \xi_c} $$
+
+Given the following:
+
+$ T_0 = T_l(C_0) $ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; - liquidus temperature at bulk
+concentration
+
+$ D = D_0 exp(-D_{Ea}/RT_{0}) $ &emsp;&emsp;&emsp;&emsp;&emsp; - temperature dependent diffusion coefficient of solute
+in liquid
+
+$ k0 = C_s(T_0) / C_l(T_0) $ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; - temperature dependent equilibrium partition
+coefficient
+
+$ m = dT_l(C_i) / dC $ &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; - solute dependent liquidus slope
+
+This model extends LKT-BCT to non-linear phase diagrams simply by using polynomial fits between the liquidus line,
+solidus line, temperature, and solute concentration. While intuitive, many parts of the model still assume a linear
+phase diagram. This includes the expression for the velocity dependant liquidus slope $m'$ used in the total
+undercooling equation and bottom right term of the marginal stability criteria radius equation, where the liquidus
+temperature gradient ahead of the dendrite tip is equal to the liquidus slope times the solute concentration gradient.
+
+The papers based on this model also do not specify what temperatures each of the fit parameters should be evaluated at.
+For a linear phase diagram $m$ and $k0$ are constant at all temperatures. For a non-linear phase diagram, the order at
+which each undercooling is evaluated matters. Melt temperature changes between each undercooling component, so $m$, 
+$k0$, $D$, and other derived parameters will also change. Here evaluating all parameters at $T_0$ gave the closest
+result to those published, however the data points never match up exactly.

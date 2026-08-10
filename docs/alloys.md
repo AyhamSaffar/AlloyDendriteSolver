@@ -2,25 +2,33 @@
 
 Alloy structs are used to organise all thermodynamic constants for a given binary alloy system.
 
-All *Alloy* objects must contain the following constants: 
+All *Alloy* objects can be used with the LGK model and must contain the following constants: 
 
-- $L$ 	&nbsp; Fusion enthalpy - $J/mol$
-- $c_p$ &nbsp; Melt heat capacity - $J/(mol K)$
-- $m$ 	&nbsp; Equilibrium liquidus slope - $K / C\%$
-- $k_0$	&nbsp; Equilibrium partition coefficient - $C\% / C\%$
-- $Γ$ 	&nbsp; Gibbs-Thomson coefficient - $Km$
-- $D$ 	&nbsp; Diffusion coefficient of solute in liquid - $m^2/s$
-- $α$	&nbsp; Thermal diffusivity of liquid - $m^2/s$
-- $σ^*$	&nbsp; Stability constant - $m/m$
+- $L$ 	&emsp; Fusion enthalpy - $J/mol$
+- $c_p$ &emsp; Melt heat capacity - $J/(mol K)$
+- $m$ 	&emsp; Equilibrium liquidus slope - $K / C%$
+- $k_0$	&emsp; Equilibrium partition coefficient - $C% / C%$
+- $Γ$ 	&emsp; Gibbs-Thomson coefficient - $Km$
+- $D$ 	&emsp; Diffusion coefficient of solute in liquid - $m^2/s$
+- $α$	&emsp; Thermal diffusivity of liquid - $m^2/s$
+- $σ^*$	&emsp; Stability constant - $m/m$
 
 where C% is the concentration unit. Alloy varaible names with the *_wtp* suffix are in weight percent while the *_atp*
 suffic refers to atom or mole percent.  
 
 Optional parameters required for LKT-BCT models:
 
-- $a_0$ &nbsp; Solid atomic spacing - $m$
-- $V_0$ &nbsp; Speed of sound in liquid - $m/s$
-- $T_m$ &nbsp; Pure solid melting point at  - $K$
+- $a_0$ &emsp; Solid atomic spacing - $m$
+- $V_0$ &emsp; Speed of sound in liquid - $m/s$
+- $T_m$ &emsp; Pure solid melting point at  - $K$
+
+Further optional parameters required for CLW models, as well as the above:
+
+- $D_0$ &emsp; Diffusivity at 0K - $m^2/s$
+- $D_{Ea}$ &nbsp; Activation energy for diffusion - $J/mol$
+- $T_l(C)$ &nbsp; Polynomial fit of concentration - $C%$ to liquidus temperature - $K$
+- $C_s(T)$ &nbsp; Polynomial fit of temperature - $K$ to solidus concentration - $C%$ 
+- $C_l(T)$ &nbsp; Polynomial fit of temperature - $K$ to liquidus concentration - $C%$
 
 ### Constants Varying With Other Parameters
 
@@ -34,13 +42,11 @@ not including this variance may be negligible compared to the error created by o
 The thermodynamic constants $L$ and $c_p$ have been normalised by mole throughout for consistency. Volumetric and
 gravimetric values must be converted to molar for use in this library.
 
-Concentration based quantities ($m$ and $k_0$) can either be in at.% or wt.%. Alloys only used with the LGK model can be
-either as this model only uses these quantities in their unitless forms during dimensional analysis calculations.
-**Alloys used with the LKT-BCT model must be in at.%** as this model contains terms that require the proportion of atoms
-in a given phase.
+Concentration based quantities ($m$ and $k_0$) can either be in at.% or wt.%. Care must be taken to ensure all
+concentration values have the same units as the corresponding Alloy.
 
 Units for $k_0$ are often omitted as it is unitless overall. However it has a different value when in wt.% / wt.%
 compared to at.% / at.%. Consider the situation where the solute metal atoms have a much lower atomic mass then
 the bulk metal. If The solute has three times the wt.% in the liquid as the solid ($k_0$ = 0.33 wt.%/wt.%), it follows
 that it would have more than three times the atom fraction in the liquid as the solid. These units are easy to miss and
-cannot be easily interconverted in most cases. A full phase diagram line fit is required.
+cannot be easily interconverted in most cases.
