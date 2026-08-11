@@ -1,7 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <tuple>
 #include <cmath> // for std::exp
-#include <vector> //! TEMP
 #include "differentials.h"
 #include "models.h"
 #include "alloys.h"
