@@ -46,15 +46,11 @@ namespace alloys
             inline double msAtT(double T) const;
 
             inline Alloy(
-                // LGK
-                double L, double Cp, double m, double k0, double r, double D, double a, double o,
-                // LKT-BCT
-                double a0=-1, double V0=-1, double Tm=-1,
-                // CLW
+                double L, double Cp, double m, double k0, double r, double D, double a, double o, // LGK
+                double a0=-1, double V0=-1, double Tm=-1, // LKT-BCT
                 double DA0=-1, double DEa=-1, std::vector<double> TlAtCFit={}, std::vector<double> ClAtTFit={},
-                    std::vector<double> CsAtTFit={},
-                // WLCYZ
-                double Vd=-1
+                    std::vector<double> CsAtTFit={}, // CLW
+                double Vd=-1 // WLCYZ
             );
             Alloy() = default;
             bool operator<=>(const Alloy&) const = default;

@@ -5,6 +5,7 @@
 #include <tuple>
 #include <stdexcept>
 #include "alloys.h"
+#include "enzyme.h"
 
 /// @brief standard models that help calculate solidification parameters from alloy physical parameters. These assume
 /// a single nucleation event, for example in small liquid solder balls that don't have any available nucleants.
@@ -14,7 +15,7 @@ namespace models
     struct DTs
     {
         double t{}; // thermal undercooling
-        double c{}; // solutal undercooling
+        double c{}; // constitutional (solutal) undercooling
         double r{}; // curvature undercooling
         double k{}; // kinetic undercooling
     };
@@ -140,6 +141,94 @@ namespace models
         double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*(1-k)*Pc*xic*Ci) - R}; // radius error
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
-}
 
+    // the functions below must be seperate from the WLCYZ function so they can be differentiated within that function.
+
+    // calculates the velocity dependent partition coefficient used in the WLCYZ model
+    inline double getkv(double T, double V, const alloys::Alloy& A)
+    {
+        double ke{A.CsAtT(T)/A.ClAtT(T)}; // equilibrium partition coefficient
+        double psi{1-(V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
+        double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
+        return ((V/Vdi)+ke*psi) / ((V/Vdi)+psi);
+    }
+
+    // calculates the relaxation effect term N used in the WLCYZ model
+    inline double getN(double T, double V, const alloys::Alloy& A)
+    {
+        double ke{A.CsAtT(T)/A.ClAtT(T)}; // equilibrium partition coefficient
+        double psi{1-(V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
+        double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
+        double kv{((V/Vdi)+ke*psi) / ((V/Vdi)+psi)};
+        return 1 - kv + (std::log(kv)/ke) + (1-kv)*(1-kv)*V/A.Vd;
+    }
+
+    /// @brief Wang, Liu, Chen, Yang and Zhou  model. Generalises better to higher undercoolings and velocities for non
+    /// linear phase diagrams.
+    /// @param V velocity - m/s
+    /// @param R dendrite tip radius - m
+    /// @param dT undercooling - K
+    /// @param C0 bulk alloy solute concentration - C.%
+    /// @param A struct containing key physical alloy parameters
+    /// @return dT and R errors. If V, R, dt, and C0 are perfectly correct, both errors should be zero.
+    inline std::tuple<double, double, DTs> WLCYZ(double V, double R, double dT, double C0, const alloys::Alloy& A)
+    {
+        if (!A.WLCYZCapable)
+            throw std::runtime_error("Attempted to pass non WLCYZ capable Alloy to WLCYZ model");
+
+        double Pt{V*R/(2*A.a)}; // thermal Péclet number
+        double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
+        double dTt{A.L*Ivt/A.Cp}; // thermal undercooling
+        double Ti{A.TlAtC(C0) - dT + dTt}; // interface temperature
+        
+        double Cle{A.ClAtT(Ti)}, Cse{A.CsAtT(Ti)}; // equilibrium interface solute concentration of liquid & solid
+        double ke{Cse/Cle}; // equilibrium partition coefficient
+        double dTr{2*A.r/R}; // curvature undercooling
+        // P suffix (prime) used to denote a value is curvature adjusted (calculated at T=Ti+dTr)
+        double CleP{A.ClAtT(Ti+dTr)}, CseP{A.CsAtT(Ti+dTr)}; // curvature adjusted Cl & Cs
+        double keP{CseP/CleP}; // curvature adjusted equilibrium partition coefficient
+        
+        double psi{1-(V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
+        double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
+        double kvP{((V/Vdi)+keP*psi) / ((V/Vdi)+psi)}; // curvature corrected velocity dependent partition coefficient
+        double NP{1 - kvP + std::log(kvP/keP) + (1-kvP)*(1-kvP)*V/A.Vd}; // curvature corrected relaxation term N
+        //* can this not just be calculated with dimensional analysis like in all the other models?
+        double Cl{(CleP-CseP-(V/A.V0))/NP}; // true interface solute concentration of liquid
+
+        double dTc{A.TlAtC(C0) - A.TlAtC(Cl)}; // constitutional (solutal) undercooling
+        double dTk{A.TlAtC(Cl) - A.TlAtC(CleP)}; // kinetic undercooling
+
+        static alloys::Alloy ACopy{}; // required as __enzye_autodiff sometimes modifies objects passed to it
+        ACopy = A;
+        double dNdT{  // dN(Ti)/dT
+            __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti, enzyme_const, V, enzyme_const, &ACopy)
+        };
+        double kv{((V/Vdi)+ke*psi) / ((V/Vdi)+psi)}; // velocity dependent partition coefficient
+        double N{1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd}; // relaxation term N
+        double ml{A.mlAtT(Ti)}, ms{A.msAtT(Ti)}; // solidus and liquidus gradients
+        double M{-ml*ms*N/(ml-ms+ml*ms*Cl*dNdT)}; // solutal field gradient coefficient
+
+        double mlP{A.mlAtT(Ti+dTr)}, msP{A.msAtT(Ti+dTr)}; // curvature adjusted solidus and liquidus gradients
+        ACopy = A;
+        double dNPdT{  // dN(Ti+dTr)/dT
+            __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy)
+        };
+        //* requires a ClP below?
+        double MP{-mlP*msP*NP/(mlP-msP+mlP*msP*Cl*dNPdT)}; // curvature adjusted solutal field gradient coefficient
+        ACopy = A;
+        double dkvPdT{ // dKv(Ti+dTr)/dT
+            __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy)
+        };
+        double Pc{V*R/(2*A.D)}; // solutal peclet number
+
+        double xic{ // solutal stability function
+            1 - (2*kvP+2*MP*Cl*dkvPdT) / ( std::sqrt(1+(psi/(A.o*Pc*Pc))) + 2*kvP - 1 + 2*MP*Cl*dkvPdT)
+        };
+        double xiL{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
+        double RPred{(A.r/A.o) / (Pt*A.L*xiL/A.Cp + 2*MP*Pc*Cl*(kvP-1)*xic/psi)}; // calculated dendrite radius
+     
+        return std::make_tuple(RPred-R, dTt+dTc+dTr+dTk-dT, DTs{dTt, dTc, dTr, dTk});
+    }
+
+}
 #endif
