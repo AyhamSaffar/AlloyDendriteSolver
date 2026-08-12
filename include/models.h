@@ -125,7 +125,7 @@ namespace models
         double k0{A.CsAtT(T0)/A.ClAtT(T0)}; // equilibrium partition coefficient
         double k{(k0+(A.a0*V/D)) / (1+(A.a0*V/D))}; // non equilibrium partition coefficient
         double Ci{C0/(1-(1-k)*Ivc)}; // interface solute concentration
-        double m{A.mAtC(Ci)}; // liquidus gradient at interface
+        double m{A.mlAtC(Ci)}; // liquidus gradient at interface
         
         //! derivation assumes linear liquidus and solidus which is far from true here
         double mP{m * ( 1 + (k0-k*(1-std::log(k/k0))) / (1-k0) )}; // velocity dependent liquidus slope (m prime)

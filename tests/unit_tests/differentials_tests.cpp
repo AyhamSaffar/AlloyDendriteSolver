@@ -37,7 +37,6 @@ TEST_CASE("diff::calculateGrads works for successive analytically differentiable
     }
 }
 
-
 TEST_CASE("diff::calculateGrads does not modify Alloy objects passed to it", "[differentials]")
 {
     // checks enzyme bug (https://github.com/EnzymeAD/Enzyme/issues/3073) is prevent from modifying Alloy objects

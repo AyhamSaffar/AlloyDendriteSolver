@@ -35,10 +35,15 @@ namespace alloys
             bool CLWCapable{false};
             inline double DAtT(double T) const;
             inline double TlAtC(double C) const;
-            inline double mAtC(double C) const;
+            inline double mlAtC(double C) const;
             inline double ClAtT(double T) const;
             inline double CsAtT(double T) const;
-            inline double mAtT(double T) const;
+
+            // WLCYZ parameters
+            bool WLCYZCapable{false};
+            double Vd{};    // maximum speed of diffusion in the bulk liquid - m/s
+            inline double mlAtT(double T) const;
+            inline double msAtT(double T) const;
 
             inline Alloy(
                 // LGK
@@ -47,7 +52,9 @@ namespace alloys
                 double a0=-1, double V0=-1, double Tm=-1,
                 // CLW
                 double DA0=-1, double DEa=-1, std::vector<double> TlAtCFit={}, std::vector<double> ClAtTFit={},
-                    std::vector<double> CsAtTFit={} 
+                    std::vector<double> CsAtTFit={},
+                // WLCYZ
+                double Vd=-1
             );
             Alloy() = default;
             bool operator<=>(const Alloy&) const = default;
@@ -76,22 +83,24 @@ namespace alloys
 /// @param DA0 Arrhenius constant of diffusivity - m2/s. Only needed for CLW alloys.
 /// @param DEa activation energy for diffusion - J/mol. Only needed for CLW alloys.
 /// @param TlAtCFit polynomial fit of Tl for a given C (0th to nth order coefficient). Only needed for CLW alloys.
-/// @param mAtCFit polynomial fit of m for a given C (0th to nth order coefficient). Only needed for CLW alloys.
+/// @param mlAtCFit polynomial fit of m for a given C (0th to nth order coefficient). Only needed for CLW alloys.
 /// @param ClAtTFit polynomial fit of Cl for a given T (0th to nth order coefficient). Only needed for CLW alloys.
 /// @param CsAtTFit polynomial fit of Cs for a given T (0th to nth order coefficient). Only needed for CLW alloys.
+/// @param Vd maximum speed of diffusion in the bulk liquid - m/s. Only needed for WLCYZ alloys.
 inline alloys::Alloy::Alloy(
     double L, double Cp, double m, double k0, double r, double D, double a, double o, double a0, double V0, double Tm,
-    double DA0, double DEa, std::vector<double> TlAtCFit, std::vector<double> ClAtTFit, std::vector<double> CsAtTFit  
+    double DA0, double DEa, std::vector<double> TlAtCFit, std::vector<double> ClAtTFit, std::vector<double> CsAtTFit,
+    double Vd  
 ): L{L}, Cp{Cp}, m{m}, k0{k0}, r{r}, D{D}, a{a}, o{o}, a0{a0}, V0{V0}, Tm{Tm}, m_DA0{DA0}, m_DEa{DEa},
     m_TlAtCFit{TlAtCFit}, m_ClAtTFit{ClAtTFit}, m_CsAtTFit{CsAtTFit} 
 {
     if ((a0!=-1) && (V0!=-1) && (Tm!=-1))
         LKT_BCTCapable = true;
-    if ((DA0!=-1) && (DEa!=-1) && (!TlAtCFit.empty()) && (!ClAtTFit.empty()) && (!CsAtTFit.empty()))
+    if (LKT_BCTCapable && (DA0!=-1) && (DEa!=-1) && (!TlAtCFit.empty()) && (!ClAtTFit.empty()) && (!CsAtTFit.empty()))
         CLWCapable = true;
-}            
-            
-            
+    if (CLWCapable && (Vd!=-1))
+        WLCYZCapable = true;
+}                  
 
 /// @brief Calculates the solute liquid diffusivity at a given T
 /// @param T Liquid temperature - K
@@ -102,9 +111,9 @@ inline double alloys::Alloy::DAtT(double T) const
     return m_DA0*std::exp(-m_DEa/(R*T));
 }
 
-/// @brief Calculates the liquidus temperature at a given C
+/// @brief Calculates the equilibrium liquidus temperature at a given C
 /// @param C Liquid solute concentration - C%
-/// @return Liquidus temperature - K
+/// @return Equilibrium liquidus temperature - K
 inline double alloys::Alloy::TlAtC(double C) const
 {
     double Tl{0};
@@ -116,12 +125,12 @@ inline double alloys::Alloy::TlAtC(double C) const
 /// @brief Calculates the equilibrium liquidus slope at a given C
 /// @param C Liquid solute concentration - C%
 /// @return Equilibrium liquidus slope - K/C%
-inline double alloys::Alloy::mAtC(double C) const
+inline double alloys::Alloy::mlAtC(double C) const
 {
-    double m{0};
+    double ml{0};
     for (std::size_t i{1}; i<std::size(m_TlAtCFit); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
-        m += i * m_TlAtCFit[i] * std::pow(C, i-1); // m(C) = dTl(C)/dC
-    return m;
+        ml += i * m_TlAtCFit[i] * std::pow(C, i-1); // ml(C) = dTl(C)/dC
+    return ml;
 }
 
 /// @brief Calculates the equilibrium liquidus concentration at a given T
@@ -135,7 +144,7 @@ inline double alloys::Alloy::ClAtT(double T) const
     return Cl;
 }
 
-/// @brief Calculates the solidus concentration at a given T
+/// @brief Calculates the equilibrium solidus concentration at a given T
 /// @param T Liquid temperature - K
 /// @return Equilibrium solidus concentration - C% / C%
 inline double alloys::Alloy::CsAtT(double T) const
@@ -146,15 +155,26 @@ inline double alloys::Alloy::CsAtT(double T) const
     return Cs;
 }
 
-/// @brief Calculates the equilibrium liquidus slope at a given T
+/// @brief Calculates the equilibrium liquidus gradient at a given T
 /// @param T Liquid temperature - K
-/// @return Equilibrium liquidus slope - K/C%
-inline double alloys::Alloy::mAtT(double T) const
+/// @return Equilibrium liquidus gradient - K/C%
+inline double alloys::Alloy::mlAtT(double T) const
 {
     double dCldT{0};
     for (std::size_t i{1}; i<std::size(m_ClAtTFit); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
         dCldT += i * m_ClAtTFit[i] * std::pow(T, i-1);
-    return 1/dCldT; // m = dT/dCl = 1 / (dCl/dT)
+    return 1/dCldT; // ml = dTl/dC = 1 / (dCl/dT)
+}
+
+/// @brief Calculates the equilibrium solidus gradient at a given T
+/// @param T Liquid temperature - K
+/// @return Equilibrium solidus gradient - K/C%
+inline double alloys::Alloy::msAtT(double T) const
+{
+    double dCsdT{0};
+    for (std::size_t i{1}; i<std::size(m_CsAtTFit); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
+        dCsdT += i * m_CsAtTFit[i] * std::pow(T, i-1);
+    return 1/dCsdT; // ml = dTs/dC = 1 / (dCs/dT)
 }
 
 
