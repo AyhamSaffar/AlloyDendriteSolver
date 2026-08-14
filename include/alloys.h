@@ -94,7 +94,7 @@ inline alloys::Alloy::Alloy(
         LKT_BCTCapable = true;
     if (LKT_BCTCapable && (DA0!=-1) && (DEa!=-1) && (!TlAtCFit.empty()) && (!ClAtTFit.empty()) && (!CsAtTFit.empty()))
         CLWCapable = true;
-    if (CLWCapable && (Vd!=-1))
+    if (LKT_BCTCapable && (!TlAtCFit.empty()) && (!ClAtTFit.empty()) && (!CsAtTFit.empty()) && (Vd!=-1))
         WLCYZCapable = true;
 }                  
 
@@ -182,7 +182,21 @@ namespace alloys
     static constexpr double o{1.0/(4*std::numbers::pi*std::numbers::pi)};
     static constexpr double R{8.3145}; // gas constant in J/molK
     static constexpr double NA{0}; //* used E.G. for m and k0 in alloys with non linear phase diagrams.
-    
+
+    // calculated using least squares fitting of the phase diagrams from the TCNI8 database. Valid down to 1343K.
+    static std::vector<double> NiBTlAtCFit{11728.310506759,-13.74052637939,-0.2444339920279,-0.01972205626106};
+    static std::vector<double> NiBClAtTFit{280.856238051,-0.537495568016,0.000381791884713,-9.53611701497e-08};
+    static std::vector<double> NiBCsAtTFit{
+        -23.86104359553,0.0647957147612,-6.61489819253e-05,3.083066146706e-08,-5.57017810813e-12
+    };
+
+    // Nickel Borom system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. The constant m & k0 values
+    // are taken from https://www.sciencedirect.com/science/article/pii/S1359646207003302.
+    const Alloy NiB2007_atp{
+        1.72e4, 36.39, -14.3, 0.0155, 3.42e-7, 3e-9, 8.5e-6, o, (3e-9)/18.9, 425, 1728, -1, -1,
+        NiBTlAtCFit, NiBClAtTFit, NiBCsAtTFit, 18.9
+    };
+
     // Derived from Binary Alloy Phase Diagrams, Vol. 1104, American Society for Metals, Metals Park, OH, 1986.
     static std::vector<double> FeSbTlAtCFit{1811.15, -5.7341, -0.02588, -0.00103};
     static std::vector<double> FeSbClAtTFit{393.39, -0.6802, 4.8758e-4, -1.2803e-7};
@@ -218,10 +232,6 @@ namespace alloys
     // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit.
     const Alloy CoCu_60wtp{14057, 36.05, NA, NA, 3.33e-7, NA, 2.9e-5, o, 4.294e-10, 4000, NA, 2.04e-7, 54069,
         CoCuTlAtCFit, CoCuClAtTFit, CoCuCsAtTFit};
-
-    // Nickel Borom system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. m and k0 were fit using
-    // ThermoCalc database TCNI8. Default m and k0 used were the average over the first 100K dT.
-    const Alloy NiB2007_atp{1.72e4, 36.39, -16.3, 3.45e-2, 3.42e-7, 3e-9, 8.5e-6, o, (3e-9)/18.9, 425, 1726};
 
     static constexpr double NiAr{58.693e-3}, NiDensity{8.907e3}; // In Kg/mol and Kg/m3 respectively
     static constexpr double NiS{(1.72e4*NiDensity/NiAr)/1726}; // S = L/Tm and converted to J/m3K. Not supplied in paper

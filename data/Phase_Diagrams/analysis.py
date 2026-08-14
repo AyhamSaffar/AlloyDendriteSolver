@@ -12,12 +12,12 @@ assert data_path.is_file(), f"Could not find data.csv file in {home_path}"
 
 # %%
 data = pd.read_csv(data_path)
-for col in ["T", "Cl", "Cs"]:
+for col in ["T/K", "Cl/%", "Cs/%"]:
     assert col in data.columns, f"Could not find {col} Column in {data.columns.to_list()} columns"
 
 # %%
-orders = range(3, 8)
-fits = [('Cl', 'T'), ('T', 'Cl'), ('T', 'Cs')] # parameter pairs to fit (x axis, y axis)
+orders = range(2, 6)
+fits = [('Cl/%', 'T/K'), ('T/K', 'Cl/%'), ('T/K', 'Cs/%')] # parameter pairs to fit (x axis, y axis)
 fig, axes = plt.subplots(ncols=len(orders), nrows=len(fits), figsize=(6*len(orders), 5*len(fits)))
 stat_data = []
 
@@ -37,7 +37,8 @@ for i, order in enumerate(orders):
         ax = ax.twinx()
         ax.set_ylabel(f'Error')
         y_errors = np.abs(data[y]-y_fit)
-        ax.bar(data[x], y_errors, color='grey', alpha=0.5)
+        average_x_size = (data[x].max()-data[x].min())/len(data[x])
+        ax.bar(data[x], y_errors, color='grey', alpha=0.5, width=average_x_size)
 
         stat_row = dict()
         stat_row['kind'] = f'{x} to {y}'
