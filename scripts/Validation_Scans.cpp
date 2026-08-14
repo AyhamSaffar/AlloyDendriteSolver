@@ -189,6 +189,7 @@ int main()
         }
     }
 
+
     // https://doi.org/10.1080/09500830903002356 Fig. 2 & 3.
     std::ofstream outfFeSb{dataPath + "FeSb_CLW.csv"};
     outfFeSb << solvers::Result::commaSeparatedColumns << ",k0,kv\n";
@@ -214,6 +215,25 @@ int main()
         }      
     }
 
+
+    // https://www.sciencedirect.com/science/article/pii/S1359645406006215 Fig. 4, 5 & 6
+    std::ofstream outfNiB2{dataPath + "NiB_WLCYZ.csv"}; // ealier validation experiment uses NiB for LKT_BCT
+    outfNiB2 << solvers::Result::commaSeparatedColumns << '\n';
+
+    {
+        const alloys::Alloy A{alloys::NiB2007_atp};
+        const double C0{0.7}, dT0{1};
+        solvers::Result R{solvers::bruteForceNewton<models::WLCYZ>(dT0, C0, A)};
+        double V0{R.V}, R0{R.R};
+
+        for (double dT{dT0}; dT<=450; ++dT)
+        {
+            R = solvers::newton<models::WLCYZ>(dT, C0, A, V0, R0);
+            if (R.hasConverged)
+                std::tie(V0, R0) = std::tie(R.V, R.R);
+            outfNiB2 << R.commaSeparatedValues() << '\n';
+        }
+    }
 
     return 0;
 }

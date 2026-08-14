@@ -88,7 +88,7 @@ inline alloys::Alloy::Alloy(
     double DA0, double DEa, std::vector<double> TlAtCFit, std::vector<double> ClAtTFit, std::vector<double> CsAtTFit,
     double Vd  
 ): L{L}, Cp{Cp}, m{m}, k0{k0}, r{r}, D{D}, a{a}, o{o}, a0{a0}, V0{V0}, Tm{Tm}, m_DA0{DA0}, m_DEa{DEa},
-    m_TlAtCFit{TlAtCFit}, m_ClAtTFit{ClAtTFit}, m_CsAtTFit{CsAtTFit} 
+    m_TlAtCFit{TlAtCFit}, m_ClAtTFit{ClAtTFit}, m_CsAtTFit{CsAtTFit}, Vd{Vd}
 {
     if ((a0!=-1) && (V0!=-1) && (Tm!=-1))
         LKT_BCTCapable = true;
@@ -184,7 +184,7 @@ namespace alloys
     static constexpr double NA{0}; //* used E.G. for m and k0 in alloys with non linear phase diagrams.
 
     // calculated using least squares fitting of the phase diagrams from the TCNI8 database. Valid down to 1343K.
-    static std::vector<double> NiBTlAtCFit{11728.310506759,-13.74052637939,-0.2444339920279,-0.01972205626106};
+    static std::vector<double> NiBTlAtCFit{1728.310506759,-13.74052637939,-0.2444339920279,-0.01972205626106};
     static std::vector<double> NiBClAtTFit{280.856238051,-0.537495568016,0.000381791884713,-9.53611701497e-08};
     static std::vector<double> NiBCsAtTFit{
         -23.86104359553,0.0647957147612,-6.61489819253e-05,3.083066146706e-08,-5.57017810813e-12
