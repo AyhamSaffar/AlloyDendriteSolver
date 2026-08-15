@@ -330,3 +330,46 @@ ax.plot(data['dT'], data['kv'], color='black', linestyle='-')
 fig.tight_layout()
 fig.savefig(experiment_path / 'FeSb_CLW.png')
 
+# %%
+data = experiments['NiB_WLCYZ']
+fig, axes = plt.subplots(ncols=3, figsize=(12, 3.5))
+
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+for ax in axes.flatten():
+    ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
+
+axes[0].set_xlabel('bath undercooling ΔT (K)')
+axes[0].set_xlim(0, 350)
+axes[0].set_xticks(range(0, 350, 100))
+axes[0].set_ylabel('The dendrite tip velocity V (m/s)')
+axes[0].set_ylim(-1, 40)
+axes[0].set_yticks(range(0, 41, 10))
+
+axes[0].plot(data['dT'], data['V'], color='black')
+
+axes[1].set_xlabel('bath undercooling ΔT (K)')
+axes[1].set_xlim(0, 400)
+axes[1].set_xticks([0, 100, 300])
+axes[1].set_ylabel('The dendrite tip radius R (m)')
+axes[1].set_yscale('log')
+axes[1].set_ylim(1e-9, 1e-6)
+axes[1].set_yticks([10**i for i in range(-9, -5)])
+
+axes[1].plot(data['dT'], data['R'], color='black')
+
+axes[2].set_xlabel('bath undercooling ΔT (K)')
+axes[2].set_xlim(0, 400)
+axes[2].set_xticks([0, 100, 300])
+axes[2].set_ylabel('undercooling contribution (K)')
+axes[2].set_ylim(-5, 225)
+axes[2].set_yticks(range(0, 210, 50))
+
+axes[2].plot(data['dT'], data['dTr'], color='black', linestyle='-', label='dTr')
+axes[2].plot(data['dT'], data['dTc'], color='black', linestyle='--', label='dTc')
+axes[2].plot(data['dT'], data['dTk'], color='black', linestyle=':', label='dTk')
+axes[2].plot(data['dT'], data['dTt'], color='black', linestyle='-.', label='dTt')
+
+axes[2].legend()
+
+fig.tight_layout()
+fig.savefig(experiment_path / 'NiB_WLCYZ.png')

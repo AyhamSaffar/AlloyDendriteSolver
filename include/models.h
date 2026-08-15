@@ -198,10 +198,10 @@ namespace models
         double dTc{A.TlAtC(C0) - A.TlAtC(Cl)}; // constitutional (solutal) undercooling
         double dTk{A.TlAtC(Cl) - A.TlAtC(CleP)}; // kinetic undercooling
 
-        static alloys::Alloy ACopy{}; // required as __enzye_autodiff sometimes modifies objects passed to it
-        ACopy = A;
+        alloys::Alloy ACopy1{A}; // required as __enzye_autodiff sometimes modifies objects passed to it
+        //* could not copy assign A to a static object as enyzme would fail to deduce the static object's type?
         double dNdT{  // dN(Ti)/dT
-            __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti, enzyme_const, V, enzyme_const, &ACopy)
+            __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti, enzyme_const, V, enzyme_const, &ACopy1)
         };
         double kv{((V/Vdi)+ke*psi) / ((V/Vdi)+psi)}; // velocity dependent partition coefficient
         double N{1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd}; // relaxation term N
@@ -209,15 +209,15 @@ namespace models
         double M{-ml*ms*N/(ml-ms+ml*ms*Cl*dNdT)}; // solutal field gradient coefficient
 
         double mlP{A.mlAtT(Ti+dTr)}, msP{A.msAtT(Ti+dTr)}; // curvature adjusted solidus and liquidus gradients
-        ACopy = A;
+        alloys::Alloy ACopy2{A};
         double dNPdT{  // dN(Ti+dTr)/dT
-            __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy)
+            __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy2)
         };
         //* requires a ClP below?
         double MP{-mlP*msP*NP/(mlP-msP+mlP*msP*Cl*dNPdT)}; // curvature adjusted solutal field gradient coefficient
-        ACopy = A;
+        alloys::Alloy ACopy3{A};
         double dkvPdT{ // dKv(Ti+dTr)/dT
-            __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy)
+            __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy3)
         };
         double Pc{V*R/(2*A.D)}; // solutal peclet number
 
