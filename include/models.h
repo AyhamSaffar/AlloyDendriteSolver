@@ -160,7 +160,7 @@ namespace models
         double psi{1-(V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
         double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
         double kv{((V/Vdi)+ke*psi) / ((V/Vdi)+psi)};
-        return 1 - kv + (std::log(kv)/ke) + (1-kv)*(1-kv)*V/A.Vd;
+        return 1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd;
     }
 
     /// @brief Wang, Liu, Chen, Yang and Zhou  model. Generalises better to higher undercoolings and velocities for non
