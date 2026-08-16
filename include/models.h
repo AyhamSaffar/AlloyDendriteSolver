@@ -184,8 +184,8 @@ namespace models
         double Cle{A.ClAtT(Ti)}, Cse{A.CsAtT(Ti)}; // equilibrium interface solute concentration of liquid & solid
         double ke{Cse/Cle}; // equilibrium partition coefficient
         double dTr{2*A.r/R}; // curvature undercooling
-        // P suffix (prime) used to denote a value is curvature adjusted (calculated at T=Ti+dTr)
-        double CleP{A.ClAtT(Ti+dTr)}, CseP{A.CsAtT(Ti+dTr)}; // curvature adjusted Cl & Cs
+        // P suffix (prime) used to denote a value is curvature adjusted (calculated at T=Ti-dTr)
+        double CleP{A.ClAtT(Ti-dTr)}, CseP{A.CsAtT(Ti-dTr)}; // curvature adjusted Cl & Cs
         double keP{CseP/CleP}; // curvature adjusted equilibrium partition coefficient
         
         double psi{1-(V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
@@ -208,16 +208,16 @@ namespace models
         double ml{A.mlAtT(Ti)}, ms{A.msAtT(Ti)}; // solidus and liquidus gradients
         double M{-ml*ms*N/(ml-ms+ml*ms*Cl*dNdT)}; // solutal field gradient coefficient
 
-        double mlP{A.mlAtT(Ti+dTr)}, msP{A.msAtT(Ti+dTr)}; // curvature adjusted solidus and liquidus gradients
+        double mlP{A.mlAtT(Ti-dTr)}, msP{A.msAtT(Ti-dTr)}; // curvature adjusted solidus and liquidus gradients
         alloys::Alloy ACopy2{A};
-        double dNPdT{  // dN(Ti+dTr)/dT
-            __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy2)
+        double dNPdT{  // dN(Ti-dTr)/dT
+            __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti-dTr, enzyme_const, V, enzyme_const, &ACopy2)
         };
         //* requires a ClP below?
         double MP{-mlP*msP*NP/(mlP-msP+mlP*msP*Cl*dNPdT)}; // curvature adjusted solutal field gradient coefficient
         alloys::Alloy ACopy3{A};
-        double dkvPdT{ // dKv(Ti+dTr)/dT
-            __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy3)
+        double dkvPdT{ // dKv(Ti-dTr)/dT
+            __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti-dTr, enzyme_const, V, enzyme_const, &ACopy3)
         };
         double Pc{V*R/(2*A.D)}; // solutal peclet number
 
