@@ -137,7 +137,7 @@ namespace models
 
         double dTc{T0-A.TlAtC(Ci)}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
         double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
-        //! derivation assumes T at any C = Tm + m*C, which is far from true here. 1998 paper also misplaces xic term 
+        //! derivation assumes T(C) = Tm + m*C, which is far from true here. 1998 paper also misplaces xic term 
         double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*(1-k)*Pc*xic*Ci) - R}; // radius error
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
@@ -148,18 +148,18 @@ namespace models
     inline double getkv(double T, double V, const alloys::Alloy& A)
     {
         double ke{A.CsAtT(T)/A.ClAtT(T)}; // equilibrium partition coefficient
-        double psi{1-(V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
+        double psi{1 - (V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
         double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
-        return ((V/Vdi)+ke*psi) / ((V/Vdi)+psi);
+        return (V<A.Vd) ? ((V/Vdi)+ke*psi) / ((V/Vdi)+psi) : 1;
     }
 
     // calculates the relaxation effect term N used in the WLCYZ model
     inline double getN(double T, double V, const alloys::Alloy& A)
     {
         double ke{A.CsAtT(T)/A.ClAtT(T)}; // equilibrium partition coefficient
-        double psi{1-(V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
+        double psi{1 - (V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
         double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
-        double kv{((V/Vdi)+ke*psi) / ((V/Vdi)+psi)};
+        double kv{(V<A.Vd) ? ((V/Vdi)+ke*psi) / ((V/Vdi)+psi) : 1};
         return 1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd;
     }
 
@@ -179,18 +179,20 @@ namespace models
         double Pt{V*R/(2*A.a)}; // thermal Péclet number
         double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
         double dTt{A.L*Ivt/A.Cp}; // thermal undercooling
-        double Ti{A.TlAtC(C0) - dT + dTt}; // interface temperature
+        //! limit dTt here so it is never greater than dT?
+        double Ti{A.TlAtC(C0) - dT + ((dTt<dT) ? dTt : dT)}; // interface temperature. Ti must <= Tl(C0)
         
         double Cle{A.ClAtT(Ti)}, Cse{A.CsAtT(Ti)}; // equilibrium interface solute concentration of liquid & solid
         double ke{Cse/Cle}; // equilibrium partition coefficient
         double dTr{2*A.r/R}; // curvature undercooling
-        // P suffix (prime) used to denote a value is curvature adjusted (calculated at T=Ti-dTr)
-        double CleP{A.ClAtT(Ti-dTr)}, CseP{A.CsAtT(Ti-dTr)}; // curvature adjusted Cl & Cs
+        // P suffix (prime) used to denote a value is curvature adjusted (calculated at T=Ti+dTr)
+        double CleP{A.ClAtT(Ti+dTr)}, CseP{A.CsAtT(Ti+dTr)}; // curvature adjusted Cle & Cse
         double keP{CseP/CleP}; // curvature adjusted equilibrium partition coefficient
         
-        double psi{1-(V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
+        double psi{1 - (V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
         double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
-        double kvP{((V/Vdi)+keP*psi) / ((V/Vdi)+psi)}; // curvature corrected velocity dependent partition coefficient
+        //! is this ever needed?
+        double kvP{(V<A.Vd) ? ((V/Vdi)+keP*psi) / ((V/Vdi)+psi) : 1}; // curvature corrected velocity dependent k
         double NP{1 - kvP + std::log(kvP/keP) + (1-kvP)*(1-kvP)*V/A.Vd}; // curvature corrected relaxation term N
         //* can this not just be calculated with dimensional analysis like in all the other models?
         double Cl{(CleP-CseP-(V/A.V0))/NP}; // true interface solute concentration of liquid
@@ -203,26 +205,25 @@ namespace models
         double dNdT{  // dN(Ti)/dT
             __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti, enzyme_const, V, enzyme_const, &ACopy1)
         };
-        double kv{((V/Vdi)+ke*psi) / ((V/Vdi)+psi)}; // velocity dependent partition coefficient
+        double kv{(V<A.Vd) ? ((V/Vdi)+ke*psi) / ((V/Vdi)+psi) : 1}; // velocity dependent partition coefficient
         double N{1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd}; // relaxation term N
         double ml{A.mlAtT(Ti)}, ms{A.msAtT(Ti)}; // solidus and liquidus gradients
         double M{-ml*ms*N/(ml-ms+ml*ms*Cl*dNdT)}; // solutal field gradient coefficient
 
-        double mlP{A.mlAtT(Ti-dTr)}, msP{A.msAtT(Ti-dTr)}; // curvature adjusted solidus and liquidus gradients
+        double mlP{A.mlAtT(Ti+dTr)}, msP{A.msAtT(Ti+dTr)}; // curvature adjusted solidus and liquidus gradients
         alloys::Alloy ACopy2{A};
-        double dNPdT{  // dN(Ti-dTr)/dT
-            __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti-dTr, enzyme_const, V, enzyme_const, &ACopy2)
+        double dNPdT{  // dN(Ti+dTr)/dT
+            __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy2)
         };
-        //* requires a ClP below?
         double MP{-mlP*msP*NP/(mlP-msP+mlP*msP*Cl*dNPdT)}; // curvature adjusted solutal field gradient coefficient
         alloys::Alloy ACopy3{A};
-        double dkvPdT{ // dKv(Ti-dTr)/dT
-            __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti-dTr, enzyme_const, V, enzyme_const, &ACopy3)
+        double dkvPdT{ // dKv(Ti+dTr)/dT
+            __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy3)
         };
         double Pc{V*R/(2*A.D)}; // solutal peclet number
 
         double xic{ // solutal stability function
-            1 - (2*kvP+2*MP*Cl*dkvPdT) / ( std::sqrt(1+(psi/(A.o*Pc*Pc))) + 2*kvP - 1 + 2*MP*Cl*dkvPdT)
+            (V<A.Vd) ? 1 - (2*kvP+2*MP*Cl*dkvPdT) / ( std::sqrt(1+(psi/(A.o*Pc*Pc))) + 2*kvP - 1 + 2*MP*Cl*dkvPdT) : 0
         };
         double xiL{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
         double RPred{(A.r/A.o) / (Pt*A.L*xiL/A.Cp + 2*MP*Pc*Cl*(kvP-1)*xic/psi)}; // calculated dendrite radius
