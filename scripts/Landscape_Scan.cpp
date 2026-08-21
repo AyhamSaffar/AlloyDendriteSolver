@@ -16,7 +16,7 @@ int main()
     const alloys::Alloy A{alloys::NiB2007_atp};
     double C0{0.7}, f1{}, f2{};
     models::DTs _{};
-    for (double dT: {1.0, 10.0, 100.0})
+    for (double dT: {1.0, 10.0, 100.0, 200.0, 300.0})
         for (double VPower{-6}; VPower<=3.0; VPower+=0.01)
         {
             double V{std::pow(10.0, VPower)};
