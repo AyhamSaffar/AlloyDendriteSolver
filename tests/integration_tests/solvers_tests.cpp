@@ -91,3 +91,41 @@ TEST_CASE("Linearised CLW model agrees with LKT-BCT at pre solute trapping under
     }
 
 }
+
+TEST_CASE("Linearised WLCYZ model agrees with LKT-BCT at pre solute trapping undercoolings", "[Solvers]")
+{
+    // WLCYZ paper states this model reduces to non-equilibrium bulk diffusion adjusted LKT-BCT for linear liquidus and
+    // solidus. This test therefore does not go beyond 5% of the maximum velocity for bulk diffusion
+    const alloys::Alloy A{alloys::NiB2007_atp}; // WLCYZ capable Alloy
+
+    // linearised phase diagram identities
+    std::vector<double> TlAtC{A.Tm, A.m}; // Tl = Tm + ml*C
+    std::vector<double> ClAtT{-A.Tm/A.m, 1/A.m}; // Cl = (T-Tm)/ml
+    double ms{A.m/A.k0}; // derived from combining Cl = (T-Tm)/ml and Cs = (T-Tm)/ms given k0 = Cs/Cl
+    std::vector<double> CsAtT{-A.Tm/ms, 1/ms}; // Cs = (T-Tm)/ms
+    const alloys::Alloy ALin{ // linearised version
+        A.L, A.Cp, A.m, A.k0, A.r, A.D, A.a, A.o, A.a0, A.V0, A.Tm, -1, -1, TlAtC, ClAtT, CsAtT, A.Vd
+    };
+
+    const double C0{0.7}, dT0{1};
+    double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
+    
+    for (double dT{1}; dT<500; ++dT)
+    {
+        INFO("dT = " + std::to_string(dT));
+        solvers::Result LKT_BCTResult{solvers::newton<models::LKT_BCT>(dT, C0, ALin, V0, R0)};
+        solvers::Result WLCYZResult{solvers::newton<models::WLCYZ>(dT, C0, ALin, V0, R0)};
+        INFO("V LKT-BCT = " + std::to_string(LKT_BCTResult.V) + ", V WLCYZ = " + std::to_string(WLCYZResult.V) + '\n');
+        INFO("R LKT-BCT = " + std::to_string(LKT_BCTResult.R) + ", R WLCYZ = " + std::to_string(WLCYZResult.R) + '\n');
+
+        REQUIRE(LKT_BCTResult.hasConverged);
+        REQUIRE(WLCYZResult.hasConverged);
+        REQUIRE((std::abs(LKT_BCTResult.R - WLCYZResult.R)/LKT_BCTResult.R) < 0.05); // maximum of 5% error
+        REQUIRE((std::abs(LKT_BCTResult.V - WLCYZResult.V)/LKT_BCTResult.V) < 0.05);
+
+        if (WLCYZResult.V > (A.Vd/20))
+            break;
+        std::tie(V0, R0) = std::tie(WLCYZResult.V, WLCYZResult.R);
+    }
+
+}

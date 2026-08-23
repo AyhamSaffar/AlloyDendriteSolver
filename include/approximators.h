@@ -5,8 +5,8 @@
 #include "alloys.h"
 
 // approximate analytical solutions to solidification parameters following "Solidification" by Dantzig & Rappaz
-// (1st Ed)" textbook. Assumes very small undercooling and some amount of solute, allowing all undercooling to be
-// solutal and the thermal field gradient to be negligible.
+// (1st Ed)" textbook. Assumes linear liquidus and solidus, very small undercooling and some amount of solute, allowing
+// all undercooling to be solutal and the thermal field gradient to be negligible.
 namespace approx
 {
     /// @brief given as equation 8.91 in cited texbook.
