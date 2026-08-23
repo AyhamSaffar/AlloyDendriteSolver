@@ -180,7 +180,7 @@ namespace models
         double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
         double dTt{A.L*Ivt/A.Cp}; // thermal undercooling
         //! limit dTt here so it is never greater than dT?
-        double Ti{A.TlAtC(C0) - dT + ((dTt<dT) ? dTt : dT)}; // interface temperature. Ti must <= Tl(C0)
+        double Ti{A.TlAtC(C0) - dT + dTt}; // interface temperature. Ti must <= Tl(C0)
         
         double Cle{A.ClAtT(Ti)}, Cse{A.CsAtT(Ti)}; // equilibrium interface solute concentration of liquid & solid
         double ke{Cse/Cle}; // equilibrium partition coefficient
@@ -195,13 +195,17 @@ namespace models
         double kvP{(V<A.Vd) ? ((V/Vdi)+keP*psi) / ((V/Vdi)+psi) : 1}; // curvature corrected velocity dependent k
         double NP{1 - kvP + std::log(kvP/keP) + (1-kvP)*(1-kvP)*V/A.Vd}; // curvature corrected relaxation term N
         //* can this not just be calculated with dimensional analysis like in all the other models?
-        double Cl{(CleP-CseP-(V/A.V0))/NP}; // true interface solute concentration of liquid
+        // double Cl{(CleP-CseP-(V/A.V0))/NP}; // true interface solute concentration of liquid
+        
+        double Pc{V*R/(2*A.D)}; // solutal peclet number
+        double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
+        double Cl{C0/(1-(1-kvP)*Ivc)}; // Cl if derived using dimensional analysis
 
         double dTc{A.TlAtC(C0) - A.TlAtC(Cl)}; // constitutional (solutal) undercooling
         double dTk{A.TlAtC(Cl) - A.TlAtC(CleP)}; // kinetic undercooling
 
+        // could not copy assign A to a static object as enyzme would fail to deduce the static object's type
         alloys::Alloy ACopy1{A}; // required as __enzye_autodiff sometimes modifies objects passed to it
-        //* could not copy assign A to a static object as enyzme would fail to deduce the static object's type?
         double dNdT{  // dN(Ti)/dT
             __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti, enzyme_const, V, enzyme_const, &ACopy1)
         };
@@ -220,7 +224,6 @@ namespace models
         double dkvPdT{ // dKv(Ti+dTr)/dT
             __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy3)
         };
-        double Pc{V*R/(2*A.D)}; // solutal peclet number
 
         double xic{ // solutal stability function
             (V<A.Vd) ? 1 - (2*kvP+2*MP*Cl*dkvPdT) / ( std::sqrt(1+(psi/(A.o*Pc*Pc))) + 2*kvP - 1 + 2*MP*Cl*dkvPdT) : 0
@@ -228,7 +231,7 @@ namespace models
         double xiL{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
         double RPred{(A.r/A.o) / (Pt*A.L*xiL/A.Cp + 2*MP*Pc*Cl*(kvP-1)*xic/psi)}; // calculated dendrite radius
      
-        return std::make_tuple(RPred-R, dTt+dTc+dTr+dTk-dT, DTs{dTt, dTc, dTr, dTk});
+        return std::make_tuple(dTt+dTc+dTr+dTk-dT, RPred-R, DTs{dTt, dTc, dTr, dTk});
     }
 
 }
