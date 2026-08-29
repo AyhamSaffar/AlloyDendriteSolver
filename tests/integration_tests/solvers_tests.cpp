@@ -67,7 +67,8 @@ TEST_CASE("Linearised CLW model agrees with LKT-BCT at pre solute trapping under
     // to V = Vd/20.
     const alloys::Alloy A{alloys::AgCu_wtp}; // LKT-BCT capable Alloy
     const alloys::Alloy ALin{ // CLW model with fixed D, k0 and linear Tl
-        A.L, A.Cp, A.m, A.k0, A.r, A.D, A.a, A.o, A.a0, A.V0, A.Tm, A.D, 0, {A.Tm, A.m}, {1}, {A.k0}
+        A.L, A.Cp, A.m, A.k0, A.r, A.D, A.a, A.o, A.a0, A.V0, A.Tm, A.D, 0, 
+        {alloys::Fit{{A.Tm, A.m}}}, {alloys::Fit{{1}}}, {alloys::Fit{{A.k0}}}, 
     };
     const double C0{3}, dT0{1}, Vd{A.D/A.a0}; // C0 low as CLW assumes dilute limit in solute trapping expression
     double V0{approx::getV(dT0, C0, A)}, R0{approx::getR(dT0, C0, A)};
@@ -92,6 +93,7 @@ TEST_CASE("Linearised CLW model agrees with LKT-BCT at pre solute trapping under
 
 }
 
+//! currently fails as model attemps to get liquidus T at C=nan
 TEST_CASE("Linearised WLCYZ model agrees with LKT-BCT at pre solute trapping undercoolings", "[Solvers]")
 {
     // WLCYZ paper states this model reduces to non-equilibrium bulk diffusion adjusted LKT-BCT for linear liquidus and
@@ -99,10 +101,10 @@ TEST_CASE("Linearised WLCYZ model agrees with LKT-BCT at pre solute trapping und
     const alloys::Alloy A{alloys::NiB2007_atp}; // WLCYZ capable Alloy
 
     // linearised phase diagram identities
-    std::vector<double> TlAtC{A.Tm, A.m}; // Tl = Tm + ml*C
-    std::vector<double> ClAtT{-A.Tm/A.m, 1/A.m}; // Cl = (T-Tm)/ml
+    std::vector<alloys::Fit> TlAtC{alloys::Fit{{A.Tm, A.m}}}; // Tl = Tm + ml*C
+    std::vector<alloys::Fit> ClAtT{alloys::Fit{{-A.Tm/A.m, 1/A.m}}}; // Cl = (T-Tm)/ml
     double ms{A.m/A.k0}; // derived from combining Cl = (T-Tm)/ml and Cs = (T-Tm)/ms given k0 = Cs/Cl
-    std::vector<double> CsAtT{-A.Tm/ms, 1/ms}; // Cs = (T-Tm)/ms
+    std::vector<alloys::Fit> CsAtT{alloys::Fit{{-A.Tm/ms, 1/ms}}}; // Cs = (T-Tm)/ms
     const alloys::Alloy ALin{ // linearised version
         A.L, A.Cp, A.m, A.k0, A.r, A.D, A.a, A.o, A.a0, A.V0, A.Tm, -1, -1, TlAtC, ClAtT, CsAtT, A.Vd
     };

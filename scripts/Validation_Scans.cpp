@@ -176,7 +176,7 @@ int main()
         double V0{R.V}, R0{R.R}; // cannot use approx module for non linear phase diagrams
 
         double Tl{A.TlAtC(C0)};
-        for (double dT{dT0}; dT<=400; ++dT) // cannot go below 316K due to phase diagram fit
+        for (double dT{dT0}; dT<=360; ++dT) // cannot go to higher undercoolings without lower T CoCu phase diagram fit
         {
             R = solvers::newton<models::CLW>(dT, C0, A, V0, R0);
             if (R.hasConverged) // no solution exists = model predicts such high undercooling is impossible
@@ -216,24 +216,25 @@ int main()
     }
 
 
-    // https://www.sciencedirect.com/science/article/pii/S1359645406006215 Fig. 4, 5 & 6
-    std::ofstream outfNiB2{dataPath + "NiB_WLCYZ.csv"}; // ealier validation experiment uses NiB for LKT_BCT
-    outfNiB2 << solvers::Result::commaSeparatedColumns << '\n';
+    //! cannot currently run as model will attempt to evaluate phase diagram fit at super high T if R is small
+    // // https://www.sciencedirect.com/science/article/pii/S1359645406006215 Fig. 4, 5 & 6
+    // std::ofstream outfNiB2{dataPath + "NiB_WLCYZ.csv"}; // ealier validation experiment uses NiB for LKT_BCT
+    // outfNiB2 << solvers::Result::commaSeparatedColumns << '\n';
 
-    {
-        const alloys::Alloy A{alloys::NiB2007_atp};
-        const double C0{0.7}, dT0{1};
-        solvers::Result R{solvers::bruteForceNewton<models::WLCYZ>(dT0, C0, A)};
-        double V0{R.V}, R0{R.R};
+    // {
+    //     const alloys::Alloy A{alloys::NiB2007_atp};
+    //     const double C0{0.7}, dT0{1};
+    //     solvers::Result R{solvers::bruteForceNewton<models::WLCYZ>(dT0, C0, A)};
+    //     double V0{R.V}, R0{R.R};
 
-        for (double dT{dT0}; dT<=450; ++dT)
-        {
-            R = solvers::newton<models::WLCYZ>(dT, C0, A, V0, R0);
-            if (R.hasConverged)
-                std::tie(V0, R0) = std::tie(R.V, R.R);
-            outfNiB2 << R.commaSeparatedValues() << '\n';
-        }
-    }
+    //     for (double dT{dT0}; dT<=450; ++dT)
+    //     {
+    //         R = solvers::newton<models::WLCYZ>(dT, C0, A, V0, R0);
+    //         if (R.hasConverged)
+    //             std::tie(V0, R0) = std::tie(R.V, R.R);
+    //         outfNiB2 << R.commaSeparatedValues() << '\n';
+    //     }
+    // }
 
     return 0;
 }

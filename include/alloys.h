@@ -5,11 +5,21 @@
 #include <numbers>
 #include <vector>
 #include <cmath>
+#include <stdexcept>
 
 
 /// @brief datastructures needed to track alloy physical constants in SI units
 namespace alloys
 {
+    /// @brief contains polynomial fitting of x to y given x is between xMin and xMax
+    struct Fit
+    {
+        std::vector<double> coeffs{}; // coefficients for polynomial fit of x to y. Starts at 0th order coefficient
+        double xMin{-1e100}; // minimum input value the polynomial fit is valid for. Defaults to -infinite.
+        double xMax{1e100}; // maximum input value the polynomial fit is valid for. Defaults to infinite.
+        bool operator==(const Fit&) const = default;
+    };
+
     /// @brief contains key physical constants for a given alloy system in SI units. Concentration units (C%) can either
     /// be atom percent or weight percent if used with LGK or must be in atom percent with any other model.
     class Alloy
@@ -48,20 +58,22 @@ namespace alloys
             inline Alloy(
                 double L, double Cp, double m, double k0, double r, double D, double a, double o, // LGK
                 double a0=-1, double V0=-1, double Tm=-1, // LKT-BCT
-                double DA0=-1, double DEa=-1, std::vector<double> TlAtCFit={}, std::vector<double> ClAtTFit={},
-                    std::vector<double> CsAtTFit={}, // CLW
+                double DA0=-1, double DEa=-1, std::vector<Fit> TlAtC={}, std::vector<Fit> ClAtT={},
+                    std::vector<Fit> CsAtT={}, // CLW
                 double Vd=-1 // WLCYZ
             );
             Alloy() = default;
-            bool operator<=>(const Alloy&) const = default;
+            bool operator==(const Alloy&) const = default;
+            // bool operator!=(const Alloy&) const = default;
 
         private:
             double m_DA0{}; // Arrhenius constant of diffusivity - m2/s
             double m_DEa{}; // activation energy for diffusion - J/mol
-            std::vector<double> m_TlAtCFit{}; // polynomial fit of Tl for a given C (0th to nth order coefficient)
-            std::vector<double> m_ClAtTFit{}; // polynomial fit of Cl for a given T (0th to nth order coefficient)
-            std::vector<double> m_CsAtTFit{}; // polynomial fit of Cs for a given T (0th to nth order coefficient)
-    }; 
+            inline const std::vector<double>& getFit(const std::vector<Fit>& fits, double x) const;
+            std::vector<Fit> m_TlAtC{}; // polynomial fits of Tl for a given C (0th to nth order coefficient)
+            std::vector<Fit> m_ClAtT{}; // polynomial fits of Cl for a given T (0th to nth order coefficient)
+            std::vector<Fit> m_CsAtT{}; // polynomial fits of Cs for a given T (0th to nth order coefficient)
+    };
 }
 
 /// @brief create a new Alloy object.
@@ -78,23 +90,22 @@ namespace alloys
 /// @param Tm Pure solid melting point - K. Only needed for LKT-BCT capable alloys.
 /// @param DA0 Arrhenius constant of diffusivity - m2/s. Only needed for CLW alloys.
 /// @param DEa activation energy for diffusion - J/mol. Only needed for CLW alloys.
-/// @param TlAtCFit polynomial fit of Tl for a given C (0th to nth order coefficient). Only needed for CLW alloys.
-/// @param mlAtCFit polynomial fit of m for a given C (0th to nth order coefficient). Only needed for CLW alloys.
-/// @param ClAtTFit polynomial fit of Cl for a given T (0th to nth order coefficient). Only needed for CLW alloys.
-/// @param CsAtTFit polynomial fit of Cs for a given T (0th to nth order coefficient). Only needed for CLW alloys.
+/// @param TlAtC polynomial fits of Tl for a given C (0th to nth order coefficient). Only needed for CLW alloys.
+/// @param ClAtT polynomial fits of Cl for a given T (0th to nth order coefficient). Only needed for CLW alloys.
+/// @param CsAtT polynomial fits of Cs for a given T (0th to nth order coefficient). Only needed for CLW alloys.
 /// @param Vd maximum speed of diffusion in the bulk liquid - m/s. Only needed for WLCYZ alloys.
 inline alloys::Alloy::Alloy(
     double L, double Cp, double m, double k0, double r, double D, double a, double o, double a0, double V0, double Tm,
-    double DA0, double DEa, std::vector<double> TlAtCFit, std::vector<double> ClAtTFit, std::vector<double> CsAtTFit,
-    double Vd  
+    double DA0, double DEa, std::vector<alloys::Fit> TlAtC, std::vector<alloys::Fit> ClAtT,
+    std::vector<alloys::Fit> CsAtT, double Vd  
 ): L{L}, Cp{Cp}, m{m}, k0{k0}, r{r}, D{D}, a{a}, o{o}, a0{a0}, V0{V0}, Tm{Tm}, m_DA0{DA0}, m_DEa{DEa},
-    m_TlAtCFit{TlAtCFit}, m_ClAtTFit{ClAtTFit}, m_CsAtTFit{CsAtTFit}, Vd{Vd}
+    m_TlAtC{TlAtC}, m_ClAtT{ClAtT}, m_CsAtT{CsAtT}, Vd{Vd}
 {
     if ((a0!=-1) && (V0!=-1) && (Tm!=-1))
         LKT_BCTCapable = true;
-    if (LKT_BCTCapable && (DA0!=-1) && (DEa!=-1) && (!TlAtCFit.empty()) && (!ClAtTFit.empty()) && (!CsAtTFit.empty()))
+    if (LKT_BCTCapable && (DA0!=-1) && (DEa!=-1) && (!TlAtC.empty()) && (!ClAtT.empty()) && (!CsAtT.empty()))
         CLWCapable = true;
-    if (LKT_BCTCapable && (!TlAtCFit.empty()) && (!ClAtTFit.empty()) && (!CsAtTFit.empty()) && (Vd!=-1))
+    if (LKT_BCTCapable && (!TlAtC.empty()) && (!ClAtT.empty()) && (!CsAtT.empty()) && (Vd!=-1))
         WLCYZCapable = true;
 }                  
 
@@ -107,14 +118,30 @@ inline double alloys::Alloy::DAtT(double T) const
     return m_DA0*std::exp(-m_DEa/(R*T));
 }
 
+/// @brief finds the polynomial fit which is valid at x. Throws a runtime error is x is out of range of all fits.
+/// @param fits vector of Fit objects
+/// @param x value at which a Fit must be valid for
+/// @return the polynomial coefficients for the corresponding fit.
+inline const std::vector<double>& alloys::Alloy::getFit(const std::vector<alloys::Fit>& fits, double x) const
+{
+    for (const Fit& fit: fits)
+    {
+        if ((x<=fit.xMax) && (x>=fit.xMin))
+            return fit.coeffs;
+    }
+    throw std::runtime_error("No polynomial fit available that is valid at requested point");
+}
+
+
 /// @brief Calculates the equilibrium liquidus temperature at a given C
 /// @param C Liquid solute concentration - C%
 /// @return Equilibrium liquidus temperature - K
 inline double alloys::Alloy::TlAtC(double C) const
 {
+    const std::vector<double>& coeffs {getFit(m_TlAtC, C)};
     double Tl{0};
-    for (std::size_t i{0}; i<std::size(m_TlAtCFit); ++i)
-        Tl += m_TlAtCFit[i] * std::pow(C, i);
+    for (std::size_t i{0}; i<std::size(coeffs); ++i)
+        Tl += coeffs[i] * std::pow(C, i);
     return Tl;
 }
 
@@ -123,9 +150,10 @@ inline double alloys::Alloy::TlAtC(double C) const
 /// @return Equilibrium liquidus slope - K/C%
 inline double alloys::Alloy::mlAtC(double C) const
 {
+    const std::vector<double>& coeffs {getFit(m_TlAtC, C)};
     double ml{0};
-    for (std::size_t i{1}; i<std::size(m_TlAtCFit); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
-        ml += i * m_TlAtCFit[i] * std::pow(C, i-1); // ml(C) = dTl(C)/dC
+    for (std::size_t i{1}; i<std::size(coeffs); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
+        ml += i * coeffs[i] * std::pow(C, i-1); // ml(C) = dTl(C)/dC
     return ml;
 }
 
@@ -134,9 +162,10 @@ inline double alloys::Alloy::mlAtC(double C) const
 /// @return Equilibrium liquidus concentration - C% / C%
 inline double alloys::Alloy::ClAtT(double T) const
 {
+    const std::vector<double>& coeffs {getFit(m_ClAtT, T)};
     double Cl{0};
-    for (std::size_t i{0}; i<std::size(m_ClAtTFit); ++i)
-        Cl += m_ClAtTFit[i] * std::pow(T, i);
+    for (std::size_t i{0}; i<std::size(coeffs); ++i)
+        Cl += coeffs[i] * std::pow(T, i);
     return Cl;
 }
 
@@ -145,9 +174,10 @@ inline double alloys::Alloy::ClAtT(double T) const
 /// @return Equilibrium solidus concentration - C% / C%
 inline double alloys::Alloy::CsAtT(double T) const
 {
+    const std::vector<double>& coeffs {getFit(m_CsAtT, T)};
     double Cs{0};
-    for (std::size_t i{0}; i<std::size(m_CsAtTFit); ++i)
-        Cs += m_CsAtTFit[i] * std::pow(T, i);
+    for (std::size_t i{0}; i<std::size(coeffs); ++i)
+        Cs += coeffs[i] * std::pow(T, i);
     return Cs;
 }
 
@@ -156,9 +186,10 @@ inline double alloys::Alloy::CsAtT(double T) const
 /// @return Equilibrium liquidus gradient - K/C%
 inline double alloys::Alloy::mlAtT(double T) const
 {
+    const std::vector<double>& coeffs {getFit(m_ClAtT, T)};
     double dCldT{0};
-    for (std::size_t i{1}; i<std::size(m_ClAtTFit); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
-        dCldT += i * m_ClAtTFit[i] * std::pow(T, i-1);
+    for (std::size_t i{1}; i<std::size(coeffs); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
+        dCldT += i * coeffs[i] * std::pow(T, i-1);
     return 1/dCldT; // ml = dTl/dC = 1 / (dCl/dT)
 }
 
@@ -167,9 +198,10 @@ inline double alloys::Alloy::mlAtT(double T) const
 /// @return Equilibrium solidus gradient - K/C%
 inline double alloys::Alloy::msAtT(double T) const
 {
+    const std::vector<double>& coeffs {getFit(m_CsAtT, T)};
     double dCsdT{0};
-    for (std::size_t i{1}; i<std::size(m_CsAtTFit); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
-        dCsdT += i * m_CsAtTFit[i] * std::pow(T, i-1);
+    for (std::size_t i{1}; i<std::size(coeffs); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
+        dCsdT += i * coeffs[i] * std::pow(T, i-1);
     return 1/dCsdT; // ml = dTs/dC = 1 / (dCs/dT)
 }
 
@@ -183,55 +215,58 @@ namespace alloys
     static constexpr double R{8.3145}; // gas constant in J/molK
     static constexpr double NA{0}; //* used E.G. for m and k0 in alloys with non linear phase diagrams.
 
-    // calculated using least squares fitting of the phase diagrams from the TCNI8 database. Valid down to 1343K.
-    static std::vector<double> NiBTlAtCFit{1728.310506759,-13.74052637939,-0.2444339920279,-0.01972205626106};
-    static std::vector<double> NiBClAtTFit{280.856238051,-0.537495568016,0.000381791884713,-9.53611701497e-08};
-    static std::vector<double> NiBCsAtTFit{
-        -23.86104359553,0.0647957147612,-6.61489819253e-05,3.083066146706e-08,-5.57017810813e-12
+    // calculated using least squares fitting of the phase diagrams from the TCNI8 database.
+    static std::vector<Fit> NiBTlAtC{
+        Fit{{1728.310506759,-13.74052637939,-0.2444339920279,-0.01972205626106}, 0.1, 16.587}
+    };
+    static std::vector<Fit> NiBClAtT{
+        Fit{{280.856238051,-0.537495568016,0.000381791884713,-9.53611701497e-08}, 1343, 1727}
+    };
+    static std::vector<Fit> NiBCsAtT{
+        {{-23.86104359553,0.0647957147612,-6.61489819253e-05,3.083066146706e-08,-5.57017810813e-12}, 1343, 1727}
     };
 
     // Nickel Borom system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. The constant m & k0 values
     // are taken from https://www.sciencedirect.com/science/article/pii/S1359646207003302.
     const Alloy NiB2007_atp{
         1.72e4, 36.39, -14.3, 0.0155, 3.42e-7, 3e-9, 8.5e-6, o, (3e-9)/18.9, 425, 1728, -1, -1,
-        NiBTlAtCFit, NiBClAtTFit, NiBCsAtTFit, 18.9
+        NiBTlAtC, NiBClAtT, NiBCsAtT, 18.9
     };
 
     // Derived from Binary Alloy Phase Diagrams, Vol. 1104, American Society for Metals, Metals Park, OH, 1986.
-    static std::vector<double> FeSbTlAtCFit{1811.15, -5.7341, -0.02588, -0.00103};
-    static std::vector<double> FeSbClAtTFit{393.39, -0.6802, 4.8758e-4, -1.2803e-7};
-    static std::vector<double> FeSbCsAtTFit{33.559, -0.01853};
+    static std::vector<Fit> FeSbTlAtC{Fit{{1811.15, -5.7341, -0.02588, -0.00103}}};
+    static std::vector<Fit> FeSbClAtT{Fit{{393.39, -0.6802, 4.8758e-4, -1.2803e-7}}};
+    static std::vector<Fit> FeSbCsAtT{Fit{{33.559, -0.01853}}};
 
     // Iron Antimony system in wt.%. Take from https://doi.org/10.1080/09500830903002356.
     const Alloy FeSb_wtp{15'027, 43.77, NA, NA, 3.56e-7, NA, 7.3e-6, o, 2.5e-10, 3000, NA, 4.11e-7, 5e4, 
-        FeSbTlAtCFit, FeSbClAtTFit, FeSbCsAtTFit};
+        FeSbTlAtC, FeSbClAtT, FeSbCsAtT};
 
-    /// ThermoCalc 2026b with the TCBIN v1.1 database was used to get phase diagram data and this was fit to 7th order
-    // polynomials using the least squares method in Python's Numpy library. This fit is only valid above 1385K (316K
-    // dT), as below this T, the phase diagram transitions from an FCC Cu & Liquid mix to an FCC Cu & FCC Co mix. 
-    static std::vector<double> CoCuTlAtCFit{
-        1768.4309105217317, -2.4830585090005366, -0.06569466381811043, -0.002782299761566121, 0.00024348143492583415,
-        -5.255801655884799e-06, 4.880250303891831e-08, -1.7583823392354547e-10
+    // calculated using least squares fitting of the phase diagrams from the TCBIN v1.1 database. Currently does not
+    // go below equilibrium temperatures.
+    static std::vector<Fit> CoCuTlAtC{
+        Fit{{1768.430910521, -2.483058509000, -0.0656946638181, -0.00278229976156, 0.0002434814349258,
+            -5.25580165588e-06, 4.88025030389e-08, -1.758382339235e-10}, 0.014, 92.782}
     };
-    static std::vector<double> CoCuClAtTFit{
-        779838079.9241728, -3507066.1641644835, 6748.775967182457, -7.203433488153699, 0.00460573309595906,
-        -1.7639643327132657e-06, 3.746931408209084e-10, -3.4051708146153894e-14
+    static std::vector<Fit> CoCuClAtT{
+        Fit{{779838079.924, -3507066.164164, 6748.77596718, -7.20343348815, 0.0046057330959,
+            -1.763964332713e-06, 3.74693140820e-10, -3.405170814615e-14}, 1380.8, 1768}
     };
-    static std::vector<double> CoCuCsAtTFit{
-        -35635062.73621782, 163520.05663544996, -321.2683140293004, 0.35032250139780624, -0.0002289764005790414,
-        8.970805214138605e-08, -1.9505707064548234e-11, 1.8158181787312304e-15
+    static std::vector<Fit> CoCuCsAtT{
+        Fit{{-35635062.73621782, 163520.05663544996, -321.2683140293004, 0.35032250139780624, -0.0002289764005790414,
+            8.970805214138605e-08, -1.9505707064548234e-11, 1.8158181787312304e-15}, 1380.8, 1768}
     };
     // below paper uses noticably different a0 and a for C0=20wt.% and C0=60wt.%, so these must be 2 seperate Alloys.
 
     // Cobalt Copper system for 20wt.% Cu. Taken from https://doi.org/10.1007/s11433-010-4167-y. Phase diagram fits used
     // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit.
     const Alloy CoCu_20wtp{15033, 39.06, NA, NA, 3.4e-7, NA, 1.424e-5, o, 1.697e-10, 4000, NA, 1.58e-7, 55060,
-        CoCuTlAtCFit, CoCuClAtTFit, CoCuCsAtTFit};
+        CoCuTlAtC, CoCuClAtT, CoCuCsAtT};
 
     // Cobalt Copper system for 60wt.% Cu. Taken from https://doi.org/10.1007/s11433-010-4167-y. Phase diagram fits used
     // in paper was not used as it lacked decimal places in coefficients as well as a Tl(C) fit.
     const Alloy CoCu_60wtp{14057, 36.05, NA, NA, 3.33e-7, NA, 2.9e-5, o, 4.294e-10, 4000, NA, 2.04e-7, 54069,
-        CoCuTlAtCFit, CoCuClAtTFit, CoCuCsAtTFit};
+        CoCuTlAtC, CoCuClAtT, CoCuCsAtT};
 
     static constexpr double NiAr{58.693e-3}, NiDensity{8.907e3}; // In Kg/mol and Kg/m3 respectively
     static constexpr double NiS{(1.72e4*NiDensity/NiAr)/1726}; // S = L/Tm and converted to J/m3K. Not supplied in paper

@@ -45,16 +45,16 @@ TEST_CASE("diff::calculateGrads does not modify Alloy objects passed to it", "[d
     // cannot use CLW Alloy here as all params must be non zero to ensure they are included in differentiation
     // calculation and not optimised out 
     alloys::Alloy A{alloys::AgCu_wtp}, ACopy{alloys::AgCu_wtp};
-    J = diff::calculateGrads<models::LGK>(1, 1, 1, 1, A);
+    J = diff::calculateGrads<models::LGK>(1e-6, 1e-6, 1, 1, A);
     REQUIRE(A==ACopy);
     J = diff::calculateGrads<models::LKT_BCT>(1, 1, 1, 1, A);
     REQUIRE(A==ACopy);
 
     std::tie(A, ACopy) = std::tie(alloys::CoCu_20wtp, alloys::CoCu_20wtp); // must use CLW capable Alloy here
-    J = diff::calculateGrads<models::CLW>(1, 1, 1, 1, A);
+    J = diff::calculateGrads<models::CLW>(1e-6, 1e-6, 1, 1, A);
     REQUIRE(A==ACopy);
 
     std::tie(A, ACopy) = std::tie(alloys::NiB2007_atp, alloys::NiB2007_atp); // must use CLW capable Alloy here
-    J = diff::calculateGrads<models::WLCYZ>(1, 1, 1, 1, A);
+    J = diff::calculateGrads<models::WLCYZ>(1e-6, 1e-6, 1, 1, A);
     REQUIRE(A==ACopy);
 }
