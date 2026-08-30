@@ -1,4 +1,4 @@
-// #ifndef ALLOYS_H
+#ifndef ALLOYS_H
 #define ALLOYS_H
 
 #include <iostream>
@@ -333,4 +333,4 @@ namespace alloys
     const Alloy SucAce_atp{46'260*SucMr, 1937.5*SucMr, -2.16, 0.103, 6.62e-8, 1.27e-9, 1.14e-7, o};
 }
 
-// #endif
+#endif
