@@ -176,7 +176,7 @@ int main()
         double V0{R.V}, R0{R.R}; // cannot use approx module for non linear phase diagrams
 
         double Tl{A.TlAtC(C0)};
-        for (double dT{dT0}; dT<=360; ++dT) // cannot go to higher undercoolings without lower T CoCu phase diagram fit
+        for (double dT{dT0}; dT<=300; ++dT) // cannot go to higher undercoolings without lower T CoCu phase diagram fit
         {
             R = solvers::newton<models::CLW>(dT, C0, A, V0, R0);
             if (R.hasConverged) // no solution exists = model predicts such high undercooling is impossible

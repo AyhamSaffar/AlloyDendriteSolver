@@ -80,10 +80,15 @@ namespace solvers{
                 double prevFNorm{std::sqrt(f1*f1 + f2*f2)};
                 a = LINESEARCH(MODEL, V, R, dT, C0, A, dV, dR, prevFNorm);
                 if (a==-1) // line search failed
-                    break;
+                break;
             }
             V += a*dV; 
             R += a*dR;
+            if ((V<0) || (R<0)) // required as this gives rise to negative / very high T, breaking phase diagram fits
+            {
+                diverged = true;
+                break;
+            }
         }
         
         return Result{diverged, converged, step, dT, C0, V, R, f1, f2, dTs.t, dTs.c, dTs.r, dTs.k};
