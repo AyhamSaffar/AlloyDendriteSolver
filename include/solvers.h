@@ -62,6 +62,11 @@ namespace solvers{
         for (; step<maxSteps; ++step)
         {
             std::tie(f1, f2, dTs) = MODEL(V, R, dT, C0, A);
+            if (std::isnan(f1) || std::isnan(f2))
+            {
+                diverged = true;
+                break;
+            }
             if ((std::abs(f1)<1e-12) && (std::abs(f2)<1e-12))
             {
                 converged = true;
