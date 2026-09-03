@@ -5,7 +5,10 @@
 #include <numbers>
 #include <vector>
 #include <cmath>
-#include <stdexcept>
+#include <exception>
+#include <sstream>
+#include <string>
+#include <limits>
 
 
 /// @brief datastructures needed to track alloy physical constants in SI units
@@ -74,6 +77,16 @@ namespace alloys
             std::vector<Fit> m_ClAtT{}; // polynomial fits of Cl for a given T (0th to nth order coefficient)
             std::vector<Fit> m_CsAtT{}; // polynomial fits of Cs for a given T (0th to nth order coefficient)
     };
+
+    class FitRangeException: public std::exception
+    {
+        private:
+            std::string m_error{};
+
+        public:
+            inline FitRangeException(double x, double xMin, double xMax);
+            const char* what() const noexcept override {return m_error.c_str();}
+    };
 }
 
 /// @brief create a new Alloy object.
@@ -129,7 +142,17 @@ inline const std::vector<double>& alloys::Alloy::getFit(const std::vector<alloys
         if ((x<=fit.xMax) && (x>=fit.xMin))
             return fit.coeffs;
     }
-    throw std::runtime_error("No polynomial fit available that is valid at requested point");
+
+    double xMin{std::numeric_limits<double>::max()}, xMax{std::numeric_limits<double>::min()};
+    for (const Fit& fit: fits)
+    {
+        if (fit.xMin < xMin)
+            xMin = fit.xMin;
+        if (fit.xMax > xMax)
+            xMax = fit.xMax;
+    }
+
+    throw alloys::FitRangeException(x, xMin, xMax);
 }
 
 
@@ -203,6 +226,18 @@ inline double alloys::Alloy::msAtT(double T) const
     for (std::size_t i{1}; i<std::size(coeffs); ++i) // i must start at 1 as otherwise uint{0}-1 gives underflow
         dCsdT += i * coeffs[i] * std::pow(T, i-1);
     return 1/dCsdT; // ml = dTs/dC = 1 / (dCs/dT)
+}
+
+/// @brief contructs the m_error string.
+/// @param x input value given to the polynomial fits.
+/// @param xMin minimum input value the polynomial fits are valid for.
+/// @param xMax maximum input value the polynomial fits are valid for.
+inline alloys::FitRangeException::FitRangeException(double x, double xMin, double xMax)
+{
+    std::stringstream error{};
+    error << "No polynomial fit available that is valid at requested point. ";
+    error << "Requested at " << x << " when range of fits is " << xMin << " to " << xMax << '.';
+    m_error = error.str();
 }
 
 
