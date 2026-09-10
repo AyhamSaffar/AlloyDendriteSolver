@@ -20,25 +20,31 @@ for dT in np.sort(raw_data['dT'].unique()):
 	data[dT] = grids
 
 # %%
-fig, axes = plt.subplots(ncols=len(data), figsize=(6*len(data), 5))
+fig, axes = plt.subplots(ncols=len(data), nrows=3, figsize=(5*len(data), 12))
 
-for i, (dT, grids) in enumerate(data.items()):
-
-	axes[i].set_title(f'Undercooling = {dT:.0f}K')
-	axes[i].set_xlabel(r'$R_0$ / $log_{10}(m)$')
-	axes[i].set_ylabel(r'$V_0$ / $log_{10}(m/s)$')
-
+for col, (dT, grids) in enumerate(data.items()):
 	log_f1, log_f2 = np.log10(np.abs(grids['f1'])), np.log10(np.abs(grids['f2']))
-	F_mean_im = axes[i].imshow(
-		(log_f1 + log_f2) / 2,
-		extent=(np.log10(Rs.min()), np.log10(Rs.max()), np.log10(Vs.min()), np.log10(Vs.max())),
-		interpolation=None,
-		aspect='auto',
-		cmap='coolwarm',
-	)
+	axes[0, col].set_title(f'Undercooling = {dT:.0f}K', fontsize='x-large')
 
-	fig.colorbar(F_mean_im, label=r'Mean|F| / $log_{10}$')
+	for row in range(3):
+		axes[row, col].set_xlabel(r'$R_0$ / $log_{10}(m)$')
+		axes[row, col].set_ylabel(r'$V_0$ / $log_{10}(m/s)$')
 
-fig.tight_layout()
+		if col==0:
+			label = f'$log_{{10}}$ |{'f1+f2' if row==0 else 'f1' if row==1 else 'f2'}|'
+			axes[row, col].annotate(
+				label, xy=(-0.3, 0.5), xycoords='axes fraction', rotation='vertical',
+				fontsize='x-large', verticalalignment='center'
+			)
+
+		im = axes[row, col].imshow(
+			log_f1+log_f2 if row==0 else log_f1 if row==1 else log_f2,
+			extent=(np.log10(Rs.min()), np.log10(Rs.max()), np.log10(Vs.min()), np.log10(Vs.max())),
+			interpolation=None,
+			aspect='auto',
+			cmap='coolwarm',
+		)
+		fig.colorbar(im)
+
+fig.tight_layout(rect=[0.01, 0, 1, 1]) # ensures row labels are not cut off on left edge
 fig.savefig(experiment_path / "plots.png")
-
