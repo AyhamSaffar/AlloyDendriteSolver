@@ -15,7 +15,7 @@ Rs = np.sort(raw_data['R'].unique())
 
 data = {} # dT: {col: col_grid}
 for dT in np.sort(raw_data['dT'].unique()):
-	subset = raw_data[raw_data['dT']==dT].sort_values(by=['V', 'R'], ascending=[False, True]) # top row = highest V0
+	subset = raw_data[raw_data['dT']==dT].sort_values(by=['V', 'R'], ascending=[False, True]) # top row = highest V
 	grids = {col: subset[col].to_numpy().reshape([len(Vs), len(Rs)]) for col in ['f1', 'f2']} 
 	data[dT] = grids
 
@@ -40,9 +40,7 @@ for col, (dT, grids) in enumerate(data.items()):
 		im = axes[row, col].imshow(
 			log_f1+log_f2 if row==0 else log_f1 if row==1 else log_f2,
 			extent=(np.log10(Rs.min()), np.log10(Rs.max()), np.log10(Vs.min()), np.log10(Vs.max())),
-			interpolation=None,
-			aspect='auto',
-			cmap='coolwarm',
+			interpolation=None, aspect='auto', cmap='coolwarm',
 		)
 		fig.colorbar(im)
 

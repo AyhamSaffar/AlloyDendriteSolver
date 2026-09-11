@@ -196,7 +196,6 @@ namespace models
             double Pt{V*R/(2*A.a)}; // thermal Péclet number
             double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
             double dTt{A.L*Ivt/A.Cp}; // thermal undercooling
-            //! limit dTt here so it is never greater than dT?
             double Ti{A.TlAtC(C0) - dT + dTt}; // interface temperature. Ti must <= Tl(C0)
             
             double Cle{A.ClAtT(Ti)}, Cse{A.CsAtT(Ti)}; // equilibrium interface solute concentration of liquid & solid
@@ -208,19 +207,16 @@ namespace models
             
             double psi{1 - (V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
             double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
-            //! is this ever needed?
             double kvP{(V<A.Vd) ? ((V/Vdi)+keP*psi) / ((V/Vdi)+psi) : 1}; // curvature corrected velocity dependent k
             double NP{1 - kvP + std::log(kvP/keP) + (1-kvP)*(1-kvP)*V/A.Vd}; // curvature corrected relaxation term N
-            //* can this not just be calculated with dimensional analysis like in all the other models?
-            // double Cl{(CleP-CseP-(V/A.V0))/NP}; // true interface solute concentration of liquid
             
             double Pc{V*R/(2*A.D)}; // solutal peclet number
             double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
-            double Cl{C0/(1-(1-kvP)*Ivc)}; // Cl if derived using dimensional analysis
+            double Cl{C0/(1-(1-kvP)*Ivc)}; // solute concentration of liquid at interface
+            // double Cl{(CleP-CseP-(V/A.V0))/NP}; // alternative definition of Cl that tends to give bad results
 
             double dTc{A.TlAtC(C0) - A.TlAtC(Cl)}; // constitutional (solutal) undercooling
-            double dTk{A.TlAtC(Cl) - A.TlAtC(CleP)}; // kinetic undercooling
-
+            
             // could not copy assign A to a static object as enyzme would fail to deduce the static object's type
             alloys::Alloy ACopy1{A}; // required as __enzye_autodiff sometimes modifies objects passed to it
             double dNdT{  // dN(Ti)/dT
@@ -230,16 +226,24 @@ namespace models
             double N{1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd}; // relaxation term N
             double ml{A.mlAtT(Ti)}, ms{A.msAtT(Ti)}; // solidus and liquidus gradients
             double M{-ml*ms*N/(ml-ms+ml*ms*Cl*dNdT)}; // solutal field gradient coefficient
-
-            double mlP{A.mlAtT(Ti+dTr)}, msP{A.msAtT(Ti+dTr)}; // curvature adjusted solidus and liquidus gradients
+            
             alloys::Alloy ACopy2{A};
+            double dNdV{  // dN(Ti)/dV
+                __enzyme_autodiff<double>((void*)getN, enzyme_const, Ti, enzyme_out, V, enzyme_const, &ACopy2)
+            };
+            double mu{(ml-ms+ml*ms*Cl*dNdT)/(ml*ms*((1/A.V0)+Cl*dNdV))}; // interfacial kinetic coefficient
+            double dTk{V/mu}; // kinetic undercooling
+            // double dTk{A.TlAtC(Cl) - A.TlAtC(CleP)}; // alternative definition of dTK that tends to give bad results 
+            
+            double mlP{A.mlAtT(Ti+dTr)}, msP{A.msAtT(Ti+dTr)}; // curvature adjusted solidus and liquidus gradients
+            alloys::Alloy ACopy3{A};
             double dNPdT{  // dN(Ti+dTr)/dT
-                __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy2)
+                __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy3)
             };
             double MP{-mlP*msP*NP/(mlP-msP+mlP*msP*Cl*dNPdT)}; // curvature adjusted solutal field gradient coefficient
-            alloys::Alloy ACopy3{A};
+            alloys::Alloy ACopy4{A};
             double dkvPdT{ // dKv(Ti+dTr)/dT
-                __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy3)
+                __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy4)
             };
 
             double xic{ // solutal stability function
