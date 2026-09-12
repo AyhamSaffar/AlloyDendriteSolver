@@ -247,7 +247,7 @@ namespace models
             };
 
             double xic{ // solutal stability function
-                (V<A.Vd) ? 1 - (2*kvP+2*MP*Cl*dkvPdT) / ( std::sqrt(1+(psi/(A.o*Pc*Pc))) + 2*kvP - 1 + 2*MP*Cl*dkvPdT) : 0
+                (V<A.Vd) ? 1-(2*kvP+2*MP*Cl*dkvPdT) / ( std::sqrt(1+(psi/(A.o*Pc*Pc))) + 2*kvP - 1 + 2*MP*Cl*dkvPdT) : 0
             };
             double xiL{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
             double RPred{(A.r/A.o) / (Pt*A.L*xiL/A.Cp + 2*MP*Pc*Cl*(kvP-1)*xic/psi)}; // calculated dendrite radius

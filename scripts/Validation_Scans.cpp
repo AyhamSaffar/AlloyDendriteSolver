@@ -216,9 +216,9 @@ int main()
     }
 
 
-    // https://www.sciencedirect.com/science/article/pii/S1359645406006215 Fig. 4, 5 & 6
+    // https://www.sciencedirect.com/science/article/pii/S1359645406006215 Fig. 4, 5, 6 & 8
     std::ofstream outfNiB2{dataPath + "NiB_WLCYZ.csv"}; // ealier validation experiment uses NiB for LKT_BCT
-    outfNiB2 << solvers::Result::commaSeparatedColumns << '\n';
+    outfNiB2 << solvers::Result::commaSeparatedColumns << ",Ti\n";
 
     {
         const alloys::Alloy A{alloys::NiB2007_atp};
@@ -231,7 +231,8 @@ int main()
             R = solvers::newton<models::WLCYZ>(dT, C0, A, V0, R0);
             if (R.hasConverged)
                 std::tie(V0, R0) = std::tie(R.V, R.R);
-            outfNiB2 << R.commaSeparatedValues() << '\n';
+            double Ti{A.TlAtC(C0)-dT+R.dTt}; // temperature of interface
+            outfNiB2 << R.commaSeparatedValues() << ',' << Ti << '\n';
         }
     }
 

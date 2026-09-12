@@ -332,7 +332,7 @@ fig.savefig(experiment_path / 'FeSb_CLW.png')
 
 # %%
 data = experiments['NiB_WLCYZ']
-fig, axes = plt.subplots(ncols=3, figsize=(12, 3.5))
+fig, axes = plt.subplots(ncols=4, figsize=(16, 3.5))
 
 bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
 for ax in axes.flatten():
@@ -370,6 +370,20 @@ axes[2].plot(data['dT'], data['dTk'], color='black', linestyle=':', label='dTk')
 axes[2].plot(data['dT'], data['dTt'], color='black', linestyle='-.', label='dTt')
 
 axes[2].legend()
+
+axes[3].set_xlabel('bath undercooling ΔT (K)')
+axes[3].set_xlim(0, 400)
+axes[3].set_xticks([0, 100, 300])
+axes[3].set_ylabel("The dendrite tip radius R (m)")
+axes[3].set_ylim(0, 10e-7)
+axes[3].set_yticks(np.arange(0, 10.1e-7, 2e-7))
+twin_ax = axes[3].twinx()
+twin_ax.set_ylabel("the interfactial temperature $T_i$ (K)")
+twin_ax.set_ylim(1450, 1750)
+twin_ax.set_yticks(range(1450, 1751, 60))
+
+axes[3].plot(data['dT'], data['R'], color='black')
+twin_ax.plot(data['dT'], data['Ti'], color='black')
 
 fig.tight_layout()
 fig.savefig(experiment_path / 'NiB_WLCYZ.png')
