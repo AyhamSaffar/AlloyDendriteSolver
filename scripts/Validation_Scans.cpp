@@ -216,9 +216,9 @@ int main()
     }
 
 
-    // https://www.sciencedirect.com/science/article/pii/S1359645406006215 Fig. 4, 5, 6 & 8
+    // https://www.sciencedirect.com/science/article/pii/S1359645406006215 Fig. 4-8
     std::ofstream outfNiB2{dataPath + "NiB_WLCYZ.csv"}; // ealier validation experiment uses NiB for LKT_BCT
-    outfNiB2 << solvers::Result::commaSeparatedColumns << ",Ti\n";
+    outfNiB2 << solvers::Result::commaSeparatedColumns << ",Ti,kv,Cl*,Cs*\n";
 
     {
         const alloys::Alloy A{alloys::NiB2007_atp};
@@ -229,10 +229,28 @@ int main()
         for (double dT{dT0}; dT<=450; ++dT)
         {
             R = solvers::newton<models::WLCYZ>(dT, C0, A, V0, R0);
-            if (R.hasConverged)
+            double Ti{NAN}, kvP{NAN}, Cl{NAN}, Cs{NAN};
+            if (R.hasConverged) // guarantees phase diagram fits below are sampled at valid points
+            {
                 std::tie(V0, R0) = std::tie(R.V, R.R);
-            double Ti{A.TlAtC(C0)-dT+R.dTt}; // temperature of interface
-            outfNiB2 << R.commaSeparatedValues() << ',' << Ti << '\n';
+
+                Ti = A.TlAtC(C0)-dT+R.dTt; // temperature of interface
+                double dTr{2*A.r/R.R}; // curvature undercooling
+                // P suffix (prime) used to denote a value is curvature adjusted (calculated at T=Ti+dTr)
+                double CleP{A.ClAtT(Ti+dTr)}, CseP{A.CsAtT(Ti+dTr)}; // curvature adjusted Cle & Cse
+                double keP{CseP/CleP}; // curvature adjusted equilibrium partition coefficient
+                
+                double psi{1 - (R.V*R.V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
+                double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
+                kvP = (R.V<A.Vd) ? ((R.V/Vdi)+keP*psi) / ((R.V/Vdi)+psi) : 1; // curvature corrected velocity dependent k
+                double NP{1 - kvP + std::log(kvP/keP) + (1-kvP)*(1-kvP)*R.V/A.Vd}; // curvature corrected relaxation term N
+                double Pc{R.V*R.R/(2*A.D)}; // solutal peclet number
+                double Ivc{models::ivantsov(Pc)}; // solutal Ivantsov function
+                Cl = C0/(1-(1-kvP)*Ivc); // solute concentration of liquid at interface
+                Cs = Cl*kvP; // solute concentration of solid at interface
+            }
+
+            outfNiB2 << R.commaSeparatedValues() << ',' << Ti << ',' << kvP << ',' << Cl << ',' << Cs << '\n';
         }
     }
 

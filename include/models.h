@@ -4,6 +4,7 @@
 #include <cmath> // for std::exp and std::expint
 #include <tuple>
 #include <stdexcept>
+#include <cassert>  // #####################  TEMP  ###################
 #include "alloys.h"
 #include "enzyme.h"
 
@@ -225,7 +226,7 @@ namespace models
             double kv{(V<A.Vd) ? ((V/Vdi)+ke*psi) / ((V/Vdi)+psi) : 1}; // velocity dependent partition coefficient
             double N{1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd}; // relaxation term N
             double ml{A.mlAtT(Ti)}, ms{A.msAtT(Ti)}; // solidus and liquidus gradients
-            double M{-ml*ms*N/(ml-ms+ml*ms*Cl*dNdT)}; // solutal field gradient coefficient
+            double M{-ml*ms*N/(ml-ms+ml*ms*Cl*dNdT)}; // non-equilibrium liquidus gradient
             
             alloys::Alloy ACopy2{A};
             double dNdV{  // dN(Ti)/dV
@@ -240,7 +241,7 @@ namespace models
             double dNPdT{  // dN(Ti+dTr)/dT
                 __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy3)
             };
-            double MP{-mlP*msP*NP/(mlP-msP+mlP*msP*Cl*dNPdT)}; // curvature adjusted solutal field gradient coefficient
+            double MP{-mlP*msP*NP/(mlP-msP+mlP*msP*Cl*dNPdT)}; // curvature adjusted non-equilibrium liquidus gradient
             alloys::Alloy ACopy4{A};
             double dkvPdT{ // dKv(Ti+dTr)/dT
                 __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy4)
