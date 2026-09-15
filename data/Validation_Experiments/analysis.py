@@ -332,57 +332,63 @@ fig.savefig(experiment_path / 'FeSb_CLW.png')
 
 # %%
 data = experiments['NiB_WLCYZ']
-fig, axes = plt.subplots(ncols=4, figsize=(16, 3.5))
+fig, axes = plt.subplots(ncols=5, figsize=(20, 3.5))
 
 bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
 for ax in axes.flatten():
     ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
+    ax.set_xlabel('bath undercooling ΔT (K)')
+    ax.set_xlim(0, 400)
+    ax.set_xticks(range(0, 401, 100))
 
-axes[0].set_xlabel('bath undercooling ΔT (K)')
-axes[0].set_xlim(0, 350)
-axes[0].set_xticks(range(0, 350, 100))
+# fig.4
 axes[0].set_ylabel('The dendrite tip velocity V (m/s)')
 axes[0].set_ylim(-1, 40)
 axes[0].set_yticks(range(0, 41, 10))
-
 axes[0].plot(data['dT'], data['V'], color='black')
 
-axes[1].set_xlabel('bath undercooling ΔT (K)')
-axes[1].set_xlim(0, 400)
-axes[1].set_xticks([0, 100, 300])
+# fig. 5
 axes[1].set_ylabel('The dendrite tip radius R (m)')
 axes[1].set_yscale('log')
 axes[1].set_ylim(1e-9, 1e-6)
 axes[1].set_yticks([10**i for i in range(-9, -5)])
-
 axes[1].plot(data['dT'], data['R'], color='black')
 
-axes[2].set_xlabel('bath undercooling ΔT (K)')
-axes[2].set_xlim(0, 400)
-axes[2].set_xticks([0, 100, 300])
+# fig.6
 axes[2].set_ylabel('undercooling contribution (K)')
 axes[2].set_ylim(-5, 225)
 axes[2].set_yticks(range(0, 210, 50))
-
 axes[2].plot(data['dT'], data['dTr'], color='black', linestyle='-', label='dTr')
 axes[2].plot(data['dT'], data['dTc'], color='black', linestyle='--', label='dTc')
 axes[2].plot(data['dT'], data['dTk'], color='black', linestyle=':', label='dTk')
 axes[2].plot(data['dT'], data['dTt'], color='black', linestyle='-.', label='dTt')
-
 axes[2].legend()
 
-axes[3].set_xlabel('bath undercooling ΔT (K)')
-axes[3].set_xlim(0, 400)
-axes[3].set_xticks([0, 100, 300])
-axes[3].set_ylabel("The dendrite tip radius R (m)")
-axes[3].set_ylim(0, 10e-7)
-axes[3].set_yticks(np.arange(0, 10.1e-7, 2e-7))
+# fig.7
+axes[3].set_ylabel('liquid and solid composition')
+axes[3].set_ylim(0, 0.03)
+axes[3].set_yticks(np.arange(0, 0.031, 0.005))
 twin_ax = axes[3].twinx()
+twin_ax.set_ylabel('nonequilibrium partition coefficient k')
+twin_ax.set_ylim(-0.1, 1.1)
+twin_ax.set_yticks(np.arange(0, 1.1, 0.2))
+
+# paper plots atom fraction while library returns atom.%
+line_1 = axes[3].plot(data['dT'], data['Cl*']/100, color='black', linestyle='-', label='$C_L^*$')
+line_2 = axes[3].plot(data['dT'], data['Cs*']/100, color='black', linestyle=':',  label='$C_S^*$')
+line_3 = twin_ax.plot(data['dT'], data['kv'], color='black', linestyle='--', label='k')
+lines = line_1 + line_2 + line_3
+axes[3].legend(lines, [line.get_label() for line in lines], loc='center right')
+
+# fig.8
+axes[4].set_ylabel("The dendrite tip radius R (m)")
+axes[4].set_ylim(0, 10e-7)
+axes[4].set_yticks(np.arange(0, 10.1e-7, 2e-7))
+twin_ax = axes[4].twinx()
 twin_ax.set_ylabel("the interfactial temperature $T_i$ (K)")
 twin_ax.set_ylim(1450, 1750)
 twin_ax.set_yticks(range(1450, 1751, 60))
-
-axes[3].plot(data['dT'], data['R'], color='black')
+axes[4].plot(data['dT'], data['R'], color='black')
 twin_ax.plot(data['dT'], data['Ti'], color='black')
 
 fig.tight_layout()

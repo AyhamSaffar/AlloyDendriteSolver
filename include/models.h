@@ -4,7 +4,6 @@
 #include <cmath> // for std::exp and std::expint
 #include <tuple>
 #include <stdexcept>
-#include <cassert>  // #####################  TEMP  ###################
 #include "alloys.h"
 #include "enzyme.h"
 
