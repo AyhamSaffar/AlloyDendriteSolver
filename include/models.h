@@ -170,9 +170,7 @@ namespace models
     inline double getN(double T, double V, const alloys::Alloy& A)
     {
         double ke{A.CsAtT(T)/A.ClAtT(T)}; // equilibrium partition coefficient
-        double psi{1 - (V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
-        double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
-        double kv{(V<A.Vd) ? ((V/Vdi)+ke*psi) / ((V/Vdi)+psi) : 1};
+        double kv{getkv(T, V, A)}; // elocity dependent partition coefficient
         return 1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd;
     }
 

@@ -332,7 +332,7 @@ fig.savefig(experiment_path / 'FeSb_CLW.png')
 
 # %%
 data = experiments['NiB_WLCYZ']
-fig, axes = plt.subplots(ncols=5, figsize=(20, 3.5))
+fig, axes = plt.subplots(ncols=5, figsize=(25, 3.5))
 
 bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
 for ax in axes.flatten():

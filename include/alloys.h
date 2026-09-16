@@ -250,7 +250,26 @@ namespace alloys
     static constexpr double R{8.3145}; // gas constant in J/molK
     static constexpr double NA{0}; //* used E.G. for m and k0 in alloys with non linear phase diagrams.
 
-    // calculated using least squares fitting of the phase diagrams from the TCNI8 database.
+    // calculated using least squares fitting of the atom.% phase diagram from the TCBIN1.1 database. Note this phase
+    // diagram does not exactly match the shape of the published phase diagram. 
+    static std::vector<Fit> NiZrTlAtC{
+        Fit{{1.72828E+03,-1.40432E+01,-1.62058E+00,-5.55751E-02}, 0.0695, 9.08932}
+    };
+    static std::vector<Fit> NiZrClAtT{
+        Fit{{-4.72882E+03,1.24846E+01,-1.23186E-02,5.40164E-06,-8.89711E-10}, 1425.0, 1727.27273}
+    };
+    static std::vector<Fit> NiZrCsAtT{
+        Fit{{4.21827E+01,-8.57530E-02,7.34390E-05,-3.09579E-08,5.20935E-12}, 1425.0, 1727.27273}
+    };
+
+    // Nickel Zirconium system in at.%. Taken from https://www.sciencedirect.com/science/article/pii/S1359646207003302.
+    // The constant m & k0 values only precisely hold above 1700K (~30K below Tm) and change strongly below this T.
+    const Alloy NiZr_atp{
+        1.623e4, 41, -11, 0.04, 8.5e-8, 5e-9, 4.2e-5, o, (5e-9)/21.5, 550, 1728, -1, -1,
+        NiZrTlAtC, NiZrClAtT, NiZrCsAtT
+    };
+
+    // calculated using least squares fitting of the atom.% phase diagram from the TCNI8 database.
     static std::vector<Fit> NiBTlAtC{
         Fit{{1728.310506759,-13.74052637939,-0.2444339920279,-0.01972205626106}, 0.1, 16.587}
     };
@@ -261,8 +280,9 @@ namespace alloys
         {{-23.86104359553,0.0647957147612,-6.61489819253e-05,3.083066146706e-08,-5.57017810813e-12}, 1343, 1727}
     };
 
-    // Nickel Borom system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. The constant m & k0 values
-    // are taken from https://www.sciencedirect.com/science/article/pii/S1359646207003302.
+    // Nickel Boron system in at.%. Taken from https://doi.org/10.1016/j.actamat.2006.08.042. The constant m & k0 values
+    // are taken from https://www.sciencedirect.com/science/article/pii/S1359646207003302 and only precisely hold 
+    // above 1650K (~100K below Tm).
     const Alloy NiB2007_atp{
         1.72e4, 36.39, -14.3, 0.0155, 3.42e-7, 3e-9, 8.5e-6, o, (3e-9)/18.9, 425, 1728, -1, -1,
         NiBTlAtC, NiBClAtT, NiBCsAtT, 18.9
@@ -277,7 +297,7 @@ namespace alloys
     const Alloy FeSb_wtp{15'027, 43.77, NA, NA, 3.56e-7, NA, 7.3e-6, o, 2.5e-10, 3000, NA, 4.11e-7, 5e4, 
         FeSbTlAtC, FeSbClAtT, FeSbCsAtT};
 
-    // calculated using least squares fitting of the phase diagrams from the TCBIN v1.1 database. Currently does not
+    // calculated using least squares fitting of the wt.% phase diagram from the TCBIN1.1 database. Currently does not
     // go below equilibrium temperatures.
     static std::vector<Fit> CoCuTlAtC{
         Fit{{1.76850E+03,-2.39309E+00,-1.09155E-01,2.30917E-03}, 0.014, 36.095},
