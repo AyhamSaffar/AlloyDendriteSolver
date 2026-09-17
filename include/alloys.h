@@ -265,8 +265,8 @@ namespace alloys
     // Nickel Zirconium system in at.%. Taken from https://www.sciencedirect.com/science/article/pii/S1359646207003302.
     // The constant m & k0 values only precisely hold above 1700K (~30K below Tm) and change strongly below this T.
     const Alloy NiZr_atp{
-        1.623e4, 41, -11, 0.04, 8.5e-8, 5e-9, 4.2e-5, o, (5e-9)/21.5, 550, 1728, -1, -1,
-        NiZrTlAtC, NiZrClAtT, NiZrCsAtT
+        1.623e4, 41, -11, 0.04, 8.5e-8, 5e-9, 4.2e-5, o, (5e-9)/19, 550, 1728, -1, -1,
+        NiZrTlAtC, NiZrClAtT, NiZrCsAtT, 21.5
     };
 
     // calculated using least squares fitting of the atom.% phase diagram from the TCNI8 database.

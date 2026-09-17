@@ -254,6 +254,28 @@ int main()
         }
     }
 
+
+    // https://www.sciencedirect.com/science/article/pii/S1359646207003302 Fig 2.b (Fig 2.a already done just above)
+    std::ofstream outfNiZr{dataPath + "NiZr_WLCYZ.csv"};
+    outfNiZr << solvers::Result::commaSeparatedColumns << '\n';
+
+    {
+        const alloys::Alloy A{alloys::NiZr_atp};
+        const double C0{1}, dT0{1};
+        solvers::Result R{solvers::bruteForceNewton<models::WLCYZ>(dT0, C0, A)};
+        double V0{R.V}, R0{R.R};
+
+        for (double dT{dT0}; dT<=280; ++dT)
+        {
+            R = solvers::newton<models::WLCYZ>(dT, C0, A, V0, R0);
+            if (R.hasConverged)
+                std::tie(V0, R0) = std::tie(R.V, R.R);
+
+            outfNiZr << R.commaSeparatedValues() << '\n';
+        }
+    }
+
+
     return 0;
 }
 

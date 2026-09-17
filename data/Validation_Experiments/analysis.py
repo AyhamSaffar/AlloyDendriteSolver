@@ -393,3 +393,21 @@ twin_ax.plot(data['dT'], data['Ti'], color='black')
 
 fig.tight_layout()
 fig.savefig(experiment_path / 'NiB_WLCYZ.png')
+
+# %%
+data = experiments['NiZr_WLCYZ']
+fig, ax = plt.subplots(figsize=(5, 4))
+
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
+
+ax.set_xlabel('bath undercooling ΔT (K)')
+ax.set_xlim(0, 280)
+ax.set_xticks(range(0, 281, 70))
+ax.set_ylabel('the dendrite tip velocity V (m/s)')
+ax.set_ylim(-1, 30)
+ax.set_yticks(range(0, 31, 10))
+ax.plot(data['dT'], data['V'], color='black')
+
+fig.tight_layout()
+fig.savefig(experiment_path / 'NiZr_WLCYZ.png')
