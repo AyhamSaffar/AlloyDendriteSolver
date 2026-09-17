@@ -104,6 +104,35 @@ namespace models
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
 
+    // bulk non-equilibrium diffusion correction of LKT-BCT by Galenko & Danilov. Only used to test WLCYZ
+    inline std::tuple<double, double, DTs> LKT_BCT_GD(double V, double R, double dT, double C0, const alloys::Alloy& A)
+    {
+        if (!A.WLCYZCapable)
+            throw std::runtime_error("Attempted to pass non WLCYZ capable Alloy to LKT-BCT-GD model");
+
+        double Pt{V*R/(2*A.a)}; // thermal Péclet number
+        double Pc{V*R/(2*A.D)}; // solutal Péclet number
+        double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
+        double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
+
+        double psi{1 - (V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
+        double k{ // velocity dependent partition coefficient
+            (V<A.Vd) ? (A.k0*psi+(A.a0*V/A.D)) / (psi+(A.a0*V/A.D)) : 1
+        }; 
+        double mP{(A.m/(1-A.k0)) * (1-k+std::log(k/A.k0)+(1-k)*(1-k)*V/A.Vd)}; // velocity dependent liquidus slope (m prime)
+
+        double R0{8.314}; // molar gas constant
+        double mu{A.L*A.V0/(R0*A.Tm*A.Tm)}; // interfacial kinetic coefficient
+        double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
+        double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + (psi/(A.o*Pc*Pc))) )}; // - solutal stability function
+        double Ci{C0/(1-(1-k)*Ivc)}; // solute concentration of liquid at interface
+
+        double dTt{A.L*Ivt/A.Cp}, dTc{A.m*C0 - mP*Ci}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
+        double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
+        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*Pc*(1-k)*xic*Ci) - R}; // radius error
+        return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
+    }
+
     /// @brief Cao, Wang, Duan, and Bai model. Designed to better generalise to higher undercoolings and velocities for
     /// non-linear phase diagrams, but makes strong assumptions and precise implementation details were never published.
     /// @param V velocity - m/s
@@ -170,7 +199,7 @@ namespace models
     inline double getN(double T, double V, const alloys::Alloy& A)
     {
         double ke{A.CsAtT(T)/A.ClAtT(T)}; // equilibrium partition coefficient
-        double kv{getkv(T, V, A)}; // elocity dependent partition coefficient
+        double kv{getkv(T, V, A)}; // velocity dependent partition coefficient
         return 1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd;
     }
 
@@ -210,10 +239,10 @@ namespace models
             
             double Pc{V*R/(2*A.D)}; // solutal peclet number
             double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
-            double Cl{C0/(1-(1-kvP)*Ivc)}; // solute concentration of liquid at interface
-            // double Cl{(CleP-CseP-(V/A.V0))/NP}; // alternative definition of Cl that tends to give bad results
+            double Cli{C0/(1-(1-kvP)*Ivc)}; // solute concentration of liquid at interface
+            // double Cli{(CleP-CseP-(V/A.V0))/NP}; // alternative definition of Cl that tends to give bad results
 
-            double dTc{A.TlAtC(C0) - A.TlAtC(Cl)}; // constitutional (solutal) undercooling
+            double dTc{A.TlAtC(C0) - A.TlAtC(Cli)}; // constitutional (solutal) undercooling
             
             // could not copy assign A to a static object as enyzme would fail to deduce the static object's type
             alloys::Alloy ACopy1{A}; // required as __enzye_autodiff sometimes modifies objects passed to it
@@ -223,13 +252,13 @@ namespace models
             double kv{(V<A.Vd) ? ((V/Vdi)+ke*psi) / ((V/Vdi)+psi) : 1}; // velocity dependent partition coefficient
             double N{1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd}; // relaxation term N
             double ml{A.mlAtT(Ti)}, ms{A.msAtT(Ti)}; // solidus and liquidus gradients
-            double M{-ml*ms*N/(ml-ms+ml*ms*Cl*dNdT)}; // non-equilibrium liquidus gradient
+            double M{-ml*ms*N/(ml-ms+ml*ms*Cli*dNdT)}; // non-equilibrium liquidus gradient
             
             alloys::Alloy ACopy2{A};
             double dNdV{  // dN(Ti)/dV
                 __enzyme_autodiff<double>((void*)getN, enzyme_const, Ti, enzyme_out, V, enzyme_const, &ACopy2)
             };
-            double mu{(ml-ms+ml*ms*Cl*dNdT)/(ml*ms*((1/A.V0)+Cl*dNdV))}; // interfacial kinetic coefficient
+            double mu{(ml-ms+ml*ms*Cli*dNdT)/(ml*ms*((1/A.V0)+Cli*dNdV))}; // interfacial kinetic coefficient
             double dTk{V/mu}; // kinetic undercooling
             // double dTk{A.TlAtC(Cl) - A.TlAtC(CleP)}; // alternative definition of dTK that tends to give bad results 
             
@@ -238,18 +267,18 @@ namespace models
             double dNPdT{  // dN(Ti+dTr)/dT
                 __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy3)
             };
-            double MP{-mlP*msP*NP/(mlP-msP+mlP*msP*Cl*dNPdT)}; // curvature adjusted non-equilibrium liquidus gradient
+            double MP{-mlP*msP*NP/(mlP-msP+mlP*msP*Cli*dNPdT)}; // curvature adjusted non-equilibrium liquidus gradient
             alloys::Alloy ACopy4{A};
             double dkvPdT{ // dKv(Ti+dTr)/dT
                 __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy4)
             };
 
             double xic{ // solutal stability function
-                (V<A.Vd) ? 1-(2*kvP+2*MP*Cl*dkvPdT) / ( std::sqrt(1+(psi/(A.o*Pc*Pc))) + 2*kvP - 1 + 2*MP*Cl*dkvPdT) : 0
+                (V<A.Vd) ? 1-(2*kvP+2*MP*Cli*dkvPdT) / ( std::sqrt(1+(psi/(A.o*Pc*Pc))) + 2*kvP - 1 + 2*MP*Cli*dkvPdT) : 0
             };
             double xiL{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
-            double RPred{(A.r/A.o) / (Pt*A.L*xiL/A.Cp + 2*MP*Pc*Cl*(kvP-1)*xic/psi)}; // calculated dendrite radius
-        
+            double RPred{(A.r/A.o) / (Pt*A.L*xiL/A.Cp + 2*MP*Pc*Cli*(kvP-1)*xic/psi)}; // calculated dendrite radius
+
             return std::make_tuple(dTt+dTc+dTr+dTk-dT, RPred-R, DTs{dTt, dTc, dTr, dTk});
         }
         catch (const alloys::FitRangeException&)
