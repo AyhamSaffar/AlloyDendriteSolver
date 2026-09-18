@@ -20,12 +20,12 @@ TEST_CASE("LGK model V prediction agrees with published LGK SnAg numerical fit a
         for (double C0{3.0}; C0<=6.0; C0+=1.0)
         {
             INFO("dT = " + std::to_string(dT) + ", and C0 = " + std::to_string(C0));
-            solvers::Result result{solvers::newton<models::LGK>(dT, C0, alloys::SnAg_wtp)};
-            REQUIRE(result.hasConverged);
-            REQUIRE(result.R > 0);
+            solvers::Result R{solvers::newton<models::LGK>(dT, C0, alloys::SnAg_wtp)};
+            REQUIRE(R.hasConverged);
+            REQUIRE(R.R > 0);
 
             double VFit{getPublishedLGKSnAgVFit(dT, C0)};
-            REQUIRE(std::abs(result.V-VFit)/VFit < 0.20); // maximum of 20% error as numerical fit
+            REQUIRE(std::abs(R.V-VFit)/VFit < 0.20); // maximum of 20% error as numerical fit
         }
 }
 
@@ -41,10 +41,10 @@ TEST_CASE("LKT-BCT model V prediction agrees with LGK at low undercooling", "[so
 
             const alloys::Alloy A{alloys::SnAg_wtp};
             constexpr bool legacy{false}; // ensures LGK form is consistent with LKT_BCT
-            solvers::Result LGKResult{solvers::newton<models::LGK<legacy>>(dT, C0, A)};
-            solvers::Result LKT_BCTResult{solvers::newton<models::LKT_BCT>(dT, C0, A)};
+            solvers::Result LGKR{solvers::newton<models::LGK<legacy>>(dT, C0, A)};
+            solvers::Result BCTR{solvers::newton<models::LKT_BCT>(dT, C0, A)};
 
-            const solvers::Result& R{LKT_BCTResult};
+            const solvers::Result& R{BCTR};
             double Pt{R.V*R.R/(2*A.a)}; // thermal Péclet number
             double Pc{R.V*R.R/(2*A.D)}; // solutal Péclet number
             double k{(A.k0+(A.a0*R.V/A.D)) / (1+(A.a0*R.V/A.D))}; // non equilibrium partition coefficient
@@ -55,9 +55,9 @@ TEST_CASE("LKT-BCT model V prediction agrees with LGK at low undercooling", "[so
             if((xit<0.9) || (xic<0.9) || ((std::abs(k-A.k0)/A.k0)>0.1) || ((dTk/dT)>0.1))
                 break; // LKT-BCT no longer equivalent to LGK
 
-            REQUIRE(LKT_BCTResult.hasConverged);
-            REQUIRE(std::abs(LKT_BCTResult.R-LGKResult.R)/LGKResult.R < 0.01); // maximum of 1% error
-            REQUIRE(std::abs(LKT_BCTResult.V-LGKResult.V)/LGKResult.V < 0.01); // maximum of 1% error
+            REQUIRE(BCTR.hasConverged);
+            REQUIRE(std::abs(BCTR.R-LGKR.R)/LGKR.R < 0.01); // maximum of 1% error
+            REQUIRE(std::abs(BCTR.V-LGKR.V)/LGKR.V < 0.01); // maximum of 1% error
         }
 }
 
@@ -76,24 +76,24 @@ TEST_CASE("Linearised CLW model agrees with LKT-BCT at pre solute trapping under
     for (double dT{1}; dT<500; ++dT)
     {
         INFO("dT = " + std::to_string(dT));
-        solvers::Result LKT_BCTResult{solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0)};
-        solvers::Result CLWResult{solvers::newton<models::CLW>(dT, C0, ALin, V0, R0)};
-        INFO("V LKT-BCT = " + std::to_string(LKT_BCTResult.V) + ", V CLW = " + std::to_string(CLWResult.V) + '\n');
-        INFO("R LKT-BCT = " + std::to_string(LKT_BCTResult.R) + ", R CLW = " + std::to_string(CLWResult.R) + '\n');
+        solvers::Result BCTR{solvers::newton<models::LKT_BCT>(dT, C0, A, V0, R0)};
+        solvers::Result CLWR{solvers::newton<models::CLW>(dT, C0, ALin, V0, R0)};
+        INFO("V LKT-BCT = " + std::to_string(BCTR.V) + ", V CLW = " + std::to_string(CLWR.V) + '\n');
+        INFO("R LKT-BCT = " + std::to_string(BCTR.R) + ", R CLW = " + std::to_string(CLWR.R) + '\n');
 
-        REQUIRE(LKT_BCTResult.hasConverged);
-        REQUIRE(CLWResult.hasConverged);
-        REQUIRE((std::abs(LKT_BCTResult.R - CLWResult.R)/LKT_BCTResult.R) < 0.05); // maximum of 5% error
-        REQUIRE((std::abs(LKT_BCTResult.V - CLWResult.V)/LKT_BCTResult.V) < 0.05);
+        REQUIRE(BCTR.hasConverged);
+        REQUIRE(CLWR.hasConverged);
+        REQUIRE((std::abs(BCTR.R - CLWR.R)/BCTR.R) < 0.05); // maximum of 5% error
+        REQUIRE((std::abs(BCTR.V - CLWR.V)/BCTR.V) < 0.05);
 
-        if (CLWResult.V > (Vd/20))
+        if (CLWR.V > (Vd/20))
             break;
-        std::tie(V0, R0) = std::tie(CLWResult.V, CLWResult.R);
+        std::tie(V0, R0) = std::tie(CLWR.V, CLWR.R);
     }
 
 }
 
-// currently fails at intermediate dTs (~31K) meaning there is likely an issue with WLCYZ
+// currently fails at intermediate dTs (~33K) meaning there is likely an issue with WLCYZ
 TEST_CASE("Linearised WLCYZ model agrees with LKT-BCT at pre solute trapping undercoolings", "[Solvers]")
 {
     // WLCYZ paper states this model reduces to non-equilibrium bulk diffusion adjusted LKT-BCT for linear liquidus and
@@ -115,16 +115,25 @@ TEST_CASE("Linearised WLCYZ model agrees with LKT-BCT at pre solute trapping und
     for (double dT{dT0}; dT<300; ++dT)
     {
         INFO("dT = " + std::to_string(dT));
-        solvers::Result LKT_BCTResult{solvers::newton<models::LKT_BCT_GD>(dT, C0, ALin, V0, R0)};
-        solvers::Result WLCYZResult{solvers::newton<models::WLCYZ>(dT, C0, ALin, V0, R0)};
-        INFO("V LKT-BCT = " + std::to_string(LKT_BCTResult.V) + ", V WLCYZ = " + std::to_string(WLCYZResult.V) + '\n');
-        INFO("R LKT-BCT = " + std::to_string(LKT_BCTResult.R) + ", R WLCYZ = " + std::to_string(WLCYZResult.R) + '\n');
+        solvers::Result BCTR{solvers::newton<models::LKT_BCT_GD>(dT, C0, ALin, V0, R0)};
+        solvers::Result WLCYZR{solvers::newton<models::WLCYZ>(dT, C0, ALin, V0, R0)};
+        INFO("V LKT-BCT = " + std::to_string(BCTR.V) + ", V WLCYZ = " + std::to_string(WLCYZR.V) + '\n');
+        INFO("R LKT-BCT = " + std::to_string(BCTR.R) + ", R WLCYZ = " + std::to_string(WLCYZR.R) + '\n');
 
-        REQUIRE(LKT_BCTResult.hasConverged);
-        REQUIRE(WLCYZResult.hasConverged);
-        REQUIRE((std::abs(LKT_BCTResult.R - WLCYZResult.R)/LKT_BCTResult.R) < 0.05); // maximum of 5% error
-        REQUIRE((std::abs(LKT_BCTResult.V - WLCYZResult.V)/LKT_BCTResult.V) < 0.05);
+        REQUIRE(BCTR.hasConverged);
+        REQUIRE(WLCYZR.hasConverged);
 
-        std::tie(V0, R0) = std::tie(WLCYZResult.V, WLCYZResult.R);
+        double f1{}, f2{};
+        models::DTs DTs{};
+        if ((std::abs(BCTR.V - WLCYZR.V)/BCTR.V) > 0.05)
+        {
+            std::tie(f1, f2, DTs) = models::LKT_BCT_GD(BCTR.V, BCTR.R, dT, C0, ALin);
+            std::tie(f1, f2, DTs) = models::WLCYZ(BCTR.V, BCTR.R, dT, C0, ALin);
+        }
+
+        REQUIRE((std::abs(BCTR.R - WLCYZR.R)/BCTR.R) < 0.05); // maximum of 5% error
+        REQUIRE((std::abs(BCTR.V - WLCYZR.V)/BCTR.V) < 0.05);
+
+        std::tie(V0, R0) = std::tie(WLCYZR.V, WLCYZR.R);
     }
 }

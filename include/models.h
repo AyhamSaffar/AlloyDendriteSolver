@@ -104,7 +104,9 @@ namespace models
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
 
-    // bulk non-equilibrium diffusion correction of LKT-BCT by Galenko & Danilov. Only used to test WLCYZ
+    // bulk non-equilibrium diffusion correction of LKT-BCT by Galenko & Danilov. Taken from
+    // https://www.sciencedirect.com/science/article/pii/S0022024898009774. Only used to test WLCYZ and implementaiton
+    // not yet tested to make sure it agrees with published plots
     inline std::tuple<double, double, DTs> LKT_BCT_GD(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         if (!A.WLCYZCapable)
@@ -116,20 +118,23 @@ namespace models
         double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
 
         double psi{1 - (V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
+        double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
         double k{ // velocity dependent partition coefficient
-            (V<A.Vd) ? (A.k0*psi+(A.a0*V/A.D)) / (psi+(A.a0*V/A.D)) : 1
+            (V<A.Vd) ? (A.k0*psi+(V/Vdi)) / (psi+(V/Vdi)) : 1
         }; 
+        double Cli{C0/(1-(1-k)*Ivc)}; // solute concentration of liquid at interface
         double mP{(A.m/(1-A.k0)) * (1-k+std::log(k/A.k0)+(1-k)*(1-k)*V/A.Vd)}; // velocity dependent liquidus slope (m prime)
 
         double R0{8.314}; // molar gas constant
-        double mu{A.L*A.V0/(R0*A.Tm*A.Tm)}; // interfacial kinetic coefficient
+        double mu{A.V0*(A.k0-1)/A.m}; // max interfacial kinetic coefficient with no solute trapping
+        double muP{mu/(1+Cli*(1-k)*(1-k)*A.V0/A.Vd)}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
         double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + (psi/(A.o*Pc*Pc))) )}; // - solutal stability function
-        double Ci{C0/(1-(1-k)*Ivc)}; // solute concentration of liquid at interface
 
-        double dTt{A.L*Ivt/A.Cp}, dTc{A.m*C0 - mP*Ci}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
+        // dTc temporarily modified
+        double dTt{A.L*Ivt/A.Cp}, dTc{A.m*C0 - A.m*Cli}, dTr{2*A.r/R}, dTk{V/muP}; // undercooling components
         double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
-        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*Pc*(1-k)*xic*Ci) - R}; // radius error
+        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*Pc*(1-k)*xic*Cli) - R}; // radius error
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
 
