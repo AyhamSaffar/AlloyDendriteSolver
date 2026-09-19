@@ -36,7 +36,7 @@ namespace models
             return 1;
     }
 
-    /// @brief Lipton, Glicksman, and Kurz model. Useful at moderate undercoolings and velocities (VR/2D << 2π) and for
+    /// @brief Lipton, Glicksman, and Kurz model. Useful at lower undercoolings and velocities (VR/2D << 2π) and for
     /// fully linear phase diagrams.
     /// @tparam LEGACY whether to remove the factor of 2 in the f2 solutal field gradient term. If true, the model is
     /// consistent with the original paper by Lipton, Glicksman, & Kurz. If false, the model better matches future
@@ -46,9 +46,8 @@ namespace models
     /// @param dT undercooling - K
     /// @param C0 bulk alloy solute concentration - C.%
     /// @param A struct containing key physical alloy parameters
-    /// @return dT error, R error, and dT component struct. If V, R, dt, and C0 are perfectly correct, both errors
-    /// should be zero. Returns all NaNs if model could not be evaluated at a point for any reason E.G. No alloy phase
-    /// diagram fits are valid at the requested point.
+    /// @return dT error, R error, and dT component struct. Returns all NaNs if model could not be evaluated at a point
+    /// for any reason E.G. No alloy phase diagram fits are valid at the requested point.
     template <bool LEGACY=true>
     inline std::tuple<double, double, DTs> LGK(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
@@ -65,8 +64,8 @@ namespace models
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr});
     }
 
-    /// @brief Lipton, Kurz, and Trivedi - Boettinger Coriell and Trivedi model. Generalises better to higher
-    /// undercoolings and velocities for fully linear phase diagrams.
+    /// @brief Lipton, Kurz, and Trivedi - Boettinger Coriell and Trivedi model. Generalises better to intermediate
+    /// undercoolings and velocities (V < Vd which is often around 10-20m/s) for fully linear phase diagrams.
     /// @tparam LEGACY whether to use m for marginal stability cretieria. This is what BCT used in their origional
     /// paper. If false, uses mP(V). This form tends to be used in more recent papers. Defaults to true.
     /// @param V velocity - m/s
@@ -74,9 +73,8 @@ namespace models
     /// @param dT undercooling - K
     /// @param C0 bulk alloy solute concentration - C.%
     /// @param A struct containing key physical alloy parameters
-    /// @return dT error, R error, and dT component struct. If V, R, dt, and C0 are perfectly correct, both errors
-    /// should be zero. Returns all NaNs if model could not be evaluated at a point for any reason E.G. No alloy phase
-    /// diagram fits are valid at the requested point.
+    /// @return dT error, R error, and dT component struct. Returns all NaNs if model could not be evaluated at a point
+    /// for any reason E.G. No alloy phase diagram fits are valid at the requested point.
     template <bool LEGACY=true>
     inline std::tuple<double, double, DTs> LKT_BCT(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
@@ -104,50 +102,17 @@ namespace models
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
 
-    // bulk non-equilibrium diffusion correction of LKT-BCT by Galenko & Danilov. Taken from
-    // https://www.sciencedirect.com/science/article/pii/S0022024898009774. Only used to test WLCYZ and implementaiton
-    // not yet tested to make sure it agrees with published plots
-    inline std::tuple<double, double, DTs> LKT_BCT_GD(double V, double R, double dT, double C0, const alloys::Alloy& A)
-    {
-        if (!A.WLCYZCapable)
-            throw std::runtime_error("Attempted to pass non WLCYZ capable Alloy to LKT-BCT-GD model");
 
-        double Pt{V*R/(2*A.a)}; // thermal Péclet number
-        double Pc{V*R/(2*A.D)}; // solutal Péclet number
-        double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
-        double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
-
-        double psi{1 - (V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
-        double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
-        double k{ // velocity dependent partition coefficient
-            (V<A.Vd) ? (A.k0*psi+(V/Vdi)) / (psi+(V/Vdi)) : 1
-        }; 
-        double Cli{C0/(1-(1-k)*Ivc)}; // solute concentration of liquid at interface
-        double mP{(A.m/(1-A.k0)) * (1-k+std::log(k/A.k0)+(1-k)*(1-k)*V/A.Vd)}; // velocity dependent liquidus slope (m prime)
-
-        double R0{8.314}; // molar gas constant
-        double mu{A.V0*(A.k0-1)/A.m}; // max interfacial kinetic coefficient with no solute trapping
-        double muP{mu/(1+Cli*(1-k)*(1-k)*A.V0/A.Vd)}; // interfacial kinetic coefficient
-        double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
-        double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + (psi/(A.o*Pc*Pc))) )}; // - solutal stability function
-
-        // dTc temporarily modified
-        double dTt{A.L*Ivt/A.Cp}, dTc{A.m*C0 - A.m*Cli}, dTr{2*A.r/R}, dTk{V/muP}; // undercooling components
-        double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
-        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*Pc*(1-k)*xic*Cli) - R}; // radius error
-        return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
-    }
-
-    /// @brief Cao, Wang, Duan, and Bai model. Designed to better generalise to higher undercoolings and velocities for
-    /// non-linear phase diagrams, but makes strong assumptions and precise implementation details were never published.
+    /// @brief Cao, Wang, Duan, and Bai model. Designed to generalise better to intermediate undercoolings and 
+    /// velocities (V < Vdi which is often around 10-20m/s) for non-linear phase diagrams, but makes strong assumptions
+    /// and precise implementation details were never published.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
     /// @param C0 bulk alloy solute concentration - C.%
     /// @param A struct containing key physical alloy parameters
-    /// @return dT error, R error, and dT component struct. If V, R, dt, and C0 are perfectly correct, both errors
-    /// should be zero. Returns all NaNs if model could not be evaluated at a point for any reason E.G. No alloy phase
-    /// diagram fits are valid at the requested point.
+    /// @return dT error, R error, and dT component struct. Returns all NaNs if model could not be evaluated at a point
+    /// for any reason E.G. No alloy phase diagram fits are valid at the requested point.
     inline std::tuple<double, double, DTs> CLW(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         if (!A.CLWCapable)
@@ -189,6 +154,48 @@ namespace models
         }
     }
 
+
+    /// @brief Galenko & Danilov model. Generalises better to very high undercoolings and velocities for fully linear
+    /// phase diagrams.
+    /// @param V velocity - m/s
+    /// @param R dendrite tip radius - m
+    /// @param dT undercooling - K
+    /// @param C0 bulk alloy solute concentration - C.%
+    /// @param A struct containing key physical alloy parameters
+    /// @return dT error, R error, and dT component struct. Returns all NaNs if model could not be evaluated at a point
+    /// for any reason E.G. No alloy phase diagram fits are valid at the requested point.
+    inline std::tuple<double, double, DTs> GD(double V, double R, double dT, double C0, const alloys::Alloy& A)
+    {
+        if (!A.GDCapable)
+            throw std::runtime_error("Attempted to pass non GD capable Alloy to GD model");
+
+        double Pt{V*R/(2*A.a)}; // thermal Péclet number
+        double Pc{V*R/(2*A.D)}; // solutal Péclet number
+        double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
+        double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
+
+        double psi{1 - (V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
+        double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
+        double k{ // velocity dependent partition coefficient
+            (V<A.Vd) ? (A.k0*psi+(V/Vdi)) / (psi+(V/Vdi)) : 1
+        }; 
+        double Cli{C0/(1-(1-k)*Ivc)}; // solute concentration of liquid at interface
+        double mP{(A.m/(1-A.k0)) * (1-k+std::log(k/A.k0)+(1-k)*(1-k)*V/A.Vd)}; // velocity dependent liquidus slope (m prime)
+
+        double R0{8.314}; // molar gas constant
+        double mu{A.V0*(A.k0-1)/A.m}; // max interfacial kinetic coefficient with no solute trapping
+        double muP{mu/(1+Cli*(1-k)*(1-k)*A.V0/A.Vd)}; // interfacial kinetic coefficient
+        double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
+        double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + (psi/(A.o*Pc*Pc))) )}; // - solutal stability function
+
+        // dTc temporarily modified
+        double dTt{A.L*Ivt/A.Cp}, dTc{A.m*C0 - mP*Cli}, dTr{2*A.r/R}, dTk{V/muP}; // undercooling components
+        double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
+        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*Pc*(1-k)*xic*Cli) - R}; // radius error
+        return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
+    }    
+
+
     // the functions below must be seperate from the WLCYZ function so they can be differentiated within that function.
 
     // calculates the velocity dependent partition coefficient used in the WLCYZ model
@@ -208,16 +215,15 @@ namespace models
         return 1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd;
     }
 
-    /// @brief Wang, Liu, Chen, Yang and Zhou  model. Generalises better to higher undercoolings and velocities for non
-    /// linear phase diagrams.
+    /// @brief Wang, Liu, Chen, Yang and Zhou  model. Generalises better to very high undercoolings and velocities for
+    /// non linear phase diagrams.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
     /// @param C0 bulk alloy solute concentration - C.%
     /// @param A struct containing key physical alloy parameters
-    /// @return dT error, R error, and dT component struct. If V, R, dt, and C0 are perfectly correct, both errors
-    /// should be zero. Returns all NaNs if model could not be evaluated at a point for any reason E.G. No alloy phase
-    /// diagram fits are valid at the requested point.
+    /// @return dT error, R error, and dT component struct. Returns all NaNs if model could not be evaluated at a point
+    /// for any reason E.G. No alloy phase diagram fits are valid at the requested point.
     inline std::tuple<double, double, DTs> WLCYZ(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
         if (!A.WLCYZCapable)

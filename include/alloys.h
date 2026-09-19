@@ -51,10 +51,13 @@ namespace alloys
             inline double mlAtC(double C) const;
             inline double ClAtT(double T) const;
             inline double CsAtT(double T) const;
+            
+            // GD parameters
+            bool GDCapable{false};
+            double Vd{};    // maximum speed of diffusion in the bulk liquid - m/s
 
             // WLCYZ parameters
             bool WLCYZCapable{false};
-            double Vd{};    // maximum speed of diffusion in the bulk liquid - m/s
             inline double mlAtT(double T) const;
             inline double msAtT(double T) const;
 
@@ -63,11 +66,10 @@ namespace alloys
                 double a0=-1, double V0=-1, double Tm=-1, // LKT-BCT
                 double DA0=-1, double DEa=-1, std::vector<Fit> TlAtC={}, std::vector<Fit> ClAtT={},
                     std::vector<Fit> CsAtT={}, // CLW
-                double Vd=-1 // WLCYZ
+                double Vd=-1 // GD & WLCYZ
             );
             Alloy() = default;
             bool operator==(const Alloy&) const = default;
-            // bool operator!=(const Alloy&) const = default;
 
         private:
             double m_DA0{}; // Arrhenius constant of diffusivity - m2/s
@@ -118,7 +120,9 @@ inline alloys::Alloy::Alloy(
         LKT_BCTCapable = true;
     if (LKT_BCTCapable && (DA0!=-1) && (DEa!=-1) && (!TlAtC.empty()) && (!ClAtT.empty()) && (!CsAtT.empty()))
         CLWCapable = true;
-    if (LKT_BCTCapable && (!TlAtC.empty()) && (!ClAtT.empty()) && (!CsAtT.empty()) && (Vd!=-1))
+    if (LKT_BCTCapable && (Vd!=-1))
+        GDCapable = true;
+    if (GDCapable && (!TlAtC.empty()) && (!ClAtT.empty()) && (!CsAtT.empty()))
         WLCYZCapable = true;
 }                  
 
@@ -248,7 +252,7 @@ namespace alloys
     // standard solution to marginal stability criterion for a planar interace. Could vary with crystal structure.
     static constexpr double o{1.0/(4*std::numbers::pi*std::numbers::pi)};
     static constexpr double R{8.3145}; // gas constant in J/molK
-    static constexpr double NA{0}; //* used E.G. for m and k0 in alloys with non linear phase diagrams.
+    static constexpr double NA{0}; //* sometimes used for m and k0 in alloys with very non linear phase diagrams.
 
     // calculated using least squares fitting of the atom.% phase diagram from the TCBIN1.1 database. Note this phase
     // diagram does not exactly match the shape of the published phase diagram. 
@@ -294,7 +298,7 @@ namespace alloys
     static std::vector<Fit> FeSbCsAtT{Fit{{33.559, -0.01853}}};
 
     // Iron Antimony system in wt.%. Take from https://doi.org/10.1080/09500830903002356.
-    const Alloy FeSb_wtp{15'027, 43.77, NA, NA, 3.56e-7, NA, 7.3e-6, o, 2.5e-10, 3000, NA, 4.11e-7, 5e4, 
+    const Alloy FeSb_wtp{15'027, 43.77, NA, NA, 3.56e-7, NA, 7.3e-6, o, 2.5e-10, 3000, -1, 4.11e-7, 5e4, 
         FeSbTlAtC, FeSbClAtT, FeSbCsAtT};
 
     // calculated using least squares fitting of the wt.% phase diagram from the TCBIN1.1 database. Currently does not

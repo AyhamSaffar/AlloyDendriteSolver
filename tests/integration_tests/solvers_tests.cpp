@@ -94,7 +94,7 @@ TEST_CASE("Linearised CLW model agrees with LKT-BCT at pre solute trapping under
 }
 
 // currently fails at intermediate dTs (~33K) meaning there is likely an issue with WLCYZ
-TEST_CASE("Linearised WLCYZ model agrees with LKT-BCT at pre solute trapping undercoolings", "[Solvers]")
+TEST_CASE("Linearised WLCYZ model agrees with GD for Alloy with linear phase diagram", "[Solvers]")
 {
     // WLCYZ paper states this model reduces to non-equilibrium bulk diffusion adjusted LKT-BCT for linear liquidus and
     // solidus.
@@ -115,24 +115,24 @@ TEST_CASE("Linearised WLCYZ model agrees with LKT-BCT at pre solute trapping und
     for (double dT{dT0}; dT<300; ++dT)
     {
         INFO("dT = " + std::to_string(dT));
-        solvers::Result BCTR{solvers::newton<models::LKT_BCT_GD>(dT, C0, ALin, V0, R0)};
+        solvers::Result GDR{solvers::newton<models::GD>(dT, C0, ALin, V0, R0)};
         solvers::Result WLCYZR{solvers::newton<models::WLCYZ>(dT, C0, ALin, V0, R0)};
-        INFO("V LKT-BCT = " + std::to_string(BCTR.V) + ", V WLCYZ = " + std::to_string(WLCYZR.V) + '\n');
-        INFO("R LKT-BCT = " + std::to_string(BCTR.R) + ", R WLCYZ = " + std::to_string(WLCYZR.R) + '\n');
+        INFO("V LKT-BCT = " + std::to_string(GDR.V) + ", V WLCYZ = " + std::to_string(WLCYZR.V) + '\n');
+        INFO("R LKT-BCT = " + std::to_string(GDR.R) + ", R WLCYZ = " + std::to_string(WLCYZR.R) + '\n');
 
-        REQUIRE(BCTR.hasConverged);
+        REQUIRE(GDR.hasConverged);
         REQUIRE(WLCYZR.hasConverged);
 
         double f1{}, f2{};
         models::DTs DTs{};
-        if ((std::abs(BCTR.V - WLCYZR.V)/BCTR.V) > 0.05)
+        if ((std::abs(GDR.V - WLCYZR.V)/GDR.V) > 0.05)
         {
-            std::tie(f1, f2, DTs) = models::LKT_BCT_GD(BCTR.V, BCTR.R, dT, C0, ALin);
-            std::tie(f1, f2, DTs) = models::WLCYZ(BCTR.V, BCTR.R, dT, C0, ALin);
+            std::tie(f1, f2, DTs) = models::GD(GDR.V, GDR.R, dT, C0, ALin);
+            std::tie(f1, f2, DTs) = models::WLCYZ(GDR.V, GDR.R, dT, C0, ALin);
         }
 
-        REQUIRE((std::abs(BCTR.R - WLCYZR.R)/BCTR.R) < 0.05); // maximum of 5% error
-        REQUIRE((std::abs(BCTR.V - WLCYZR.V)/BCTR.V) < 0.05);
+        REQUIRE((std::abs(GDR.R - WLCYZR.R)/GDR.R) < 0.05); // maximum of 5% error
+        REQUIRE((std::abs(GDR.V - WLCYZR.V)/GDR.V) < 0.05);
 
         std::tie(V0, R0) = std::tie(WLCYZR.V, WLCYZR.R);
     }

@@ -39,22 +39,26 @@ TEST_CASE("diff::calculateGrads works for successive analytically differentiable
 
 TEST_CASE("diff::calculateGrads does not modify Alloy objects passed to it", "[differentials]")
 {
-    // checks enzyme bug (https://github.com/EnzymeAD/Enzyme/issues/3073) is prevent from modifying Alloy objects
-    diff::Jacobian J{};
+    // checks enzyme bug (https://github.com/EnzymeAD/Enzyme/issues/3073) is prevented from modifying Alloy objects
     
-    // cannot use CLW Alloy here as all params must be non zero to ensure they are included in differentiation
-    // calculation and not optimised out 
-    alloys::Alloy A{alloys::AgCu_wtp}, ACopy{alloys::AgCu_wtp};
-    J = diff::calculateGrads<models::LGK>(1e-6, 1e-6, 1, 1, A);
+    // must create an Alloy that can be used with all models
+    std::vector<alloys::Fit> fits{ alloys::Fit{{1, 2, 3}}, alloys::Fit{{4, 5, 6}}};
+    const alloys::Alloy A{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, fits, fits, fits, 1};
+    const alloys::Alloy ACopy{A};
+    diff::Jacobian J{};
+
+    J = diff::calculateGrads<models::LGK>(1, 1, 1, 1, A);
     REQUIRE(A==ACopy);
+
     J = diff::calculateGrads<models::LKT_BCT>(1, 1, 1, 1, A);
     REQUIRE(A==ACopy);
 
-    std::tie(A, ACopy) = std::tie(alloys::CoCu_20wtp, alloys::CoCu_20wtp); // must use CLW capable Alloy here
-    J = diff::calculateGrads<models::CLW>(1e-6, 1e-6, 1, 1, A);
+    J = diff::calculateGrads<models::CLW>(1, 1, 1, 1, A);
     REQUIRE(A==ACopy);
 
-    std::tie(A, ACopy) = std::tie(alloys::NiB2007_atp, alloys::NiB2007_atp); // must use CLW capable Alloy here
-    J = diff::calculateGrads<models::WLCYZ>(1e-6, 1e-6, 1, 1, A);
+    J = diff::calculateGrads<models::GD>(1, 1, 1, 1, A);
+    REQUIRE(A==ACopy);
+
+    J = diff::calculateGrads<models::WLCYZ>(1, 1, 1, 1, A);
     REQUIRE(A==ACopy);
 }
