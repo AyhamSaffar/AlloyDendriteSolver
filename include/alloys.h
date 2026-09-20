@@ -299,6 +299,12 @@ namespace alloys
         -1, -1, {}, {}, {}, 20  
     };
 
+    // Nickel Boron system in at.%. Taken from https://www.sciencedirect.com/science/article/pii/S0375960197005628.
+    const Alloy NiB1997_atp{
+        1.72e4, 36.39, -14.3, 0.0155, 3.42e-7, 5.5e-9, 8.5e-6, o, 5.5e-9/18.9, 363, 1726,
+        -1, -1, {}, {}, {}, 18.9    
+    };
+
     // Derived from Binary Alloy Phase Diagrams, Vol. 1104, American Society for Metals, Metals Park, OH, 1986.
     static std::vector<Fit> FeSbTlAtC{Fit{{1811.15, -5.7341, -0.02588, -0.00103}}};
     static std::vector<Fit> FeSbClAtT{Fit{{393.39, -0.6802, 4.8758e-4, -1.2803e-7}}};

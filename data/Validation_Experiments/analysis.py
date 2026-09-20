@@ -331,9 +331,46 @@ fig.tight_layout()
 fig.savefig(experiment_path / 'FeSb_CLW.png')
 
 # %%
+data = experiments['NiB_GD']
+fig, axes = plt.subplots(nrows=2, figsize=(5, 8))
+Vd, D = 18.9, 5.5e-9 # parameters used in paper
+
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
+axes[0].vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
+axes[1].vlines(data.loc[bad_rows, 'V']/Vd, ymin=0, ymax=1e10, color='red', alpha=0.2)
+
+axes[0].set_xlabel("Undercooling  ΔT (K)")
+axes[0].set_xlim(0, 320)
+axes[0].set_xticks(range(0, 301, 50))
+axes[0].set_ylabel("Dendrite growth velocity V (m/s)")
+axes[0].set_ylim(0, 30)
+axes[0].set_yticks(range(0, 31, 5))
+
+axes[0].hlines(y=Vd, xmin=0, xmax=320, colors='black', linestyles='--')
+axes[0].text(x=5, y=Vd+0.5, s='$ V_D $')
+axes[0].vlines(x=214, ymin=0, ymax=30, colors='black', linestyles='--')
+axes[0].text(x=218, y=1, s='$ ΔT^* $')
+axes[0].plot(data['dT'], data['V'], color='black')
+
+axes[1].set_xlabel('Dimensionless velocity $ V/V_D $')
+axes[1].set_xlim(0, 1.5)
+axes[1].set_xticks(np.arange(0, 1.51, 0.5))
+axes[1].set_ylabel('Dendrite tip radius $ R / (V_D τ_D) $')
+axes[1].set_ylim(0, 800)
+axes[1].set_yticks(range(0, 801, 200))
+
+axes[1].vlines(x=[0.31, 1], ymin=0, ymax=800, colors='black', linestyles='--')
+axes[1].text(x=0.35, y=25, s='$ V^* / V_D $')
+axes[1].plot(data['V']/Vd, data['R']*Vd/D, color='black')
+
+fig.tight_layout()
+fig.savefig(experiment_path / 'NiB_GD.png')
+
+# %%
 data = experiments['CuNi_GD']
 fig, ax = plt.subplots(figsize=(5,4))
 
+bad_rows = (~data['converged']) | (data['V']<0) | (data['R']<0)
 ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
 
 ax.set_xlabel("Undercooling  ΔT (K)")
@@ -344,9 +381,9 @@ ax.set_ylim(0, 40)
 ax.set_yticks(range(0, 41, 5))
 
 ax.hlines(y=20, xmin=0, xmax=300, colors='black', linestyles='--')
-ax.text(x=5, y=21, s='$V_D$')
+ax.text(x=5, y=21, s='$ V_D $')
 ax.vlines(x=195, ymin=0, ymax=40, colors='black', linestyles='--')
-ax.text(x=200, y=1, s='$ΔT^*$')
+ax.text(x=200, y=1, s='$ ΔT^* $')
 ax.plot(data['dT'], data['V'], color='black')
 
 fig.tight_layout()

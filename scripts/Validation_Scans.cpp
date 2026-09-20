@@ -216,6 +216,26 @@ int main()
     }
 
 
+    // https://www.sciencedirect.com/science/article/pii/S0375960197005628 Fig. 1 & 2 (line 2).
+    std::ofstream outfNiB2{dataPath + "NiB_GD.csv"};
+    outfNiB2 << solvers::Result::commaSeparatedColumns << '\n';
+
+    {
+        const alloys::Alloy A{alloys::NiB1997_atp};
+        const double C0{0.7}, dT0{1};
+        solvers::Result R{solvers::bruteForceNewton<models::GD>(dT0, C0, A)};
+        double V0{R.V}, R0{R.R};
+
+        for (double dT{dT0}; dT<=325; ++dT)
+        {
+            R = solvers::newton<models::GD>(dT, C0, A, V0, R0);
+            if (R.hasConverged)
+                std::tie(V0, R0) = std::tie(R.V, R.R);
+
+            outfNiB2 << R.commaSeparatedValues() << '\n';
+        }       
+    }
+
     // https://www.sciencedirect.com/science/article/pii/S0022024898009774 Fig. 1 (line 3)
     std::ofstream outfCuNi{dataPath + "CuNi_GD.csv"};
     outfCuNi << solvers::Result::commaSeparatedColumns << '\n';
@@ -238,8 +258,8 @@ int main()
 
 
     // https://www.sciencedirect.com/science/article/pii/S1359645406006215 Fig. 4-8
-    std::ofstream outfNiB2{dataPath + "NiB_WLCYZ.csv"}; // ealier validation experiment uses NiB for LKT_BCT
-    outfNiB2 << solvers::Result::commaSeparatedColumns << ",Ti,kv,Cl*,Cs*\n";
+    std::ofstream outfNiB3{dataPath + "NiB_WLCYZ.csv"}; // ealier validation experiment uses NiB for LKT_BCT
+    outfNiB3 << solvers::Result::commaSeparatedColumns << ",Ti,kv,Cl*,Cs*\n";
 
     {
         const alloys::Alloy A{alloys::NiB2007_atp};
@@ -271,7 +291,7 @@ int main()
                 Cs = Cl*kvP; // solute concentration of solid at interface
             }
 
-            outfNiB2 << R.commaSeparatedValues() << ',' << Ti << ',' << kvP << ',' << Cl << ',' << Cs << '\n';
+            outfNiB3 << R.commaSeparatedValues() << ',' << Ti << ',' << kvP << ',' << Cl << ',' << Cs << '\n';
         }
     }
 
