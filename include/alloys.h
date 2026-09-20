@@ -292,13 +292,20 @@ namespace alloys
         NiBTlAtC, NiBClAtT, NiBCsAtT, 18.9
     };
 
+    static constexpr double CuNi30Mr{0.7*0.063546 + 0.3*0.0586934}; // relative molecular mass of CuNi-30atp in Kg/mol
+    // Copper Nickel 30at.% system taken from https://www.sciencedirect.com/science/article/pii/S0022024898009774.
+    const Alloy CuNi_30atp{
+        2.317e5*CuNi30Mr, 576*CuNi30Mr, -4.38, 0.81, 1.3e-7, 3e-9, 1.5e-5, o, 3e-9/19, 553, 1726,
+        -1, -1, {}, {}, {}, 20  
+    };
+
     // Derived from Binary Alloy Phase Diagrams, Vol. 1104, American Society for Metals, Metals Park, OH, 1986.
     static std::vector<Fit> FeSbTlAtC{Fit{{1811.15, -5.7341, -0.02588, -0.00103}}};
     static std::vector<Fit> FeSbClAtT{Fit{{393.39, -0.6802, 4.8758e-4, -1.2803e-7}}};
     static std::vector<Fit> FeSbCsAtT{Fit{{33.559, -0.01853}}};
 
     // Iron Antimony system in wt.%. Take from https://doi.org/10.1080/09500830903002356.
-    const Alloy FeSb_wtp{15'027, 43.77, NA, NA, 3.56e-7, NA, 7.3e-6, o, 2.5e-10, 3000, -1, 4.11e-7, 5e4, 
+    const Alloy FeSb_wtp{15'027, 43.77, NA, NA, 3.56e-7, NA, 7.3e-6, o, 2.5e-10, 3000, 1811, 4.11e-7, 5e4, 
         FeSbTlAtC, FeSbClAtT, FeSbCsAtT};
 
     // calculated using least squares fitting of the wt.% phase diagram from the TCBIN1.1 database. Currently does not
