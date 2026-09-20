@@ -176,22 +176,20 @@ namespace models
 
         double psi{1 - (V*V)/(A.Vd*A.Vd)}; // diffusion coefficient ψ
         double Vdi{A.D/A.a0}; // maximum speed at interface for diffusion
-        double k{ // velocity dependent partition coefficient
+        double kv{ // velocity dependent partition coefficient
             (V<A.Vd) ? (A.k0*psi+(V/Vdi)) / (psi+(V/Vdi)) : 1
         }; 
-        double Cli{C0/(1-(1-k)*Ivc)}; // solute concentration of liquid at interface
-        double mP{(A.m/(1-A.k0)) * (1-k+std::log(k/A.k0)+(1-k)*(1-k)*V/A.Vd)}; // velocity dependent liquidus slope (m prime)
+        double Cli{C0/(1-(1-kv)*Ivc)}; // solute concentration of liquid at interface
+        double mP{(A.m/(1-A.k0)) * (1-kv+std::log(kv/A.k0)+(1-kv)*(1-kv)*V/A.Vd)}; // velocity dependent liquidus slope
 
-        double R0{8.314}; // molar gas constant
-        double mu{A.V0*(A.k0-1)/A.m}; // max interfacial kinetic coefficient with no solute trapping
-        double muP{mu/(1+Cli*(1-k)*(1-k)*A.V0/A.Vd)}; // interfacial kinetic coefficient
+        double m{A.m*100}; // mu calculation requires m in K/C.frac instead of K/C.% for units to cancel out
+        double mu{A.V0*(A.k0-1)/m}; // interfacial kinetic coefficient
         double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
-        double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + (psi/(A.o*Pc*Pc))) )}; // - solutal stability function
+        double xic{1 + 2*kv/( 1-2*kv-std::sqrt(1 + (psi/(A.o*Pc*Pc))) )}; // solutal stability function
 
-        // dTc temporarily modified
-        double dTt{A.L*Ivt/A.Cp}, dTc{A.m*C0 - mP*Cli}, dTr{2*A.r/R}, dTk{V/muP}; // undercooling components
+        double dTt{A.L*Ivt/A.Cp}, dTc{A.m*C0 - mP*Cli}, dTr{2*A.r/R}, dTk{V/mu}; // undercooling components
         double f1{dTt+dTc+dTr+dTk-dT}; // undercooling error
-        double f2{(A.r/A.o) / (xit*Pt*A.L/A.Cp - 2*mP*Pc*(1-k)*xic*Cli) - R}; // radius error
+        double f2{(A.r/A.o) / (Pt*xit*A.L/A.Cp - 2*mP*(1-kv)*Cli*Pc*xic/psi) - R}; // radius error
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }    
 

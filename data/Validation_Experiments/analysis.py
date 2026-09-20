@@ -342,8 +342,11 @@ ax.set_xticks(range(0, 301, 50))
 ax.set_ylabel("Dendrite growth velocity V (m/s)")
 ax.set_ylim(0, 40)
 ax.set_yticks(range(0, 41, 5))
+
 ax.hlines(y=20, xmin=0, xmax=300, colors='black', linestyles='--')
 ax.text(x=5, y=21, s='$V_D$')
+ax.vlines(x=195, ymin=0, ymax=40, colors='black', linestyles='--')
+ax.text(x=200, y=1, s='$ΔT^*$')
 ax.plot(data['dT'], data['V'], color='black')
 
 fig.tight_layout()
