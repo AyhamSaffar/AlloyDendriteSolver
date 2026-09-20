@@ -331,6 +331,25 @@ fig.tight_layout()
 fig.savefig(experiment_path / 'FeSb_CLW.png')
 
 # %%
+data = experiments['CuNi_GD']
+fig, ax = plt.subplots(figsize=(5,4))
+
+ax.vlines(data.loc[bad_rows, 'dT'], ymin=0, ymax=1e10, color='red', alpha=0.2)
+
+ax.set_xlabel("Undercooling  ΔT (K)")
+ax.set_xlim(0, 300)
+ax.set_xticks(range(0, 301, 50))
+ax.set_ylabel("Dendrite growth velocity V (m/s)")
+ax.set_ylim(0, 40)
+ax.set_yticks(range(0, 41, 5))
+ax.hlines(y=20, xmin=0, xmax=300, colors='black', linestyles='--')
+ax.text(x=5, y=21, s='$V_D$')
+ax.plot(data['dT'], data['V'], color='black')
+
+fig.tight_layout()
+fig.savefig(experiment_path / 'CuNi_GD.png')
+
+# %%
 data = experiments['NiB_WLCYZ']
 fig, axes = plt.subplots(ncols=5, figsize=(25, 3.5))
 
