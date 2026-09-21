@@ -267,9 +267,11 @@ namespace models
             double dNdV{  // dN(Ti)/dV
                 __enzyme_autodiff<double>((void*)getN, enzyme_const, Ti, enzyme_out, V, enzyme_const, &ACopy2)
             };
-            double mu{(ml-ms+ml*ms*Cli*dNdT)/(ml*ms*((1/A.V0)+Cli*dNdV))}; // interfacial kinetic coefficient
+            //* m and C terms must be in C.frac (not C%) only for mu expression as % units dont cancel out there
+            double mlf{ml*100}, msf{ms*100}, Clif{Cli/100};
+            double mu{(mlf-msf+mlf*msf*Clif*dNdT) / (mlf*msf*((1/A.V0)+Clif*dNdV))}; // interfacial kinetic coefficient
             double dTk{V/mu}; // kinetic undercooling
-            // double dTk{A.TlAtC(Cl) - A.TlAtC(CleP)}; // alternative definition of dTK that tends to give bad results 
+            // double dTk{A.TlAtC(Cli) - A.TlAtC(CleP)}; // alternative definition of dTK that tends to give bad results 
             
             double mlP{A.mlAtT(Ti+dTr)}, msP{A.msAtT(Ti+dTr)}; // curvature adjusted solidus and liquidus gradients
             alloys::Alloy ACopy3{A};
