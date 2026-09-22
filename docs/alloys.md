@@ -42,8 +42,12 @@ not including this variance may be negligible compared to the error created by o
 The thermodynamic constants $L$ and $c_p$ have been normalised by mole throughout for consistency. Volumetric and
 gravimetric values must be converted to molar for use in this library.
 
-Concentration based quantities ($m$ and $k_0$) can either be in at.% or wt.%. Care must be taken to ensure all
-concentration values have the same units as the corresponding Alloy.
+Concentration based quantities ($C_s$, $C_l$, $m$, $k_0$, ...) can either be in at.% or wt.%. Care must be taken to
+ensure all concentration values passed to a given function have the same units as the Alloy passed to said function.
+Even more importantly, sometimes concentration based quantities used in an expression must be converted to their
+fractional equivalent. The expression $m_v = m_s*m_l*C_l$ will be equivalent for percentage and fractional concentration
+based quantities, with said choice only changing the units of $m_v$. An expression such as $dT = V(m_l-m_s) / V_0$
+however is only valid when the $m$ terms are fractional as there can be no percentage unit for $dT$.
 
 Units for $k_0$ are often omitted as it is unitless overall. However it has a different value when in wt.% / wt.%
 compared to at.% / at.%. Consider the situation where the solute metal atoms have a much lower atomic mass then

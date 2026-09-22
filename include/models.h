@@ -249,7 +249,6 @@ namespace models
             double Pc{V*R/(2*A.D)}; // solutal peclet number
             double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
             double Cli{C0/(1-(1-kvP)*Ivc)}; // solute concentration of liquid at interface
-            // double Cli{(CleP-CseP-(V/A.V0))/NP}; // alternative definition of Cl that tends to give bad results
 
             double dTc{A.TlAtC(C0) - A.TlAtC(Cli)}; // constitutional (solutal) undercooling
             
@@ -261,17 +260,16 @@ namespace models
             double kv{(V<A.Vd) ? ((V/Vdi)+ke*psi) / ((V/Vdi)+psi) : 1}; // velocity dependent partition coefficient
             double N{1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd}; // relaxation term N
             double ml{A.mlAtT(Ti)}, ms{A.msAtT(Ti)}; // solidus and liquidus gradients
-            double M{-ml*ms*N/(ml-ms+ml*ms*Cli*dNdT)}; // non-equilibrium liquidus gradient
             
             alloys::Alloy ACopy2{A};
             double dNdV{  // dN(Ti)/dV
                 __enzyme_autodiff<double>((void*)getN, enzyme_const, Ti, enzyme_out, V, enzyme_const, &ACopy2)
             };
-            //* m and C terms must be in C.frac (not C%) only for mu expression as % units dont cancel out there
+            //* m and C terms must be in C.frac (not C%) for expressions where % units dont cancel
             double mlf{ml*100}, msf{ms*100}, Clif{Cli/100};
             double mu{(mlf-msf+mlf*msf*Clif*dNdT) / (mlf*msf*((1/A.V0)+Clif*dNdV))}; // interfacial kinetic coefficient
             double dTk{V/mu}; // kinetic undercooling
-            // double dTk{A.TlAtC(Cli) - A.TlAtC(CleP)}; // alternative definition of dTK that tends to give bad results 
+            // double dTk{A.TlAtC(Cli) - A.TlAtC(CleP)}; // The paper's definition of dTK that gives bad results 
             
             double mlP{A.mlAtT(Ti+dTr)}, msP{A.msAtT(Ti+dTr)}; // curvature adjusted solidus and liquidus gradients
             alloys::Alloy ACopy3{A};
