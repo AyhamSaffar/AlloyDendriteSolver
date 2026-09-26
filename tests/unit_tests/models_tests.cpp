@@ -32,3 +32,31 @@ TEST_CASE("LKT_BCT model roughly agrees with approximation at low undercooling",
     REQUIRE(std::abs(f1) < 0.1);
     REQUIRE(std::abs(f2) < 0.1);
 }
+
+TEST_CASE("models do not modify Alloy objects passed to them", "[differentials]")
+{
+    // checks enzyme bug (https://github.com/EnzymeAD/Enzyme/issues/3073) is prevented from modifying Alloy objects
+    
+    // must create an Alloy that can be used with all models
+    std::vector<alloys::Fit> fits{ alloys::Fit{{1, 2, 3}}, alloys::Fit{{4, 5, 6}}};
+    const alloys::Alloy A{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, fits, fits, fits, 1};
+    const alloys::Alloy ACopy{A};
+
+    double f1{}, f2{};
+    models::DTs dTs{};
+
+    std::tie(f1, f2, dTs) = models::LGK(1, 1, 1, 1, A);
+    REQUIRE(A==ACopy);
+
+    std::tie(f1, f2, dTs) = models::LKT_BCT(1, 1, 1, 1, A);
+    REQUIRE(A==ACopy);
+
+    std::tie(f1, f2, dTs) = models::CLW(1, 1, 1, 1, A);
+    REQUIRE(A==ACopy);
+
+    std::tie(f1, f2, dTs) = models::GD(1, 1, 1, 1, A);
+    REQUIRE(A==ACopy);
+
+    std::tie(f1, f2, dTs) = models::WLCYZ(1, 1, 1, 1, A);
+    REQUIRE(A==ACopy);
+}
