@@ -36,8 +36,8 @@ namespace models
             return 1;
     }
 
-    /// @brief Lipton, Glicksman, and Kurz model. Useful at lower undercoolings and velocities (VR/2D << 2π) and for
-    /// fully linear phase diagrams.
+    /// @brief Lipton, Glicksman, and Kurz model. Useful at moderate undercoolings and velocities (VR/2D << 2π), low
+    /// solute concentrations (C0 < ~5at.%), and fully linear phase diagrams.
     /// @tparam LEGACY whether to remove the factor of 2 in the f2 solutal field gradient term. If true, the model is
     /// consistent with the original paper by Lipton, Glicksman, & Kurz. If false, the model better matches future
     /// iterations of the model. Defaults to true.
@@ -64,8 +64,9 @@ namespace models
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr});
     }
 
-    /// @brief Lipton, Kurz, and Trivedi - Boettinger Coriell and Trivedi model. Generalises better to intermediate
-    /// undercoolings and velocities (V < Vd which is often around 10-20m/s) for fully linear phase diagrams.
+    /// @brief Lipton, Kurz, and Trivedi - Boettinger Coriell and Trivedi model. Useful at high undercoolings and
+    /// velocities (V < Vd which is often around 10-20m/s), low solute concentrations (C0 < ~5at.%), and fully
+    /// linear phase diagrams.
     /// @tparam LEGACY whether to use m for marginal stability cretieria. This is what BCT used in their origional
     /// paper. If false, uses mP(V). This form tends to be used in more recent papers. Defaults to true.
     /// @param V velocity - m/s
@@ -103,9 +104,9 @@ namespace models
     }
 
 
-    /// @brief Cao, Wang, Duan, and Bai model. Designed to generalise better to intermediate undercoolings and 
-    /// velocities (V < Vdi which is often around 10-20m/s) for non-linear phase diagrams, but makes strong assumptions
-    /// and precise implementation details were never published.
+    /// @brief Cao, Lu, and Wei model. Designed for high undercoolings and velocities (V < Vd which is often around
+    /// 10-20m/s), low solute concentrations (C0 < ~5at.%), and non linear phase diagrams, but makes strong
+    /// assumptions and precise implementation details were never published.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
@@ -155,8 +156,8 @@ namespace models
     }
 
 
-    /// @brief Galenko & Danilov model. Generalises better to very high undercoolings and velocities for fully linear
-    /// phase diagrams.
+    /// @brief Galenko & Danilov model. Useful at extremely high undercoolings and velocities, low solute concentrations
+    /// (C0 < ~5at.%), and fully linear phase diagrams.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K
@@ -213,8 +214,8 @@ namespace models
         return 1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd;
     }
 
-    /// @brief Wang, Liu, Chen, Yang and Zhou  model. Generalises better to very high undercoolings and velocities for
-    /// non linear phase diagrams.
+    /// @brief Wang, Liu, Chen, Yang and Zhou  model. Useful at extremely high undercoolings and velocities, low solute
+    /// concentrations (C0 < ~5at.%), and non linear phase diagrams.
     /// @param V velocity - m/s
     /// @param R dendrite tip radius - m
     /// @param dT undercooling - K

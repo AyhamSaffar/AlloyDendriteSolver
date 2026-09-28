@@ -16,7 +16,8 @@ All alloy thermodynamic constants used below are documented in the [*alloys*](al
 
 [Lipton, J., Glicksman, M. E., & Kurz, W.](https://doi.org/10.1016/0025-5416(84)90199-X)
 
-This equation holds up to moderate undercooling for alloys with linear phase diagrams. 
+Useful at moderate undercoolings and velocities (VR/2D << 2π), low solute concentrations (C0 < ~5at.%), and fully linear
+phase diagrams.
 
 $$ ∆T = \frac{L}{c_p} Iv_t + m(C_0-C_i) + \frac{2Γ}{R} $$
 
@@ -38,18 +39,18 @@ $Iv_c(P_c) = P_c e^{P_c} E_1(P_c)$ &emsp;&emsp;&emsp;&ensp;&nbsp;- thermal Ivant
 $E_1(x) = \int_u^\infty \frac{exp(-s)}{s} ds$ &emsp;&emsp;&ensp;&emsp;&ensp;&nbsp;- first exponential
 integral of $x$
 
-The first equation calculates the LGK dendrite undercooling. It quantifies how much the bulk liquid must be cooled below
-the equilibrium liquidus temperature at C0 to drive solidification. This extra undercooling allows 1. any accumulated temperature given out by the liquid solidifying to diffuse away from the dendrite tip, 2. allows reaching the lower
-melting temperature caused by a build up of solute at the dendrite tip, and 3. allows overcoming the energy barrier
-created by the surface energy of a high curvature dendrite tip. It uses dimensional analysis to solve for solute and
-heat transport ahead of the parabaloid dendrite. Phase diagram constants are used to calculate the drop in liquidus temperature ahead of the solidification front due to solute enrichment.
+The first equation calculates the dendrite undercooling. It quantifies how much the bulk liquid must be cooled below
+the equilibrium liquidus temperature at C0 to drive solidification. This undercooling is made up of three components.
+The thermal undercooling $dTk$ describes how much temperature is built up at the dendrite tip from the heat of
+solidification. The constitutional undercool $dTc$ describes the decrease of the melting point due to build up of solute
+at the dendrite tip. The curvature undercooling $dTr$ describes the temperature decrease needed to overcoming the energy
+barrier created by the surface energy of the high curvature dendrite tip. This equation uses dimensional analysis to
+solve for solute and heat transport ahead of the parabaloid dendrite.
 
-The second equation calculates the LGK marginal stability criterion dendrite radius. A planar solidification front is
-modified by adding a periodic pertubation. Too small and the curvature will drive the pertubation to shrink. Too large
-and purtubation will grow by escaping the hot and solute rich solidification front. The dendrite radius is approximated
-as the smallest pertubation that won't shrink. This gives an expression that is a function of the solute and temperature
-field gradient ahead of the dendrite, which can be calculated for a parabaloid using the same dimensional analysis as
-the first equation.
+The second equation calculates the marginal stability criterion dendrite radius. This is the smallest possible
+pertubation of the solidification front that can stay solid. The heat and solute just ahead of the dendrite tip would
+otherwise remelt the pertubation for a given undercooling. This equation uses the gradient of the afformentioned solute
+and heat fields calculated using dimensional analysis.
 
 Note the extra factor of 2 in the second term of the second equation's denominator. Lipton, Glicksman, & Kurz remove
 this factor in their paper in order to coerce this equation into agreeing with a prior published result for the case
@@ -61,8 +62,8 @@ change is not otherwise justified and is ignored in future iterations of this mo
 [J. Lipton, W. Kurz, R. Trivedi](https://doi.org/10.1016/0001-6160(87)90174-X) - [W.J. Boettinger, S.R. Coriell and R. 
 Trivedi*](https://search.library.uq.edu.au/discovery/fulldisplay/alma991011497109703131/61UQ_INST:61UQ)
 
-An extension of the LGK model that maintains accuracy at higher undercoolings and growth rates for alloys with linear
-phase diagrams. 
+Useful at high undercoolings and velocities (V < Vd which is often around 10-20m/s), low solute concentrations
+(C0 < ~5at.%), and fully linear phase diagrams.
 
 $$ ∆T = \frac{L}{c_p} Iv_t + (mC_0 - m'C_i) + \frac{2Γ}{R} + \frac{V}{\mu} $$
 
