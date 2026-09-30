@@ -25,18 +25,15 @@ namespace diff
     template <models::ModelFunc modelFunc>
     inline Jacobian calculateGrads(double V, double R, double dT, double C0, const alloys::Alloy& A)
     {
-        // An Enzyme bug (https://github.com/EnzymeAD/Enzyme/issues/3073) leads to the __enzyme_autodiff always
-        // modifying A. As such, temporary copies must be created and passed to this function. 
-        static alloys::Alloy ATemp{};
-        ATemp = A;
         auto [df1dV, df1dR] = __enzyme_autodiff<Diffs>(
             (void*)wrapper<modelFunc, 1>,
-            enzyme_out, V, enzyme_out, R, enzyme_const, dT, enzyme_const, C0, enzyme_const, &ATemp
+            enzyme_out, V, enzyme_out, R, enzyme_const, dT, enzyme_const, C0, enzyme_const, &A,
+            enzyme_runtime_activity
         );
-        ATemp = A;
         auto [df2dV, df2dR] = __enzyme_autodiff<Diffs>(
             (void*)wrapper<modelFunc, 2>,
-            enzyme_out, V, enzyme_out, R, enzyme_const, dT, enzyme_const, C0, enzyme_const, &ATemp
+            enzyme_out, V, enzyme_out, R, enzyme_const, dT, enzyme_const, C0, enzyme_const, &A,
+            enzyme_runtime_activity
         );
         return Jacobian{df1dV, df1dR, df2dV, df2dR};
     }

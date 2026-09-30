@@ -126,7 +126,7 @@ namespace models
             double dTt{A.L*Ivt/A.Cp}; // thermal undercooling
             double T0(A.TlAtC(C0)); // liquidus T at bulk C0
 
-            //! CLW papers never detail which T/C to use for D(T), m(C), or k0(T). This only gets close to published results
+            //! CLW papers never detail which T/C to use for D(T), m(C), or k0(T). This gets close to published results
             double D{A.DAtT(T0)}; // diffusivity constant
             double Pc{V*R/(2*D)}; // solutal Péclet number
             double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
@@ -250,22 +250,18 @@ namespace models
             double Pc{V*R/(2*A.D)}; // solutal peclet number
             double Ivc{ivantsov(Pc)}; // solutal Ivantsov function
             double Cli{C0/(1-(1-kvP)*Ivc)}; // solute concentration of liquid at interface
+            double dTc{A.TlAtC(C0) - A.TlAtC(Cli)}; // constitutional (solutal) undercooling            
 
-            double dTc{A.TlAtC(C0) - A.TlAtC(Cli)}; // constitutional (solutal) undercooling
-            
-            // could not copy assign A to a static object as enyzme would fail to deduce the static object's type
-            alloys::Alloy ACopy1{A}; // required as __enzye_autodiff sometimes modifies objects passed to it
-            double dNdT{  // dN(Ti)/dT
-                __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti, enzyme_const, V, enzyme_const, &ACopy1)
-            };
+            double dNdT{__enzyme_autodiff<double>( // dN(Ti)/dT
+                (void*)getN, enzyme_out, Ti, enzyme_const, V, enzyme_const, &A, enzyme_runtime_activity
+            )};
             double kv{(V<A.Vd) ? ((V/Vdi)+ke*psi) / ((V/Vdi)+psi) : 1}; // velocity dependent partition coefficient
             double N{1 - kv + std::log(kv/ke) + (1-kv)*(1-kv)*V/A.Vd}; // relaxation term N
             double ml{A.mlAtT(Ti)}, ms{A.msAtT(Ti)}; // solidus and liquidus gradients
             
-            alloys::Alloy ACopy2{A};
-            double dNdV{  // dN(Ti)/dV
-                __enzyme_autodiff<double>((void*)getN, enzyme_const, Ti, enzyme_out, V, enzyme_const, &ACopy2)
-            };
+            double dNdV{__enzyme_autodiff<double>( // dN(Ti)/dV
+                (void*)getN, enzyme_const, Ti, enzyme_out, V, enzyme_const, &A, enzyme_runtime_activity
+            )};
             //* m and C terms must be in C.frac (not C%) for expressions where % units dont cancel
             double mlf{ml*100}, msf{ms*100}, Clif{Cli/100};
             double mu{(mlf-msf+mlf*msf*Clif*dNdT) / (mlf*msf*((1/A.V0)+Clif*dNdV))}; // interfacial kinetic coefficient
@@ -273,18 +269,16 @@ namespace models
             // double dTk{A.TlAtC(Cli) - A.TlAtC(CleP)}; // The paper's definition of dTK that gives bad results 
             
             double mlP{A.mlAtT(Ti+dTr)}, msP{A.msAtT(Ti+dTr)}; // curvature adjusted solidus and liquidus gradients
-            alloys::Alloy ACopy3{A};
-            double dNPdT{  // dN(Ti+dTr)/dT
-                __enzyme_autodiff<double>((void*)getN, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy3)
-            };
+            double dNPdT{__enzyme_autodiff<double>( // dN(Ti+dTr)/dT
+                (void*)getN, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &A, enzyme_runtime_activity
+            )};
             double MP{-mlP*msP*NP/(mlP-msP+mlP*msP*Cli*dNPdT)}; // curvature adjusted non-equilibrium liquidus gradient
-            alloys::Alloy ACopy4{A};
-            double dkvPdT{ // dKv(Ti+dTr)/dT
-                __enzyme_autodiff<double>((void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &ACopy4)
-            };
+            double dkvPdT{__enzyme_autodiff<double>( // dKv(Ti+dTr)/dT
+                (void*)getkv, enzyme_out, Ti+dTr, enzyme_const, V, enzyme_const, &A, enzyme_runtime_activity
+            )};
 
             double xic{ // solutal stability function
-                (V<A.Vd) ? 1-(2*kvP+2*MP*Cli*dkvPdT) / ( std::sqrt(1+(psi/(A.o*Pc*Pc))) + 2*kvP - 1 + 2*MP*Cli*dkvPdT) : 0
+                (V<A.Vd) ? 1 - (2*kvP+2*MP*Cli*dkvPdT) / (std::sqrt(1+(psi/(A.o*Pc*Pc))) + 2*kvP-1+2*MP*Cli*dkvPdT) : 0
             };
             double xiL{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
             double RPred{(A.r/A.o) / (Pt*A.L*xiL/A.Cp + 2*MP*Pc*Cli*(kvP-1)*xic/psi)}; // calculated dendrite radius
