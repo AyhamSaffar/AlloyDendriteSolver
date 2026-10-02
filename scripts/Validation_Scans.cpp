@@ -164,6 +164,7 @@ int main()
     
     // https://doi.org/10.1007/s11433-010-4167-y Fig. 2, 3, 5 & 6. 20wt.% R values assume linear liquidus and solidus, 
     // which is not true beyond 100K dT. Therefore the CLW model is used instead of LKT-BCT.
+    //! CLW implementation only approximates published results as exact model details were not specified in CLW paper
     std::ofstream outfCoCuCLW{dataPath + "CoCu_CLW.csv"};
     outfCoCuCLW << solvers::Result::commaSeparatedColumns << ",k0\n";
 
@@ -191,6 +192,7 @@ int main()
 
 
     // https://doi.org/10.1080/09500830903002356 Fig. 2 & 3.
+    //! CLW implementation only approximates published results as exact model details were not specified in CLW paper
     std::ofstream outfFeSb{dataPath + "FeSb_CLW.csv"};
     outfFeSb << solvers::Result::commaSeparatedColumns << ",k0,kv\n";
 
@@ -237,6 +239,7 @@ int main()
     }
 
     // https://www.sciencedirect.com/science/article/pii/S0022024898009774 Fig. 1 (line 3)
+    //! V values calculated below are slightly higher than published results, but key features of graph are stil correct
     std::ofstream outfCuNi{dataPath + "CuNi_GD.csv"};
     outfCuNi << solvers::Result::commaSeparatedColumns << '\n';
 

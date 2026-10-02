@@ -103,7 +103,6 @@ namespace models
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }
 
-
     /// @brief Cao, Lu, and Wei model. Designed for high undercoolings and velocities (V < Vd which is often around
     /// 10-20m/s), low solute concentrations (C0 < ~5at.%), and non linear phase diagrams, but makes strong
     /// assumptions and precise implementation details were never published.
@@ -155,6 +154,46 @@ namespace models
         }
     }
 
+    /// @brief Divenuti and Ando model. Useful at high undercoolings and velocities (V < Vd which is often around
+    /// 10-20m/s), low solute concentrations (C0 < ~5at.%), and non linear phase diagrams.
+    /// @param V velocity - m/s
+    /// @param R dendrite tip radius - m
+    /// @param dT undercooling - K
+    /// @param C0 bulk alloy solute concentration - C.%
+    /// @param A struct containing key physical alloy parameters
+    /// @return dT error, R error, and dT component struct. Returns all NaNs if model could not be evaluated at a point
+    /// for any reason E.G. No alloy phase diagram fits are valid at the requested point.
+    template <bool LEGACY=true>
+    inline std::tuple<double, double, DTs> DA(double V, double R, double dT, double C0, const alloys::Alloy& A)
+    {
+        if (!A.CLWCapable) // DA requires the same thermodynamic parameters as CLW plus LAtC fit
+            throw std::runtime_error("Attempted to pass non DA capable Alloy to DA model");
+
+        double Pt{V*R/(2*A.a)}; // thermal Péclet number
+        double Ivt{ivantsov(Pt)}; // thermal Ivantsov function
+        double dTt{A.L*Ivt/A.Cp}; // thermal undercooling
+        double Ti{A.TlAtC(C0) - dT + dTt}; // interface temperature. Ti must <= Tl(C0)
+        
+        double dTr{2*A.r/R}; // curvature undercooling
+        // P suffix (prime) used to denote a value is curvature adjusted (calculated at T=Ti+dTr)
+        double CleP{A.ClAtT(Ti+dTr)}, CseP{A.CsAtT(Ti+dTr)}; // curvature adjusted Cle & Cse
+        double keP{CseP/CleP}; // curvature adjusted equilibrium partition coefficient
+
+        double D{A.DAtT(Ti)}; // diffusivity of solute in melt
+        double Vdi{D/A.a0}; // maximum speed at interface for diffusion
+        double kvP{(keP + V/Vdi) / (1 + V/Vdi)}; // curvature corrected velocity dependent k
+        double Cli{C0/(1-(1-kvP)*Ivc)}; // solute concentration of liquid at interface
+        //! not sure how to derive dTc & dTk
+        double dTc{A.TlAtC(C0) - A.TlAtC(Cli)}; // constitutional (solutal) undercooling            
+        double dTk{1}; // kinetic undercooling
+
+        double xit{1 - 1/std::sqrt(1 + 1/(A.o*Pt*Pt))}; // thermal stability function
+        double xic{1 + 2*k/( 1-2*k-std::sqrt(1 + 1/(A.o*Pc*Pc)) )}; // solutal stability function
+        double RPred{(A.r/A.o) / (Pt*A.LAtC(Cli)*xit/A.Cp - 2*A.mlAtC(Ci)*Pc*Cli*(1-kvP)*xic)};
+
+        return std::make_tuple(dTt+dTc+dTr+dTk-dT, RPred-R, DTs{dTt, dTc, dTr, dTk});
+
+    }
 
     /// @brief Galenko & Danilov model. Useful at extremely high undercoolings and velocities, low solute concentrations
     /// (C0 < ~5at.%), and fully linear phase diagrams.
@@ -193,7 +232,6 @@ namespace models
         double f2{(A.r/A.o) / (Pt*xit*A.L/A.Cp - 2*mP*(1-kv)*Cli*Pc*xic/psi) - R}; // radius error
         return std::make_tuple(f1, f2, DTs{dTt, dTc, dTr, dTk});
     }    
-
 
     // the functions below must be seperate from the WLCYZ function so they can be differentiated within that function.
 
